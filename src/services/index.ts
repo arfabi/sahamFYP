@@ -22,16 +22,22 @@ export type { ClassificationResult } from './gemini';
 
 
 // Sectors.app
-export { 
-  getCompanyOverview, 
-  getCompanyFinancials, 
-  getCompanyValuation, 
-  getSectorPerformance, 
-  getDailySummary, 
-  getTopGainers, 
-  getTopLosers, 
-  getMostActive 
+export {
+  fetchCompanyReport, fetchIndexDaily, fetchTopMovers, fetchMostTraded,
+  fetchCorporateActions, fetchShareholdersComposition, fetchFreeFloat,
+  fetchSubsectorReport, fetchIdxMarketCap,
+  fetchDailyTransaction, fetchForeignFlow, fetchCompanies, fetchSuspensions, fetchIpoPerformance,
+  fetchSubsectors, fetchIndustries,
 } from './sectors';
+export type {
+  CompanyReportSection, CompanyReport, IndexDaily, TopMoverStock, TopMovers,
+  MostTradedStock, CorporateActions, ShareholdersComposition, FreeFloatEntry,
+  SubsectorReport, IdxMarketCap,
+} from './sectors';
+
+// Enrichment
+export { enrichClassification } from './enrichment';
+export type { EnrichmentResult } from './enrichment';
 
 // Cloudinary
 export { 
