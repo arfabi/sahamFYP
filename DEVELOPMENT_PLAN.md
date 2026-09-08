@@ -8,13 +8,15 @@
 
 ## Status Saat Ini
 
+✅ **Phase 5 (Selesai)**: Naskah Generator (LLM 2) + Form Wizard UI — 6 prompt template, generator service, multi-step wizard dengan live preview.
+
 ✅ **Phase 4 (Selesai)**: Sectors.app API v2 integration — semua endpoint berfungsi, enrichment orchestrator siap.
 
 ✅ **Phase 3 (Selesai)**: Gemini AI Classifier — klasifikasi 6 kategori berita + SKIP.
 
 ✅ **Phase 0–2 (Selesai)**: Infrastruktur, scraping, database.
 
-**Selanjutnya**: Phase 5 — Form Wizard UI & Naskah Generator.
+**Selanjutnya**: Phase 6 — Image Generation + Cloudinary + Download.
 
 ---
 
@@ -339,21 +341,21 @@ Membangun aplikasi standalone yang memungkinkan user untuk:
 
 ---
 
-## ✍️ Phase 5 — Naskah Generator (LLM 2) + Form Wizard
+## ✍️ Phase 5 — Naskah Generator (LLM 2) + Form Wizard ✅ COMPLETED
 
 **Durasi estimasi**: 2 minggu
 **Tujuan**: Generate naskah carousel 8 slide dan sediakan form wizard untuk edit.
 
-### 5.1 Naskah Generator Prompt
+### 5.1 Naskah Generator Prompt ✅
 
-- [ ] Buat 6 prompt template berbeda (satu per kategori) di `src/prompts/naskahGenerator.ts`:
+- [x] Buat 6 prompt template berbeda (satu per kategori) di `src/prompts/naskahGenerator.ts`:
   - Prompt SINGLE_STOCK → naskah dengan bedah data lengkap
   - Prompt MACRO_ECONOMY → naskah dengan konteks pasar
   - Prompt SECTOR_ANALYSIS → naskah rotasi sektor
   - Prompt CORPORATE_ACTION → naskah aksi korporat
-  - Prompt IPO_RIGHTS_ISSUE → naskah IPO/right issue
+  - Prompt IPO_RIGHTS_ISSUE → naskah IPO/right issue (dua skenario: ada ticker & IPO baru)
   - Prompt SUSPENSION_DELISTING → naskah suspensi
-- [ ] Setiap prompt mengikuti struktur 8 slide dari `Struktur_Konten_6_Kategori_SahamFYP.md`:
+- [x] Setiap prompt mengikuti struktur 8 slide dari `Struktur_Konten_6_Kategori_SahamFYP.md`:
   1. COVER
   2. TLDR
   3. KRONOLOGI
@@ -363,58 +365,49 @@ Membangun aplikasi standalone yang memungkinkan user untuk:
   7. KESIMPULAN
   8. CTA_DYOR
 
+### 5.2 Output JSON Schema ✅
 
-### 5.2 Output JSON Schema
+- [x] Define JSON schema untuk output naskah di `src/types/index.ts`:
+  - `SlideData` interface dengan semua field yang dibutuhkan template
+  - `CarouselData` interface dengan global settings + slides array
+  - `NaskahInput` interface untuk input generator
+- [x] Parse output JSON dari Gemini (handle markdown wrapping)
+- [x] Validasi schema (pastikan 8 slides, template valid, field wajib ada)
 
-- [ ] Define JSON schema untuk output naskah:
-  ```typescript
-  interface SlideData {
-    template: 'cover' | 'tldr' | 'kronologi' | 'data' | 'pros' | 'cons' | 'kesimpulan' | 'cta';
-    title: string;
-    description?: string;
-    source?: string;
-    disclaimer?: string;
-    visualIcon?: string;
-    tldrCards?: Array<{ icon: string; text: string }>;
-    metrics?: Array<{ icon: string; label: string; value: string; caption: string; tone: 'amber' | 'sage' }>;
-    bullets?: Array<{ icon: string; text: string }>;
-  }
-  
-  interface CarouselData {
-    handle: string;
-    badgeText: string;
-    slides: SlideData[];
-  }
-  ```
-- [ ] Parse output JSON dari Gemini
-- [ ] Validasi schema (pastikan semua field required ada)
+### 5.3 Form Wizard UI ✅
 
-### 5.3 Form Wizard UI
-
-- [ ] Buat komponen `FormWizard.tsx`:
+- [x] Buat komponen `src/components/FormWizard.tsx`:
   - Step 1: Review hasil scraping + klasifikasi
   - Step 2: Review data enrichment
-  - Step 3: Edit naskah per slide (8 slide)
-  - Step 4: Preview & download
-- [ ] Setiap slide punya editor sendiri:
+  - Step 3: Edit naskah per slide (8 slide) dengan editor per template
+  - Step 4: Preview semua slide & download PNG
+- [x] Setiap slide punya editor sendiri:
   - Input judul, deskripsi, sumber, disclaimer
-  - Pilih ikon atau upload ilustrasi
+  - Pilih ikon (22 icon Lucide)
   - Edit kartu TL;DR, metrik, bullet points (tambah/hapus/edit)
-  - Pilih warna (background, text, accent, badge)
-- [ ] Live preview di panel kanan (reuse komponen `CardGenerator.tsx` yang sudah ada)
+  - Pilih warna accent (5 preset)
+- [x] Live preview di panel kanan (reuse `TemplateRenderer` dari `Templates.tsx`)
 
-### 5.4 Integration dengan Existing Card Generator
+### 5.4 Integration ✅
 
-- [ ] Refactor `CardGenerator.tsx` agar bisa menerima data dari JSON naskah
-- [ ] Pastikan semua 8 template bisa render dari data JSON
-- [ ] Test: generate naskah → load ke form wizard → edit → preview → download
+- [x] `App.tsx` terintegrasi dengan flow: scrape → classify → enrich → generate naskah → Form Wizard
+- [x] Semua 8 template bisa render dari data JSON (via `buildRenderProps` helper)
+- [x] `services/index.ts` barrel export mencakup semua service & types baru
 
 ### Deliverables Phase 5
 
 - ✅ Naskah generator berjalan untuk semua 6 kategori
 - ✅ Form wizard UI berfungsi dengan live preview
-- ✅ User bisa edit naskah per slide
-- ✅ Output JSON valid dan konsisten
+- ✅ User bisa edit naskah per slide (title, description, icon, cards, metrics, bullets, accent)
+- ✅ Output JSON valid dan konsisten (validated & repaired)
+- ✅ TypeScript check passed, production build successful
+
+### Implementation Notes
+
+- **Tidak perlu template baru**: Semua 6 kategori pakai 8 template existing (cover, tldr, data, kronologi, standar, pros, cons, cta). Yang berbeda hanya isi/data, bukan layout.
+- **Prompt design**: Setiap prompt menyertakan data enrichment JSON sebagai konteks, aturan wajib (no mengarang, format point+explanation, DYOR disclaimer), dan output schema.
+- **JSON extraction**: Handle 3 kasus — pure JSON, markdown code block, JSON embedded in text.
+- **Validation**: Pastikan 8 slides, template valid, field wajib terisi (fallback ke "-").
 
 ---
 
@@ -528,11 +521,11 @@ Membangun aplikasi standalone yang memungkinkan user untuk:
 | Phase | Deskripsi | Durasi | Status |
 |-------|-----------|--------|--------|
 | **Phase 0** | Card Generator (existing) | ✅ Selesai | Done |
-| **Phase 1** | Setup Infrastruktur & Database | 1 minggu | 🔴 Not Started |
-| **Phase 2** | Web Scraping Service | 1 minggu | 🔴 Not Started |
-| **Phase 3** | Gemini AI Classifier | 1 minggu | 🔴 Not Started |
-| **Phase 4** | Sectors.app Data Enrichment | 1 minggu | 🔴 Not Started |
-| **Phase 5** | Naskah Generator + Form Wizard | 2 minggu | 🔴 Not Started |
+| **Phase 1** | Setup Infrastruktur & Database | 1 minggu | ✅ Selesai | Done |
+| **Phase 2** | Web Scraping Service | 1 minggu | ✅ Selesai | Done |
+| **Phase 3** | Gemini AI Classifier | 1 minggu | ✅ Selesai | Done |
+| **Phase 4** | Sectors.app Data Enrichment | 1 minggu | ✅ Selesai | Done |
+| **Phase 5** | Naskah Generator + Form Wizard | 2 minggu | ✅ Selesai | Done |
 | **Phase 6** | Image Generation + Cloudinary | 1 minggu | 🔴 Not Started |
 | **Phase 7** | End-to-End Flow + Deployment | 1 minggu | 🔴 Not Started |
 
@@ -634,7 +627,9 @@ Untuk pertanyaan tentang rencana pengembangan:
 ---
 
 **Last Updated**: 2026-09-08
-**Version**: 2.0 (Standalone App Focus)
-**Status**: Phase 4 Complete — Ready for Phase 5
+**Version**: 2.1 (Standalone App Focus)
+**Status**: Phase 5 Complete — Ready for Phase 6
 
-- ✅ Hasil scraping akurat untuk mayoritas situs berita Indonesia
+- ✅ Naskah Generator (LLM 2) berjalan untuk 6 kategori
+- ✅ Form Wizard UI dengan live preview & per-slide editor
+- ✅ TypeScript check & production build passed
