@@ -1,5 +1,6 @@
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+const GEMINI_MODEL = 'gemini-3.5-flash-lite';
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 export interface GeminiResponse {
   candidates: Array<{
@@ -14,6 +15,14 @@ export interface GeminiResponse {
     candidatesTokenCount: number;
     totalTokenCount: number;
   };
+}
+
+export interface ClassificationResult {
+  category: 'SINGLE_STOCK' | 'MACRO_ECONOMY' | 'SECTOR_ANALYSIS' | 'CORPORATE_ACTION' | 'IPO_RIGHTS_ISSUE' | 'SUSPENSION_DELISTING' | 'SKIP';
+  ticker: string | null;
+  sector: string | null;
+  confidence: number;
+  reason: string;
 }
 
 export async function generateContent(prompt: string): Promise<string> {
@@ -49,45 +58,64 @@ export async function generateContent(prompt: string): Promise<string> {
   return data.candidates[0].content.parts[0].text;
 }
 
-export async function classifyContent(title: string, content: string): Promise<any> {
+export async function classifyContent(title: string, content: string): Promise<ClassificationResult> {
   const prompt = `
-Kamu adalah classifier konten berita keuangan untuk Instagram carousel @sahamfyp.
+Kamu adalah AI News Classifier untuk sistem otomasi konten @sahamfyp. 
+Tugasmu adalah membaca judul + isi berita, lalu menentukan SATU kategori paling tepat dari 6 kategori resmi: 
+[SINGLE_STOCK, MACRO_ECONOMY, SECTOR_ANALYSIS, CORPORATE_ACTION, IPO_RIGHTS_ISSUE, SUSPENSION_DELISTING, SKIP].
+Berikan output Wajib JSON valid, tanpa markdown tambahan.
 
-Klasifikasikan berita berikut ke salah satu dari 6 kategori:
-1. SINGLE_STOCK - Berita spesifik tentang 1 emiten (ticker)
-2. MACRO_ECONOMY - Berita ekonomi makro (BI rate, inflasi, GDP, dll)
-3. SECTOR_ANALYSIS - Analisis sektor/industri (perbankan, pertambangan, dll)
-4. CORPORATE_ACTION - Corporate action (dividen, stock split, rights issue, dll)
-5. IPO_RIGHTS_ISSUE - IPO atau rights issue
-6. SUSPENSION_DELISTING - Suspensi atau delisting saham
-7. SKIP - Tidak relevan dengan keuangan/investasi
-
-Judul: ${title}
-Konten: ${content}
-
-Response dalam format JSON:
+Format JSON yang diminta:
 {
-  "category": "SINGLE_STOCK",
-  "ticker": "BBCA",
-  "sector": "Financials",
-  "confidence": 0.95,
-  "reason": "Berita tentang laba bersih BBCA Q1 2024"
+  "category": "KATEGORI",
+  "ticker": "KODE / null",
+  "sector": "SEKTOR / null",
+  "confidence": 0.0,
+  "reason": "Alasan singkat 1-2 kalimat."
 }
 
-Jika kategori adalah SKIP, ticker dan sector bisa null.
+---
+DATA BERITA YANG HARUS DIKLASIFIKASIKAN:
+- Judul: ${title}
+- Isi: ${content}
 `;
 
-  const response = await generateContent(prompt);
+  const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      contents: [{
+        parts: [{
+          text: prompt
+        }]
+      }],
+      generationConfig: {
+        responseMimeType: 'application/json'
+      }
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Gemini API error: ${error}`);
+  }
+
+  const data: GeminiResponse = await response.json();
   
-  // Parse JSON dari response
+  if (!data.candidates || data.candidates.length === 0) {
+    throw new Error('No response from Gemini');
+  }
+
+  const rawOutput = data.candidates[0].content.parts[0].text;
+  
   try {
-    const jsonMatch = response.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
-    }
-    throw new Error('Invalid JSON response');
+    const result: ClassificationResult = JSON.parse(rawOutput);
+    return result;
   } catch (error) {
-    console.error('Failed to parse classifier response:', response);
+    console.error('Failed to parse classification result:', rawOutput);
     throw new Error('Failed to parse classification result');
   }
 }
+

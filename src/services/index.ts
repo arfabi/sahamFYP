@@ -18,6 +18,8 @@ export {
   generateContent, 
   classifyContent 
 } from './gemini';
+export type { ClassificationResult } from './gemini';
+
 
 // Sectors.app
 export { 
@@ -40,5 +42,7 @@ export {
 // Scraper
 export { 
   scrapeUrl, 
-  testUrl 
+  testScraperService 
 } from './scraper';
+export type { ScrapedContent } from './scraper';
+
