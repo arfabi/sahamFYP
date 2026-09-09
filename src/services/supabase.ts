@@ -52,8 +52,12 @@ export interface GeneratedPost {
   slides_json: any;
   total_slides: number;
   schedule_id?: string;
-  instagram_status?: 'scheduled' | 'published' | 'failed' | 'cancelled';
+  instagram_status?: 'generated' | 'scheduled' | 'published' | 'failed' | 'cancelled';
+  tiktok_schedule_id?: string;
+  tiktok_status?: 'generated' | 'scheduled' | 'published' | 'failed' | 'cancelled';
   permalink?: string;
+  permalink_ig?: string;
+  permalink_tiktok?: string;
   likes?: number;
   comments?: number;
   shares?: number;

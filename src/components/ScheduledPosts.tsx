@@ -8,7 +8,7 @@ interface ScheduledPost {
   title: string;
   caption: string;
   type: string;
-  status: 'scheduled' | 'published' | 'failed' | 'cancelled';
+  status: 'generated' | 'scheduled' | 'published' | 'failed' | 'cancelled';
   scheduledAt: string;
   mediaCount: number;
   scheduleId?: string;
