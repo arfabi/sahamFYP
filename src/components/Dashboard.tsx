@@ -69,7 +69,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="h-screen bg-slate-50 flex overflow-hidden">
       {/* Sidebar */}
       <aside
         className={`bg-slate-900 text-white flex flex-col transition-all duration-300 ${
@@ -145,7 +145,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-auto">
+      <main className="flex-1 flex flex-col overflow-y-auto">
         {/* Topbar - persistent di semua modul/menu */}
         <header className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-10">
           <div className="flex items-center justify-between px-5 py-3">
