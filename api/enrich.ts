@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { enrichByCategory } from './_lib/sectors';
-import { validateApiKey, isScrapeEndpoint, isHealthEndpoint } from './_lib/auth';
+import { enrichByCategory } from './_lib/sectors.ts';
+import { validateApiKey, isScrapeEndpoint, isHealthEndpoint } from './_lib/auth.ts';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');

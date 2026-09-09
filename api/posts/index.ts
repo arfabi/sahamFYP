@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { supabaseServer } from './_lib/supabase';
-import { validateApiKey, isScrapeEndpoint, isHealthEndpoint } from './_lib/auth';
+import { supabaseServer } from '../_lib/supabase.ts';
+import { validateApiKey, isScrapeEndpoint, isHealthEndpoint } from '../_lib/auth.ts';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');

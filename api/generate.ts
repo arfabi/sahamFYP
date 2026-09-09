@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { classifyContent, generateContent } from './_lib/gemini';
-import { enrichByCategory } from './_lib/sectors';
-import { scrapeUrl } from './_lib/scraper';
-import { validateApiKey, isScrapeEndpoint, isHealthEndpoint } from './_lib/auth';
+import { classifyContent, generateContent } from './_lib/gemini.ts';
+import { enrichByCategory } from './_lib/sectors.ts';
+import { scrapeUrl } from './_lib/scraper.ts';
+import { validateApiKey, isScrapeEndpoint, isHealthEndpoint } from './_lib/auth.ts';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
