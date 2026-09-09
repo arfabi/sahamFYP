@@ -27,11 +27,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'title and content are required' });
   }
 
+  console.log('[Classify] Request received:', { title: title?.substring(0, 50), contentLength: content?.length });
+  console.log('[Classify] GEMINI_API_KEY exists:', !!process.env.GEMINI_API_KEY);
+  console.log('[Classify] GEMINI_API_KEY length:', process.env.GEMINI_API_KEY?.length);
+
   try {
     const result = await classifyContent(title, content);
+    console.log('[Classify] Success:', result);
     return res.status(200).json(result);
   } catch (error) {
-    console.error('Classify error:', error);
+    console.error('[Classify] Error:', error);
     return res.status(500).json({
       error: 'Failed to classify content',
       message: error instanceof Error ? error.message : 'Unknown error',
