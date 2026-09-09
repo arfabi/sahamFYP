@@ -7,4 +7,6 @@ dist/
 # Environment variables
 .env.local
 .env*.local
-/base
+
+# Vercel
+.vercel/
