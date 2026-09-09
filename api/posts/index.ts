@@ -41,10 +41,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .range(parseInt(offset as string), parseInt(offset as string) + parseInt(limit as string) - 1);
 
       if (status && status !== 'all') {
-        // NOTE: 'instagram_status' column doesn't exist yet in Supabase.
-        // If you add it via migration, you can filter: query = query.eq('instagram_status', status);
-        // Until then, ignore status filter on GET.
-        void query;
+        query = query.eq('instagram_status', status);
       }
 
       const { data, error } = await query;
@@ -62,6 +59,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         badge_text: naskah?.badgeText || ticker || category,
         slides_json: naskah?.slides || naskah,
         total_slides: naskah?.slides?.length || 8,
+        instagram_status: 'generated',
       };
 
       // log_id is a FK to content_logs.id (uuid) - only set if a valid content_log uuid is passed
