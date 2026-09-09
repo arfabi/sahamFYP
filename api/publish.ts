@@ -67,7 +67,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         title: caption.slice(0, 50),
         description: caption,
         topic: '',
-        type: 'album',
+        type: 'image',
         medias,
         meta: { title: '', description: '', url: '' },
         additionalInfo: {
