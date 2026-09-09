@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Dashboard from './components/Dashboard';
 import LoginPage from './components/LoginPage';
-import { getCurrentUser, clearMasterSession, type AuthUser } from './services/auth';
+import { getCurrentUser, signOut, clearMasterSession, type AuthUser } from './services/auth';
 
 export default function App() {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -26,7 +26,14 @@ export default function App() {
     setUser(authUser);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Clear Supabase session (remote) if any
+    try {
+      await signOut();
+    } catch {
+      // ignore - daemon session no need sign out
+    }
+    // Clear master/local session
     clearMasterSession();
     setUser(null);
   };

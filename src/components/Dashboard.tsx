@@ -145,7 +145,35 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 flex flex-col overflow-auto">
+        {/* Topbar - persistent di semua modul/menu */}
+        <header className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-10">
+          <div className="flex items-center justify-between px-5 py-3">
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+              <span className="text-base">{NAV_ITEMS.find((n) => n.id === activePage)?.icon || '📄'}</span>
+              <span>{NAV_ITEMS.find((n) => n.id === activePage)?.label || 'Pages'}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-amber-500 flex items-center justify-center text-white text-xs font-bold">
+                  {user.email.charAt(0).toUpperCase()}
+                </div>
+                <div className="hidden md:block text-xs text-slate-500">
+                  <p className="font-medium text-slate-700 truncate">{user.email}</p>
+                  <p className="text-slate-400">{user.role}</p>
+                </div>
+              </div>
+              <button
+                onClick={onLogout}
+                className="px-3 py-1.5 bg-slate-100 hover:bg-red-50 hover:text-red-600 rounded-lg text-sm font-medium transition flex items-center gap-1.5"
+                title="Logout"
+              >
+                🚪 <span className="hidden sm:inline">Logout</span>
+              </button>
+            </div>
+          </div>
+        </header>
+
         <div className="p-6">
           {renderPage()}
         </div>

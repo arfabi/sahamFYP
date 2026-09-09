@@ -106,15 +106,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
             </button>
           </form>
 
-          {/* Master Account Info */}
-          <div className="mt-6 p-3 bg-slate-50 rounded-lg">
-            <p className="text-xs text-slate-500 text-center">
-              <strong>Master Account:</strong><br />
-              Email: fadlirobbi@gmail.com<br />
-              Password: @Arfabi0707
-            </p>
           </div>
-        </div>
 
         {/* Footer */}
         <p className="text-center text-slate-500 text-sm mt-6">
