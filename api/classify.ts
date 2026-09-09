@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { classifyContent } from '../_lib/gemini';
-import { validateApiKey, isScrapeEndpoint, isHealthEndpoint } from '../_lib/auth';
+import { classifyContent } from './_lib/gemini';
+import { validateApiKey, isScrapeEndpoint, isHealthEndpoint } from './_lib/auth';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS
