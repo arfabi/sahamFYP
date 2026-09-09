@@ -59,6 +59,13 @@ export async function generateContent(prompt: string): Promise<string> {
 }
 
 export async function classifyContent(title: string, content: string): Promise<ClassificationResult> {
+  // In browser, proxy through Vercel API to avoid CORS
+  if (typeof window !== 'undefined') {
+    const { classifyContent: proxyClassify } = await import('./api');
+    return proxyClassify(title, content);
+  }
+
+  // Server-side (Node.js) — call Gemini directly
   const prompt = `
 Kamu adalah AI News Classifier untuk sistem otomasi konten @sahamfyp. 
 Tugasmu adalah membaca judul + isi berita, lalu menentukan SATU kategori paling tepat dari 6 kategori resmi: 
