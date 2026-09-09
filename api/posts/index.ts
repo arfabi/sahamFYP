@@ -40,8 +40,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .limit(parseInt(limit as string))
         .range(parseInt(offset as string), parseInt(offset as string) + parseInt(limit as string) - 1);
 
-      if (status) {
-        query = query.eq('instagram_status', status);
+      if (status && status !== 'all') {
+        // NOTE: 'instagram_status' column doesn't exist yet in Supabase.
+        // If you add it via migration, you can filter: query = query.eq('instagram_status', status);
+        // Until then, ignore status filter on GET.
+        void query;
       }
 
       const { data, error } = await query;
@@ -51,20 +54,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (req.method === 'POST') {
-      // Save generated content to Supabase
-      const { category, ticker, title, content, naskah, classification, enrichment, image, siteName } = req.body;
+      // Save generated content to Supabase (matches current table schema)
+      const { category, ticker, title, content, naskah, classification, enrichment, image, siteName, logId } = req.body;
+
+      const insertData: Record<string, any> = {
+        handle: naskah?.handle || '@sahamfyp',
+        badge_text: naskah?.badgeText || ticker || category,
+        slides_json: naskah?.slides || naskah,
+        total_slides: naskah?.slides?.length || 8,
+      };
+
+      // log_id is a FK to content_logs.id (uuid) - only set if a valid content_log uuid is passed
+      if (logId) {
+        insertData.log_id = logId;
+      }
 
       const { data, error } = await supabaseServer
         .from('generated_posts')
-        .insert([{
-          log_id: ticker || category || 'manual',
-          handle: naskah?.handle || '@sahamfyp',
-          badge_text: naskah?.badgeText || ticker || category,
-          slides_json: naskah?.slides || naskah,
-          total_slides: naskah?.slides?.length || 8,
-          permalink: '',
-          instagram_status: 'generated',
-        }])
+        .insert([insertData])
         .select()
         .single();
 
