@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "predev": "node scripts/sync-env.mjs",
     "build": "vite build",
+    "prebuild": "node scripts/sync-env.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "sync:env": "node scripts/sync-env.mjs"
