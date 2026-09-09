@@ -55,12 +55,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       customThumbnail: false,
     }));
 
-    // Call Repliz
+          // Call Repliz (uses HTTP Basic Auth)
+    const basicAuth = Buffer.from(`${REPLIZ_ACCESS_KEY}:${REPLIZ_SECRET_KEY}`).toString('base64');
     const response = await fetch(`${REPLIZ_API_BASE}/public/schedule`, {
       method: 'POST',
       headers: {
-        'X-Access-Key': REPLIZ_ACCESS_KEY,
-        'X-Secret-Key': REPLIZ_SECRET_KEY,
+        'Authorization': `Basic ${basicAuth}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
