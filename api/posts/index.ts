@@ -1,6 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { supabaseServer } from '../_lib/supabase';
-import { validateApiKey, isScrapeEndpoint, isHealthEndpoint } from '../_lib/auth';
+import { createClient } from '@supabase/supabase-js';
+
+const N8N_API_KEY = process.env.N8N_API_KEY || '';
+
+function validateApiKey(req: VercelRequest): boolean {
+  if (!N8N_API_KEY) return true; // Skip validation if not configured
+  return req.headers['x-api-key'] === N8N_API_KEY;
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -9,11 +15,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  if (!isScrapeEndpoint(req.url) && !isHealthEndpoint(req.url)) {
-    if (!validateApiKey(req)) {
-      return res.status(401).json({ error: 'Invalid or missing API key' });
-    }
+  if (!validateApiKey(req)) {
+    return res.status(401).json({ error: 'Invalid or missing API key' });
   }
+
+  const supabaseUrl = process.env.SUPABASE_URL || '';
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  const supabaseKey = supabaseServiceKey || process.env.SUPABASE_ANON_KEY || '';
+
+  if (!supabaseUrl || !supabaseKey) {
+    return res.status(500).json({ error: 'Supabase not configured' });
+  }
+
+  const supabaseServer = createClient(supabaseUrl, supabaseKey);
 
   try {
     if (req.method === 'GET') {

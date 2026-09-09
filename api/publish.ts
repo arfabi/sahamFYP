@@ -1,6 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { supabaseServer } from './_lib/supabase';
-import { validateApiKey, isScrapeEndpoint, isHealthEndpoint } from './_lib/auth';
+import { createClient } from '@supabase/supabase-js';
+
+const N8N_API_KEY = process.env.N8N_API_KEY || '';
+
+function validateApiKey(req: VercelRequest): boolean {
+  if (!N8N_API_KEY) return true; // Skip validation if not configured
+  return req.headers['x-api-key'] === N8N_API_KEY;
+}
 
 const REPLIZ_API_BASE = 'https://api.repliz.com';
 const REPLIZ_ACCESS_KEY = process.env.REPLIZ_ACCESS_KEY || '';
@@ -13,10 +19,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  if (!isScrapeEndpoint(req.url) && !isHealthEndpoint(req.url)) {
-    if (!validateApiKey(req)) {
-      return res.status(401).json({ error: 'Invalid or missing API key' });
-    }
+  if (!validateApiKey(req)) {
+    return res.status(401).json({ error: 'Invalid or missing API key' });
   }
 
   if (req.method !== 'POST') {
@@ -94,15 +98,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Update Supabase if postId provided
     if (postId) {
-      const updateField = platform === 'tiktok' ? 'tiktok_schedule_id' : 'schedule_id';
-      const statusField = platform === 'tiktok' ? 'tiktok_status' : 'instagram_status';
-      await supabaseServer
-        .from('generated_posts')
-        .update({
-          [updateField]: scheduleId,
-          [statusField]: 'scheduled',
-        })
-        .eq('id', postId);
+      const supabaseUrl = process.env.SUPABASE_URL || '';
+      const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+      const supabaseKey = supabaseServiceKey || process.env.SUPABASE_ANON_KEY || '';
+
+      if (supabaseUrl && supabaseKey) {
+        const supabaseServer = createClient(supabaseUrl, supabaseKey);
+        const updateField = platform === 'tiktok' ? 'tiktok_schedule_id' : 'schedule_id';
+        const statusField = platform === 'tiktok' ? 'tiktok_status' : 'instagram_status';
+        await supabaseServer
+          .from('generated_posts')
+          .update({
+            [updateField]: scheduleId,
+            [statusField]: 'scheduled',
+          })
+          .eq('id', postId);
+      }
     }
 
     return res.status(200).json({

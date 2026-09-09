@@ -1,9 +1,222 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { classifyContent, generateContent } from './_lib/gemini';
-import { enrichByCategory } from './_lib/sectors';
-import { scrapeUrl } from './_lib/scraper';
-import { validateApiKey, isScrapeEndpoint, isHealthEndpoint } from './_lib/auth';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import * as cheerio from 'cheerio';
 
+const N8N_API_KEY = process.env.N8N_API_KEY || '';
+
+function validateApiKey(req: VercelRequest): boolean {
+  if (!N8N_API_KEY) return true; // Skip validation if not configured
+  return req.headers['x-api-key'] === N8N_API_KEY;
+}
+
+// --- Gemini (self-contained) ---
+function getGeminiModel() {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY not configured');
+  }
+  const genAI = new GoogleGenerativeAI(apiKey);
+  return genAI.getGenerativeModel({
+    model: 'gemini-3.5-flash-lite',
+    generationConfig: { responseMimeType: 'application/json' },
+  });
+}
+
+async function classifyContent(title: string, content: string) {
+  const prompt = `
+Kamu adalah AI News Classifier untuk sistem otomasi konten @sahamfyp.
+Tugasmu adalah membaca judul + isi berita, lalu menentukan SATU kategori paling tepat dari 6 kategori resmi:
+[SINGLE_STOCK, MACRO_ECONOMY, SECTOR_ANALYSIS, CORPORATE_ACTION, IPO_RIGHTS_ISSUE, SUSPENSION_DELISTING, SKIP].
+Berikan output Wajib JSON valid, tanpa markdown tambahan.
+
+Format JSON yang diminta:
+{
+  "category": "KATEGORI",
+  "ticker": "KODE / null",
+  "sector": "SEKTOR / null",
+  "confidence": 0.0,
+  "reason": "Alasan singkat 1-2 kalimat."
+}
+
+---
+DATA BERITA YANG HARUS DIKLASIFIKASIKAN:
+- Judul: ${title}
+- Isi: ${content}
+`;
+
+  const model = getGeminiModel();
+  const result = await model.generateContent(prompt);
+  const rawOutput = result.response.text();
+
+  let jsonStr = rawOutput.trim();
+  if (jsonStr.startsWith('```json')) {
+    jsonStr = jsonStr.replace(/^```json\s*\n?/, '').replace(/\n?```\s*$/, '');
+  } else if (jsonStr.startsWith('```')) {
+    jsonStr = jsonStr.replace(/^```\s*\n?/, '').replace(/\n?```\s*$/, '');
+  }
+
+  return JSON.parse(jsonStr);
+}
+
+async function generateContentRaw(prompt: string): Promise<string> {
+  const model = getGeminiModel();
+  const result = await model.generateContent(prompt);
+  return result.response.text();
+}
+
+// --- Sectors.app client (self-contained) ---
+const SECTORS_API_KEY = process.env.SECTORS_API_KEY || '';
+const SECTORS_BASE = 'https://api.sectors.app/v2';
+
+async function fetchSectors(endpoint: string, params?: Record<string, string>) {
+  if (!SECTORS_API_KEY) {
+    throw new Error('Sectors API key not configured');
+  }
+
+  const url = new URL(`${SECTORS_BASE}${endpoint}`);
+  if (params) {
+    Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+  }
+
+  const response = await fetch(url.toString(), {
+    headers: { 'Authorization': SECTORS_API_KEY },
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Sectors API error: ${response.status} - ${error}`);
+  }
+
+  return response.json();
+}
+
+async function fetchCompanyReport(symbol: string, sections: string[] = ['overview', 'valuation', 'financials']) {
+  const results: Record<string, any> = {};
+
+  await Promise.all(
+    sections.map(async (section) => {
+      try {
+        const data = await fetchSectors(`/stocks/${symbol}/company-report`, { section });
+        results[section] = data;
+      } catch (error) {
+        console.warn(`Failed to fetch ${section} for ${symbol}:`, error);
+        results[section] = null;
+      }
+    })
+  );
+
+  return results;
+}
+
+async function fetchForeignFlow(symbol: string) {
+  try {
+    return await fetchSectors(`/foreign-flow/${symbol}`);
+  } catch (error) {
+    console.warn(`Failed to fetch foreign flow for ${symbol}:`, error);
+    return null;
+  }
+}
+
+async function enrichByCategory(category: string, ticker: string | null) {
+  if (!ticker) {
+    return { category, ticker: null, data: null };
+  }
+
+  const enrichmentMap: Record<string, () => Promise<any>> = {
+    SINGLE_STOCK: async () => {
+      const [report, foreignFlow] = await Promise.all([
+        fetchCompanyReport(ticker, ['overview', 'valuation', 'financials', 'dividend', 'ownership']),
+        fetchForeignFlow(ticker),
+      ]);
+      return { report, foreignFlow };
+    },
+    MACRO_ECONOMY: async () => {
+      return { note: 'Macro economy uses general market data, not ticker-specific' };
+    },
+    SECTOR_ANALYSIS: async () => {
+      const report = await fetchCompanyReport(ticker, ['overview', 'valuation']);
+      return { report };
+    },
+    CORPORATE_ACTION: async () => {
+      const report = await fetchCompanyReport(ticker, ['overview', 'financials']);
+      return { report };
+    },
+    IPO_RIGHTS_ISSUE: async () => {
+      const report = await fetchCompanyReport(ticker, ['overview', 'valuation', 'financials']);
+      return { report };
+    },
+    SUSPENSION_DELISTING: async () => {
+      const report = await fetchCompanyReport(ticker, ['overview']);
+      return { report };
+    },
+  };
+
+  const enricher = enrichmentMap[category];
+  if (!enricher) {
+    return { category, ticker, data: null };
+  }
+
+  try {
+    const data = await enricher();
+    return { category, ticker, data };
+  } catch (error) {
+    console.error(`Enrichment failed for ${category}/${ticker}:`, error);
+    return { category, ticker, data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+// --- Scraper (self-contained) ---
+async function scrapeUrl(url: string) {
+  const response = await fetch(url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+      'Accept-Language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
+    },
+    redirect: 'follow',
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+  }
+
+  const html = await response.text();
+  const $ = cheerio.load(html);
+
+  const title = $('title').text().trim() || $('h1').first().text().trim() || 'Untitled';
+
+  const contentSelectors = [
+    'article', '.article-content', '.post-content', '.entry-content',
+    '[itemprop="articleBody"]', '.detail__text', '.read__content', '.fck_detail', 'main',
+  ];
+
+  let content = '';
+  for (const selector of contentSelectors) {
+    const element = $(selector);
+    if (element.length > 0) {
+      element.find('script, style, nav, header, footer, aside').remove();
+      content = element.text().trim();
+      if (content.length > 100) break;
+    }
+  }
+
+  if (!content || content.length < 100) {
+    const paragraphs: string[] = [];
+    $('p').each((_, el) => {
+      const text = $(el).text().trim();
+      if (text.length > 20) paragraphs.push(text);
+    });
+    content = paragraphs.join('\n\n');
+  }
+
+  content = content.replace(/\s+/g, ' ').replace(/\n\s*\n/g, '\n\n').substring(0, 5000);
+
+  const author = $('[itemprop="author"]').text().trim() || $('.author').text().trim() || $('[rel="author"]').text().trim() || '';
+  const image = $('meta[property="og:image"]').attr('content') || $('[itemprop="image"]').attr('content') || $('article img').first().attr('src') || '';
+  const siteName = $('meta[property="og:site_name"]').attr('content') || $('meta[name="application-name"]').attr('content') || '';
+
+  return { url, title, content, image, siteName };
+}
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -11,10 +224,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  if (!isScrapeEndpoint(req.url) && !isHealthEndpoint(req.url)) {
-    if (!validateApiKey(req)) {
-      return res.status(401).json({ error: 'Invalid or missing API key' });
-    }
+  if (!validateApiKey(req)) {
+    return res.status(401).json({ error: 'Invalid or missing API key' });
   }
 
   if (req.method !== 'POST') {
@@ -134,7 +345,7 @@ ATURAN:
 - DARIKAN DATA NYATA, jangan mengarang
 `;
 
-  const rawOutput = await generateContent(prompt);
+  const rawOutput = await generateContentRaw(prompt);
 
   // Clean JSON from markdown
   let jsonStr = rawOutput.trim();
