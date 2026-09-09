@@ -1,4 +1,4 @@
-﻿{
+{
   "version": 2,
   "framework": "vite@5",
   "buildCommand": "npm run build",
