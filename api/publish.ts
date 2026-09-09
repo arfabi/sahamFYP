@@ -67,7 +67,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         title: caption.slice(0, 50),
         description: caption,
         topic: '',
-        type: 'image',
+        type: cloudinaryUrls.length === 1 ? 'image' : 'album',
         medias,
         meta: { title: '', description: '', url: '' },
         additionalInfo: {
@@ -84,7 +84,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         },
         replies: [],
         accountId,
-        scheduleAt: scheduleAt || new Date().toISOString(),
+        // Immediate posting by default; scheduleAt only if valid future time provided
+        scheduleAt: scheduleAt && new Date(scheduleAt) > new Date()
+          ? scheduleAt
+          : new Date().toISOString(),
       }),
     });
 
