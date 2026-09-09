@@ -1,15 +1,11 @@
 {
     "outputDirectory":  "dist",
     "buildCommand":  "npm run build",
-    "routes":  [
-                   {
-                       "src":  "/api/(.*)",
-                       "continue":  true
-                   },
-                   {
-                       "src":  "/(.*)",
-                       "dest":  "/index.html"
-                   }
-               ],
-    "version":  2
+    "version":  2,
+    "rewrites":  [
+                     {
+                         "destination":  "/api",
+                         "source":  "/api/(.*)"
+                     }
+                 ]
 }
