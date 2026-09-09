@@ -10,7 +10,7 @@
     "version":  2,
     "functions":  {
                       "api/*.ts":  {
-                                       "runtime":  "@vercel/node@3.2.1"
+                                       "runtime":  "@vercel/node"
                                    }
                   }
 }
