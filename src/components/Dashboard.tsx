@@ -110,38 +110,6 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
             </button>
           ))}
         </nav>
-
-        {/* Footer */}
-        <div className="p-4 border-t border-slate-700">
-          {!sidebarCollapsed && (
-            <>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center text-white text-sm font-bold">
-                  {user.email.charAt(0).toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white truncate">{user.email}</p>
-                  <p className="text-xs text-slate-400">{user.role}</p>
-                </div>
-              </div>
-              <button
-                onClick={onLogout}
-                className="w-full px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition flex items-center justify-center gap-2"
-              >
-                🚪 Logout
-              </button>
-              <p className="text-xs text-slate-500 text-center mt-3">v1.0.0 — SahamFYP</p>
-            </>
-          )}
-          {sidebarCollapsed && (
-            <button
-              onClick={onLogout}
-              className="w-full p-2 text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition text-center"
-            >
-              🚪
-            </button>
-          )}
-        </div>
       </aside>
 
       {/* Main Content */}
