@@ -77,9 +77,82 @@ export const PALETTE = {
   card: "#EDE6D8",
 } as const;
 
+// Curated icons that definitely exist in Lucide React
+export const ICONS = {
+  // Finance & Trending
+  TrendingUp: "TrendingUp",
+  TrendingDown: "TrendingDown",
+  BarChart3: "BarChart3",
+  LineChart: "LineChart",
+  PieChart: "PieChart",
+  Coins: "Coins",
+  DollarSign: "DollarSign",
+  Banknote: "Banknote",
+  Wallet: "Wallet",
+  CreditCard: "CreditCard",
+  // Status & Actions
+  CheckCircle2: "CheckCircle2",
+  XCircle: "XCircle",
+  AlertTriangle: "AlertTriangle",
+  Info: "Info",
+  Shield: "Shield",
+  ShieldCheck: "ShieldCheck",
+  Target: "Target",
+  Award: "Award",
+  Trophy: "Trophy",
+  // Business
+  Building2: "Building2",
+  Factory: "Factory",
+  Briefcase: "Briefcase",
+  Handshake: "Handshake",
+  Users: "Users",
+  UserCheck: "UserCheck",
+  // Growth & Performance
+  Rocket: "Rocket",
+  Zap: "Zap",
+  Flame: "Flame",
+  Sparkles: "Sparkles",
+  Gauge: "Gauge",
+  Activity: "Activity",
+  // Documents
+  FileText: "FileText",
+  ScrollText: "ScrollText",
+  Newspaper: "Newspaper",
+  BookOpen: "BookOpen",
+  // Misc
+  Globe: "Globe",
+  MapPin: "MapPin",
+  Calendar: "Calendar",
+  Clock: "Clock",
+  Lightbulb: "Lightbulb",
+  Heart: "Heart",
+  ThumbsUp: "ThumbsUp",
+  ThumbsDown: "ThumbsDown",
+  Star: "Star",
+  Crown: "Crown",
+  Gem: "Gem",
+  // Arrows
+  ArrowUpRight: "ArrowUpRight",
+  ArrowDownRight: "ArrowDownRight",
+  ChevronRight: "ChevronRight",
+  ChevronsUp: "ChevronsUp",
+} as const;
+
+export type IconName = keyof typeof ICONS;
+
+// Safe icon rendering with guaranteed fallback
 export function renderIcon(name: string, size = 24, color: string = PALETTE.navy) {
-  const C = (LucideIcons as unknown as Record<string, LucideIcon>)[name];
-  return C ? (<C size={size} color={color} strokeWidth={2.2} />) : null;
+  const iconName = (ICONS as Record<string, string>)[name] || "TrendingUp";
+  const C = (LucideIcons as unknown as Record<string, LucideIcon>)[iconName];
+  if (C) return <C size={size} color={color} strokeWidth={2.2} />;
+  // Ultimate fallback
+  return <LucideIcons.TrendingUp size={size} color={color} strokeWidth={2.2} />;
+}
+
+// Get safe icon name (for LLM-generated names that might not exist)
+export function getSafeIconName(name: string): string {
+  if ((ICONS as Record<string, string>)[name]) return name;
+  return "TrendingUp";
 }
 // ================= SHARED UI =================
 function Shell({
@@ -180,6 +253,22 @@ function CardFooter({
   );
 }
 
+// Render text dengan support **bold** markdown
+export function renderTextWithBold(text: string, className?: string) {
+  if (!text) return null;
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return (
+    <span className={className}>
+      {parts.map((part, i) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+          return <strong key={i} className="font-bold">{part.slice(2, -2)}</strong>;
+        }
+        return <React.Fragment key={i}>{part}</React.Fragment>;
+      })}
+    </span>
+  );
+}
+
 // Slot visual tunggal: 1 gambar ATAU 1 ikon per slide (biar seragam)
 function VisualSlot({
   visualMode,
@@ -188,7 +277,6 @@ function VisualSlot({
   accentColor,
   iconSize,
   className,
-  placeholder,
 }: {
   visualMode: VisualMode;
   visualIcon: string;
@@ -196,7 +284,6 @@ function VisualSlot({
   accentColor: string;
   iconSize?: number;
   className?: string;
-  placeholder?: string;
 }) {
   if (visualMode === "image" && illustrationUrl) {
     return (
@@ -210,20 +297,18 @@ function VisualSlot({
     );
   }
   return (
-    <div className={"flex flex-col items-center justify-center gap-2 " + (className || "")}>
-      <div className="flex items-center justify-center rounded-2xl border-2 border-dashed border-current opacity-40 p-4 w-full h-full">
+    <div className={"flex items-center justify-center " + (className || "")}>
+      <div className="flex items-center justify-center rounded-2xl p-4 w-full h-full">
         {renderIcon(visualIcon, iconSize ?? 56, accentColor)}
       </div>
-      {placeholder && (
-        <span className="text-[10px] text-center opacity-50">{placeholder}</span>
-      )}
     </div>
   );
 }
 // ================= TEMPLATE 1: COVER =================
 function CoverTemplate(p: TemplateBaseProps) {
-  const titleSize = scaleFont(p.title, 32, 19);
-  const descSize = scaleFont(p.description, 14, 11);
+  const titleSize = scaleFont(p.title, 28, 18);
+  const descSize = scaleFont(p.description, 13, 11);
+  const showImage = p.visualMode === "image" && p.illustrationUrl;
   return (
     <Shell bgColor={p.bgColor} textColor={p.textColor}>
       <CardHeader
@@ -232,29 +317,47 @@ function CoverTemplate(p: TemplateBaseProps) {
         badgeBgColor={p.badgeBgColor}
         badgeTextColor={p.badgeTextColor}
       />
-      <div className="flex-1 flex flex-col justify-center items-center text-center px-1 my-1">
+      <div className="flex-1 flex flex-col pt-3">
         <h2
           className="font-display font-extrabold leading-tight tracking-tight"
           style={{ fontSize: titleSize, color: p.textColor }}
         >
-          {p.title}
+          {renderTextWithBold(p.title)}
         </h2>
-        <p
-          className="mt-2.5 font-medium opacity-85 leading-relaxed max-w-[320px]"
-          style={{ fontSize: descSize }}
-        >
-          {p.description}
-        </p>
+        {p.description && (
+          <p
+            className="mt-1.5 font-medium opacity-80 leading-relaxed"
+            style={{ fontSize: descSize }}
+          >
+            {renderTextWithBold(p.description)}
+          </p>
+        )}
+        {showImage ? (
+          <div className="flex-1 relative overflow-hidden mt-3 rounded-xl">
+            <img
+              src={p.illustrationUrl ?? ""}
+              alt="Cover"
+              className="w-full h-full object-cover"
+            />
+            {p.source && (
+              <span className="absolute bottom-2 right-3 text-[9px] text-white/70 italic bg-black/30 px-2 py-0.5 rounded">
+                Sumber Foto: {p.source}
+              </span>
+            )}
+          </div>
+        ) : (
+          <div className="flex-1 flex items-center justify-center mt-3">
+            <VisualSlot
+              visualMode={p.visualMode}
+              visualIcon={p.visualIcon}
+              illustrationUrl={p.illustrationUrl}
+              accentColor={p.accentColor}
+              iconSize={100}
+              className="h-[140px] w-full max-w-[240px]"
+            />
+          </div>
+        )}
       </div>
-      <VisualSlot
-        visualMode={p.visualMode}
-        visualIcon={p.visualIcon}
-        illustrationUrl={p.illustrationUrl}
-        accentColor={p.accentColor}
-        iconSize={130}
-        className="h-[150px] shrink-0"
-        placeholder="Upload ilustrasi atau pilih 1 ikon"
-      />
       <CardFooter
         slideIndex={p.slideIndex}
         textColor={p.textColor}
@@ -267,7 +370,20 @@ function CoverTemplate(p: TemplateBaseProps) {
 // ================= TEMPLATE 5: STANDAR (Judul + 1 visual + deskripsi) =================
 function StandarTemplate(p: TemplateBaseProps) {
   const titleSize = scaleFont(p.title, 30, 19);
-  const descSize = scaleFont(p.description, 14, 11);
+  // Dynamic font scaling based on word count - fewer words = bigger font
+  const wordCount = p.description.trim().split(/\s+/).length;
+  let descSize = 14;
+  if (wordCount <= 5) {
+    descSize = 20; // Very few words - large font
+  } else if (wordCount <= 10) {
+    descSize = 16; // Few words - medium-large font
+  } else if (wordCount <= 20) {
+    descSize = 14; // Medium words - normal font
+  } else if (wordCount <= 30) {
+    descSize = 12; // Many words - smaller font
+  } else {
+    descSize = 10; // Very many words - smallest font
+  }
   return (
     <Shell bgColor={p.bgColor} textColor={p.textColor}>
       <CardHeader
@@ -281,7 +397,7 @@ function StandarTemplate(p: TemplateBaseProps) {
           className="font-display font-extrabold leading-tight tracking-tight"
           style={{ fontSize: titleSize, color: p.textColor }}
         >
-          {p.title}
+          {renderTextWithBold(p.title)}
         </h2>
         <VisualSlot
           visualMode={p.visualMode}
@@ -296,7 +412,7 @@ function StandarTemplate(p: TemplateBaseProps) {
             className="font-medium opacity-85 leading-relaxed max-w-[320px]"
             style={{ fontSize: descSize }}
           >
-            {p.description}
+            {renderTextWithBold(p.description)}
           </p>
         )}
         {p.source && (
@@ -311,13 +427,11 @@ function StandarTemplate(p: TemplateBaseProps) {
     </Shell>
   );
 }
-// ================= TEMPLATE 4: KRONOLOGI (Timeline)= =================
-const TIMELINE_NODES = ["Coins", "Handshake", "TrendingUp"];
-
+// ================= TEMPLATE 4: KRONOLOGI (Foto + Deskripsi) =================
 function KronologiTemplate(p: TemplateBaseProps) {
-  const titleSize = scaleFont(p.title,30, 19);
-  const descSize = scaleFont(p.description,13, 10.5);
-  const showImage = p.visualMode === "image" && p.illustrationUrl;
+  const titleSize = scaleFont(p.title, 30, 19);
+  const descSize = scaleFont(p.description, 13, 10.5);
+  const hasImage = p.illustrationUrl;
   return (
     <Shell bgColor={p.bgColor} textColor={p.textColor}>
       <CardHeader
@@ -326,60 +440,41 @@ function KronologiTemplate(p: TemplateBaseProps) {
         badgeBgColor={p.badgeBgColor}
         badgeTextColor={p.badgeTextColor}
       />
-      <div className="flex-1 flex flex-col items-center text-center pt-4">
+      <div className="flex-1 flex flex-col items-center text-center pt-3">
         <h2
           className="font-display font-extrabold leading-tight tracking-tight"
           style={{ fontSize: titleSize, color: p.textColor }}
         >
-          {p.title}
+          {renderTextWithBold(p.title)}
         </h2>
 
-        {showImage ? (
-          <div className="flex items-center justify-center flex-1 w-full overflow-hidden py-2">
+        {hasImage ? (
+          <div className="flex-1 w-full relative overflow-hidden py-2">
             <img
               src={p.illustrationUrl ?? ""}
               alt="Ilustrasi"
-              className="max-h-full max-w-[85%] object-contain"
+              className="w-full h-full object-cover rounded-xl"
             />
+            {p.source && (
+              <span className="absolute bottom-2 right-3 text-[9px] text-white/70 italic bg-black/30 px-2 py-0.5 rounded">
+                Sumber: {p.source}
+              </span>
+            )}
           </div>
         ) : (
-          <div className="w-full flex-1 flex flex-col items-center justify-center py-4">
-            {/* Timeline: 3 node bulat terhubung garis amber */}
-            <div className="relative w-full max-w-[300px] flex items-center justify-between">
-              <div
-                className="absolute top-1/2 left-0 right-0 h-0.5"
-                style={{ backgroundColor: p.accentColor, opacity: 0.5 }}
-              />
-              {TIMELINE_NODES.map((icon, i) => (
-                <div
-                  key={i}
-                  className="relative flex items-center justify-center rounded-full border-2"
-                  style={{
-                    width: 44,
-                    height: 44,
-                    borderColor: p.accentColor,
-                    backgroundColor: p.bgColor,
-                  }}
-                >
-                  {renderIcon(icon, 20, p.accentColor)}
-                </div>
-              ))}
+          <div className="flex-1 w-full flex items-center justify-center py-4">
+            <div className="w-full h-[180px] rounded-xl bg-slate-100 flex items-center justify-center">
+              <span className="text-sm text-slate-400">Foto Kronologi</span>
             </div>
-            <span className="text-[10px] mt-3 opacity-60">
-              Upload gambar atau pilih 1 ikon untuk ganti visual
-            </span>
           </div>
         )}
         {p.description && (
           <p
-            className="font-medium opacity-85 leading-relaxed max-w-[320px] mt-3"
+            className="font-medium opacity-85 leading-relaxed max-w-[320px] mt-2"
             style={{ fontSize: descSize }}
           >
-            {p.description}
+            {renderTextWithBold(p.description)}
           </p>
-        )}
-        {p.source && (
-          <span className="text-[11px] italic opacity-60 mt-2">{p.source}</span>
         )}
       </div>
       <CardFooter
@@ -392,8 +487,10 @@ function KronologiTemplate(p: TemplateBaseProps) {
 }
 // ================= TEMPLATE 8: CTA (Penutup)= =================
 function CtaTemplate(p: TemplateBaseProps) {
-  const titleSize = scaleFont(p.title,30,  19);
-  const descSize = scaleFont(p.description,14,  11);
+  const titleSize = scaleFont(p.title, 30, 19);
+  const descSize = scaleFont(p.description, 14, 11);
+  // Default icon for CTA is MessageCircle (comment)
+  const ctaIcon = p.visualIcon || "MessageCircle";
   return (
     <Shell bgColor={p.bgColor} textColor={p.textColor}>
       <CardHeader
@@ -407,11 +504,11 @@ function CtaTemplate(p: TemplateBaseProps) {
           className="font-display font-extrabold leading-tight tracking-tight"
           style={{ fontSize: titleSize, color: p.textColor }}
         >
-          {p.title}
+          {renderTextWithBold(p.title)}
         </h2>
         <VisualSlot
           visualMode={p.visualMode}
-          visualIcon={p.visualIcon}
+          visualIcon="MessageCircle"
           illustrationUrl={p.illustrationUrl}
           accentColor={p.accentColor}
           iconSize={110}
@@ -422,7 +519,7 @@ function CtaTemplate(p: TemplateBaseProps) {
             className="font-medium opacity-85 leading-relaxed max-w-[320px] mt-3"
             style={{ fontSize: descSize }}
           >
-            {p.description}
+            {renderTextWithBold(p.description)}
           </p>
         )}
         {p.disclaimer && (
@@ -433,6 +530,11 @@ function CtaTemplate(p: TemplateBaseProps) {
             {p.disclaimer}
           </span>
         )}
+        <div className="mt-4 pt-3 border-t border-current/10 w-full">
+          <p className="text-[11px] font-medium opacity-70">
+            Like, Share dan Follow Untuk mendapatkan informasi menarik seperti ini.
+          </p>
+        </div>
       </div>
       <CardFooter
         slideIndex={p.slideIndex}
@@ -458,10 +560,10 @@ function TldrTemplate(p: TemplateBaseProps) {
           className="font-display font-extrabold leading-tight tracking-tight text-center"
           style={{ fontSize: titleSize, color: p.textColor }}
         >
-          {p.title}
+          {renderTextWithBold(p.title)}
         </h2>
         <div className="flex-1 flex flex-col justify-center gap-3 py-3">
-          {p.tldrCards.map((card) => {
+          {p.tldrCards.map((card, idx) => {
             const cardTextSize = scaleFont(card.text,13,10);
             return (
               <div
@@ -470,13 +572,13 @@ function TldrTemplate(p: TemplateBaseProps) {
                 style={{ backgroundColor: PALETTE.card }}
               >
                 <div
-                  className="flex items-center justify-center rounded-xl shrink-0"
-                  style={{ width: 36, height:  36, backgroundColor: p.accentColor, opacity:  0.18 }}
+                  className="flex items-center justify-center rounded-xl shrink-0 font-bold"
+                  style={{ width: 36, height: 36, backgroundColor: p.accentColor, color: PALETTE.cream, fontSize: 16 }}
                 >
-                  {renderIcon(card.icon, 18, p.accentColor)}
+                  {idx + 1}
                 </div>
                 <p className="font-medium leading-snug" style={{ fontSize: cardTextSize }}>
-                  {card.text}
+                  {renderTextWithBold(card.text)}
                 </p>
               </div>
             );
@@ -494,6 +596,9 @@ function TldrTemplate(p: TemplateBaseProps) {
 // ================= TEMPLATE 3: DATA (Bedah Data — Kartu Metrik)= =================
 function DataTemplate(p: TemplateBaseProps) {
   const titleSize = scaleFont(p.title,28,  19);
+  // Limit to 3-4 cards, no more no less
+  const displayMetrics = p.metrics.slice(0, 4);
+  const isSmall = displayMetrics.length > 3;
   return (
     <Shell bgColor={p.bgColor} textColor={p.textColor}>
       <CardHeader
@@ -507,47 +612,45 @@ function DataTemplate(p: TemplateBaseProps) {
           className="font-display font-extrabold leading-tight tracking-tight text-center"
           style={{ fontSize: titleSize, color: p.textColor }}
         >
-          {p.title}
+          {renderTextWithBold(p.title)}
         </h2>
-        <div className="flex-1 flex flex-col justify-center gap-3 py-3">
-          {p.metrics.map((m) => {
-            const valueSize = scaleFont(m.value,34,22,10);
-            const captionSize = scaleFont(m.caption,11,9.5,40);
+        <div className={"flex-1 flex flex-col justify-center " + (isSmall ? "gap-1.5 py-1" : "gap-2 py-2")}>
+          {displayMetrics.map((m) => {
+            const valueSize = scaleFont(m.value, isSmall ? 22 : 28, 16, 10);
+            const captionSize = scaleFont(m.caption, isSmall ? 9 : 10, 7, 40);
             const toneColor = m.tone === "sage" ? PALETTE.sage : p.accentColor;
             return (
               <div
                 key={m.id}
-                className="px-4 py-3 rounded-2xl border"
+                className={"rounded-xl border " + (isSmall ? "px-2.5 py-1.5" : "px-3 py-2")}
                 style={{
                   backgroundColor: PALETTE.card,
                   borderColor: toneColor,
-                  borderLeftWidth: 5,
+                  borderLeftWidth: 4,
                 }}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-[11px] font-semibold uppercase tracking-wide opacity-70">
+                  <span className={"font-semibold uppercase tracking-wide opacity-70 " + (isSmall ? "text-[9px]" : "text-[10px]")}>
                     {m.label}
                   </span>
-                  {renderIcon(m.icon, 16, toneColor)}
+                  {renderIcon(m.icon, isSmall ? 12 : 14, toneColor)}
                 </div>
                 <div
-                  className="font-display font-extrabold mt-1"
+                  className="font-display font-extrabold"
                   style={{ fontSize: valueSize, color: toneColor }}
                 >
                   {m.value}
                 </div>
-                <p className="font-medium leading-snug mt-0.5" style={{ fontSize: captionSize }}>
-                  {m.caption}
+                <p className="font-medium leading-snug" style={{ fontSize: captionSize }}>
+                  {renderTextWithBold(m.caption)}
                 </p>
               </div>
             );
           })}
         </div>
-        {p.source && (
-          <span className="text-[11px] italic opacity-60 text-center mt-1">
-            {p.source}
-          </span>
-        )}
+        <span className="text-[10px] italic opacity-60 text-center mt-1 pb-1">
+          Sumber Data: sector.app
+        </span>
       </div>
       <CardFooter
         slideIndex={p.slideIndex}
@@ -558,12 +661,32 @@ function DataTemplate(p: TemplateBaseProps) {
   );
 }
 // ================= TEMPLATE 6 & 7: PROS / CONS (Lista Bullet) =================
+// Simple SVG check and X icons - bright white for visibility
+function SimpleCheckIcon({ size, color }: { size: number; color: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
+function SimpleXIcon({ size, color }: { size: number; color: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
+
 function ProsConsTemplate(
   p: TemplateBaseProps,
   tint: string,
-  bulletIcon: string
+  isPros: boolean
 ) {
   const titleSize = scaleFont(p.title, 28, 19);
+  const IconComponent = isPros ? SimpleCheckIcon : SimpleXIcon;
+  const bgColor = isPros ? PALETTE.sage : PALETTE.brick;
   return (
     <Shell bgColor={p.bgColor} textColor={p.textColor} tint={tint + "26"}>
       <CardHeader
@@ -577,33 +700,33 @@ function ProsConsTemplate(
           className="font-display font-extrabold leading-tight tracking-tight text-center"
           style={{ fontSize: titleSize, color: p.textColor }}
         >
-          {p.title}
+          {renderTextWithBold(p.title)}
         </h2>
-        <VisualSlot
-          visualMode={p.visualMode}
-          visualIcon={p.visualIcon}
-          illustrationUrl={p.illustrationUrl}
-          accentColor={p.accentColor}
-          iconSize={64}
-          className="h-[96px] w-full max-w-[220px] shrink-0 mt-2"
-        />
+        <div className="flex items-center justify-center my-3">
+          <div
+            className="flex items-center justify-center rounded-full"
+            style={{ width: 64, height: 64, backgroundColor: bgColor }}
+          >
+            <IconComponent size={32} color="#FFFFFF" />
+          </div>
+        </div>
         <div className="flex-1 flex flex-col justify-center gap-2.5">
           {p.bullets.map((b) => {
             const textSize = scaleFont(b.text,13,10,50);
             return (
               <div
                 key={b.id}
-                className="flex items-center gap-3 px-4 py-2.5 rounded-2xl"
+                className="flex items-start gap-3 px-4 py-2.5 rounded-2xl"
                 style={{ backgroundColor: PALETTE.card }}
               >
                 <div
-                  className="flex items-center justify-center rounded-full shrink-0"
-                  style={{ width: 26, height: 26, backgroundColor: p.accentColor, opacity: 0.25 }}
+                  className="flex items-center justify-center rounded-full shrink-0 mt-0.5"
+                  style={{ width: 28, height: 28, backgroundColor: bgColor }}
                 >
-                  {renderIcon(bulletIcon, 15, p.accentColor)}
+                  <IconComponent size={16} color="#FFFFFF" />
                 </div>
                 <p className="font-medium leading-snug" style={{ fontSize: textSize }}>
-                  {b.text}
+                  {renderTextWithBold(b.text)}
                 </p>
               </div>
             );
@@ -625,10 +748,10 @@ function ProsConsTemplate(
 }
 
 function ProsTemplate(p: TemplateBaseProps) {
-  return ProsConsTemplate(p, PALETTE.sage, "CheckCircle2");
+  return ProsConsTemplate(p, PALETTE.sage, true);
 }
 function ConsTemplate(p: TemplateBaseProps) {
-  return ProsConsTemplate(p, PALETTE.brick, "AlertTriangle");
+  return ProsConsTemplate(p, PALETTE.brick, false);
 }
 
 // ================= RENDERER PRINCIPAL =================

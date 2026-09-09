@@ -16,9 +16,10 @@ export type {
 // Gemini
 export { 
   generateContent, 
-  classifyContent 
+  classifyContent,
+  generateInstagramCaption
 } from './gemini';
-export type { ClassificationResult } from './gemini';
+export type { ClassificationResult, CaptionContext } from './gemini';
 
 
 // Sectors.app
@@ -42,7 +43,9 @@ export type { EnrichmentResult } from './enrichment';
 // Cloudinary
 export { 
   uploadToCloudinary, 
-  uploadMultipleImages 
+  uploadMultipleImages,
+  uploadCarouselToCloudinary,
+  getCloudinaryUrl
 } from './cloudinary';
 
 // Scraper
@@ -59,6 +62,10 @@ export type { GenerateNaskahParams } from './naskahGenerator';
 // Image Generation
 export { generateAllSlides, downloadImage, downloadAllImages } from './imageGenerator';
 export type { GeneratedImage } from './imageGenerator';
+
+// Repliz (Instagram Publishing)
+export { publishToInstagram, publishSingleImage, isReplizConfigured, getReplizAccounts, getScheduleStatus, cancelSchedule } from './repliz';
+export type { ReplizConfig, PublishToInstagramParams, PublishResult, ReplizMedia, ScheduleStatusResult } from './repliz';
 
 // Types
 export type { CarouselData, SlideData, NaskahInput } from '../types';

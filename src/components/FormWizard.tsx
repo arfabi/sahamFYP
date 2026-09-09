@@ -11,6 +11,9 @@ import React, { useState, useCallback, useRef } from 'react';
 import * as LucideIcons from 'lucide-react';
 import TemplateRenderer, { PALETTE, type TemplateId, type CardItem, type MetricCard } from '../Templates';
 import { generateAllSlides, downloadAllImages } from '../services/imageGenerator';
+import { publishToInstagram, isReplizConfigured } from '../services/repliz';
+import { generateInstagramCaption } from '../services/gemini';
+import { contentLogsApi, generatedPostsApi, postImagesApi } from '../services/supabase';
 import type { CarouselData, SlideData } from '../types';
 
 // ================= ICONS =================
@@ -43,6 +46,10 @@ export default function FormWizard(props: FormWizardProps) {
   const [activeSlide, setActiveSlide] = useState(0);
   const [downloading, setDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
+  const [caption, setCaption] = useState('');
+  const [captionLoading, setCaptionLoading] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [publishResult, setPublishResult] = useState<{ success: boolean; message: string } | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);
 
   // Update a slide field
@@ -75,6 +82,104 @@ export default function FormWizard(props: FormWizardProps) {
       setDownloadProgress(0);
     }
   }, [data]);
+
+  // Publish to Instagram via Repliz
+  // Auto generate caption via Gemini
+  const handleAutoCaption = useCallback(async () => {
+    setCaptionLoading(true);
+    setPublishResult(null);
+    try {
+      const firstSlide = data.slides[0];
+      const tldrSlide = data.slides[1];
+      const dataSlide = data.slides[3];
+      const prosSlide = data.slides[4];
+
+      const captionText = await generateInstagramCaption({
+        handle: data.handle,
+        badgeText: data.badgeText,
+        title: firstSlide.title || 'Berita Saham',
+        description: firstSlide.description || '',
+        source: firstSlide.source || '',
+        category: classification.ticker || undefined,
+        tldrCards: (tldrSlide?.tldrCards || []).map(c => c.text).filter(Boolean),
+        metrics: (dataSlide?.metrics || []).map(m => ({ label: m.label, value: m.value })),
+        bullets: (prosSlide?.bullets || []).map(b => b.text).filter(Boolean),
+      });
+      setCaption(captionText);
+      setPublishResult({ success: true, message: 'Caption auto-generated! Silahkan review dan edit jika perlu.' });
+    } catch (err) {
+      setPublishResult({ success: false, message: `Gagal generate caption: ${err instanceof Error ? err.message : 'Unknown error'}` });
+    } finally {
+      setCaptionLoading(false);
+    }
+  }, [data, classification.ticker]);
+
+  const handlePublish = useCallback(async () => {
+    if (!caption.trim()) {
+      setPublishResult({ success: false, message: 'Caption tidak boleh kosong' });
+      return;
+    }
+    setPublishing(true);
+    setPublishResult(null);
+    try {
+      // Generate all 8 slide images
+      const images = await generateAllSlides(data);
+      if (images.length === 0) {
+        setPublishResult({ success: false, message: 'Gagal generate gambar' });
+        return;
+      }
+      // Get all image URLs for carousel
+      const imageUrls = images.map(img => img.dataUrl);
+      if (imageUrls.length === 0) {
+        setPublishResult({ success: false, message: 'Gagal mengambil gambar' });
+        return;
+      }
+      const result = await publishToInstagram({
+        images: imageUrls,
+        caption: caption,
+      });
+      if (result.success) {
+        // Save post to Supabase
+        try {
+          const post = await generatedPostsApi.create({
+            log_id: classification.ticker || 'unknown',
+            handle: data.handle,
+            badge_text: data.badgeText,
+            badge_bg_color: data.badgeBgColor,
+            badge_text_color: data.badgeTextColor,
+            slides_json: data.slides,
+            total_slides: 8,
+            schedule_id: result.scheduleId,
+            instagram_status: 'scheduled',
+            permalink: result.url || '',
+          });
+          // Save images to Supabase if Cloudinary results available
+          if (result.cloudinaryResults && result.cloudinaryResults.length > 0 && post) {
+            const imageRecords = result.cloudinaryResults.map((img, idx) => ({
+              post_id: post.id,
+              slide_number: idx + 1,
+              template_type: data.slides[idx]?.template || 'unknown',
+              cloudinary_url: img.secure_url,
+              cloudinary_public_id: img.public_id,
+              width: 800,
+              height: 1000,
+              file_size: img.bytes,
+            }));
+            await postImagesApi.createBatch(imageRecords);
+          }
+        } catch (dbError) {
+          console.error('Failed to save to Supabase:', dbError);
+        }
+        setPublishResult({ success: true, message: `Berhasil dijadwalkan! Schedule ID: ${result.scheduleId}` });
+      } else {
+        setPublishResult({ success: false, message: result.error || 'Gagal publish' });
+      }
+    } catch (err) {
+      setPublishResult({ success: false, message: `Error: ${err instanceof Error ? err.message : 'Unknown error'}` });
+    } finally {
+      setPublishing(false);
+    }
+  }, [data, caption, classification.ticker]);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -113,6 +218,14 @@ export default function FormWizard(props: FormWizardProps) {
             downloadProgress={downloadProgress}
             onDownload={handleDownloadAll}
             onBack={() => setStep(3)}
+            caption={caption}
+            onCaptionChange={setCaption}
+            captionLoading={captionLoading}
+            onAutoCaption={handleAutoCaption}
+            publishing={publishing}
+            publishResult={publishResult}
+            onPublish={handlePublish}
+            replizConfigured={isReplizConfigured()}
           />
         )}
       </main>
@@ -400,16 +513,71 @@ function SlideEditor({ slide, onChange }: { slide: SlideData; onChange: (u: Part
 
   const IconPicker = ({ value, field }: { value: string; field: keyof SlideData }) => (
     <div>
-      <label className="text-xs text-slate-500">Icon</label>
-      <select
-        value={value || 'TrendingUp'}
-        onChange={e => onChange({ [field]: e.target.value })}
+      <label className="text-xs text-slate-500">Pilih Icon</label>
+      <div className="flex flex-wrap gap-1.5 mt-1 max-h-32 overflow-auto p-2 border border-slate-200 rounded-lg">
+        {ICON_OPTIONS.map((name) => {
+          const IconComp = (LucideIcons as unknown as Record<string, React.ComponentType<{ size?: number; color?: string }>>)[name];
+          const isSelected = (value || 'TrendingUp') === name;
+          return (
+            <button
+              key={name}
+              type="button"
+              onClick={() => onChange({ [field]: name })}
+              className={`p-2 rounded-lg border transition ${
+                isSelected
+                  ? 'border-amber-500 bg-amber-50 text-amber-700'
+                  : 'border-slate-200 hover:bg-slate-50 text-slate-600'
+              }`}
+              title={name}
+            >
+              {IconComp && <IconComp size={18} />}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  const VisualModeToggle = () => (
+    <div>
+      <label className="text-xs text-slate-500">Mode Visual</label>
+      <div className="flex gap-2 mt-1">
+        <button
+          type="button"
+          onClick={() => onChange({ visualMode: 'icon' })}
+          className={`flex-1 px-3 py-2 rounded-lg border text-xs font-medium transition ${
+            (slide.visualMode || 'icon') === 'icon'
+              ? 'border-amber-500 bg-amber-50 text-amber-700'
+              : 'border-slate-200 hover:bg-slate-50 text-slate-600'
+          }`}
+        >
+          Icon
+        </button>
+        <button
+          type="button"
+          onClick={() => onChange({ visualMode: 'image' })}
+          className={`flex-1 px-3 py-2 rounded-lg border text-xs font-medium transition ${
+            slide.visualMode === 'image'
+              ? 'border-amber-500 bg-amber-50 text-amber-700'
+              : 'border-slate-200 hover:bg-slate-50 text-slate-600'
+          }`}
+        >
+          Gambar
+        </button>
+      </div>
+    </div>
+  );
+
+  const ImageUrlInput = () => (
+    <div>
+      <label className="text-xs text-slate-500">URL Gambar</label>
+      <input
+        type="text"
+        value={slide.illustrationUrl || ''}
+        onChange={e => onChange({ illustrationUrl: e.target.value })}
+        placeholder="https://example.com/image.jpg"
         className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg mt-1"
-      >
-        {ICON_OPTIONS.map(icon => (
-          <option key={icon} value={icon}>{icon}</option>
-        ))}
-      </select>
+      />
     </div>
   );
 
@@ -454,7 +622,15 @@ function SlideEditor({ slide, onChange }: { slide: SlideData; onChange: (u: Part
       )}
 
       {(template === 'cover' || template === 'kronologi' || template === 'standar' || template === 'cta') && (
-        <IconPicker value={slide.visualIcon || ''} field="visualIcon" />
+        <VisualModeToggle />
+      )}
+
+      {(template === 'cover' || template === 'kronologi' || template === 'standar' || template === 'cta') && (
+        slide.visualMode === 'image' ? (
+          <ImageUrlInput />
+        ) : (
+          <IconPicker value={slide.visualIcon || ''} field="visualIcon" />
+        )
       )}
 
       <ColorPicker value={slide.accent || '#F2A93B'} field="accent" />
@@ -638,9 +814,9 @@ function buildRenderProps(data: CarouselData, slideIndex: number) {
     description: slide.description || '',
     source: slide.source || '',
     disclaimer: slide.disclaimer || '',
-    visualMode: 'icon' as const,
+    visualMode: slide.visualMode || 'icon',
     visualIcon: slide.visualIcon || 'TrendingUp',
-    illustrationUrl: null,
+    illustrationUrl: slide.illustrationUrl || null,
     tldrCards: slide.tldrCards || [],
     metrics: slide.metrics || [],
     bullets: slide.bullets || [],
@@ -656,6 +832,14 @@ function Step4Preview({
   downloadProgress,
   onDownload,
   onBack,
+  caption,
+  onCaptionChange,
+  captionLoading,
+  onAutoCaption,
+  publishing,
+  publishResult,
+  onPublish,
+  replizConfigured,
 }: {
   data: CarouselData;
   previewRef: React.RefObject<HTMLDivElement>;
@@ -663,6 +847,14 @@ function Step4Preview({
   downloadProgress: number;
   onDownload: () => void;
   onBack: () => void;
+  caption: string;
+  onCaptionChange: (caption: string) => void;
+  captionLoading: boolean;
+  onAutoCaption: () => void;
+  publishing: boolean;
+  publishResult: { success: boolean; message: string } | null;
+  onPublish: () => void;
+  replizConfigured: boolean;
 }) {
   return (
     <div className="space-y-6">
@@ -725,6 +917,67 @@ function Step4Preview({
           )}
         </button>
       </div>
+
+      {/* Publish to Instagram */}
+      {replizConfigured && (
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+          <h3 className="text-lg font-bold text-slate-800 mb-4">📱 Publish ke Instagram</h3>
+          <p className="text-sm text-slate-600 mb-4">Tulis caption untuk post Instagram. Semua 8 slide akan dijadikan carousel.</p>
+          
+          <textarea
+            value={caption}
+            onChange={(e) => onCaptionChange(e.target.value)}
+            placeholder="Tulis caption Instagram di sini...&#10;&#10;Contoh: 📈 Saham BBCA menunjukkan performa positif!&#10;&#10;#saham #investasi #BBCA"
+            className="w-full px-4 py-3 border border-slate-300 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-amber-500"
+            rows={5}
+          />
+
+          <div className="mt-2 flex items-center justify-between gap-2">
+            <span className="text-xs text-slate-400">{caption.length}/2200 karakter</span>
+            <button
+              onClick={onAutoCaption}
+              disabled={captionLoading}
+              className="px-3 py-1.5 text-xs bg-violet-500 hover:bg-violet-600 disabled:opacity-60 text-white font-semibold rounded-lg transition flex items-center gap-1.5"
+            >
+              {captionLoading ? (
+                <>
+                  <span className="animate-spin">⏳</span>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  ✨
+                  Auto Caption
+                </>
+              )}
+            </button>
+          </div>
+          
+          {publishResult && (
+            <div className={`mt-3 px-4 py-2 rounded-lg text-sm ${publishResult.success ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+              {publishResult.message}
+            </div>
+          )}
+          
+          <button
+            onClick={onPublish}
+            disabled={publishing || !caption.trim()}
+            className="mt-4 w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 disabled:opacity-60 text-white font-semibold py-3 rounded-xl transition flex items-center justify-center gap-2"
+          >
+            {publishing ? (
+              <>
+                <LucideIcons.Loader2 size={18} className="animate-spin" />
+                Publishing...
+              </>
+            ) : (
+              <>
+                <LucideIcons.Send size={18} />
+                Publish ke Instagram
+              </>
+            )}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -51,6 +51,13 @@ export interface GeneratedPost {
   badge_text_color?: string;
   slides_json: any;
   total_slides: number;
+  schedule_id?: string;
+  instagram_status?: 'scheduled' | 'published' | 'failed' | 'cancelled';
+  permalink?: string;
+  likes?: number;
+  comments?: number;
+  shares?: number;
+  reach?: number;
   created_at: string;
   updated_at: string;
 }

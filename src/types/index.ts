@@ -3,7 +3,7 @@
 // Cocok dengan TemplateBaseProps di Templates.tsx
 // ============================================================
 
-import type { TemplateId, CardItem, MetricCard } from '../Templates';
+import type { TemplateId, CardItem, MetricCard, VisualMode } from '../Templates';
 
 /** Data per-slide yang di-generate oleh LLM Naskah Generator */
 export interface SlideData {
@@ -12,7 +12,9 @@ export interface SlideData {
   description?: string;
   source?: string;
   disclaimer?: string;
+  visualMode?: VisualMode;
   visualIcon?: string;
+  illustrationUrl?: string | null;
   accent?: string;
   tldrCards?: CardItem[];
   metrics?: MetricCard[];

@@ -1,0 +1,278 @@
+﻿// ============================================================
+// Templates Page
+// Preview 8 template slide + 6 content categories with API details
+// ============================================================
+
+import React, { useState } from 'react';
+import TemplateRenderer, { PALETTE, type TemplateId } from '../Templates';
+
+interface TemplateInfo {
+  id: TemplateId;
+  name: string;
+  description: string;
+  icon: string;
+  layout: string;
+}
+
+interface ContentCategory {
+  id: string;
+  name: string;
+  icon: string;
+  description: string;
+  templates: string[];
+  api: string;
+  apiEndpoint: string;
+  promptStrategy: string;
+}
+
+const TEMPLATES: TemplateInfo[] = [
+  { id: 'cover', name: 'Cover', description: 'Headline + sub-headline + visual', icon: 'ðŸŽ¨', layout: 'Header + Title + Description + VisualSlot + Footer' },
+  { id: 'tldr', name: 'TL;DR', description: 'Ringkasan cepat 3-4 poin', icon: 'ðŸ“', layout: 'Header + Title + Card List (icon + text) + Footer' },
+  { id: 'kronologi', name: 'Kronologi', description: 'Konteks berita + sumber', icon: 'ðŸ“…', layout: 'Header + Title + Image + Source + Description + Footer' },
+  { id: 'data', name: 'Bedah Data', description: 'Kartu metrik dan angka', icon: 'ðŸ“Š', layout: 'Header + Title + Metric Cards (label + value + caption) + Source + Footer' },
+  { id: 'pros', name: 'Pros', description: 'Sisi positif / keuntungan', icon: 'ðŸ‘', layout: 'Header + Title + Center Icon + Bullet List + Footer' },
+  { id: 'cons', name: 'Cons', description: 'Sisi negatif / risiko', icon: 'âš ï¸', layout: 'Header + Title + Center Icon + Bullet List + Footer' },
+  { id: 'standar', name: 'Kesimpulan', description: 'Judul + visual + deskripsi', icon: 'ðŸ“Œ', layout: 'Header + Title + VisualSlot + Description + Source + Footer' },
+  { id: 'cta', name: 'CTA', description: 'Call to action penutup', icon: 'ðŸ’¬', layout: 'Header + Title + VisualSlot + Description + Disclaimer + Footer' },
+];
+
+const CONTENT_CATEGORIES: ContentCategory[] = [
+  {
+    id: 'single_stock',
+    name: 'Single Stock',
+    icon: '??',
+    description: 'Analisis Emiten Tunggal ï¿½ kinerja saham individual',
+    templates: ['Cover', 'TL;DR', 'Kronologi', 'Bedah Data', 'Pros', 'Cons', 'Kesimpulan', 'CTA'],
+    api: 'Sectors.app',
+    apiEndpoint: 'fetch-company-report (valuation, financials, ownership) + fetch-foreign-flow',
+    promptStrategy: 'Focus on PER, PBV, ROE, EPS, foreign flow, valuation vs peer',
+  },
+  {
+    id: 'macro_economy',
+    name: 'Macro Economy',
+    icon: '??',
+    description: 'Makro Ekonomi & Tren Pasar ï¿½ suku bunga, IHSG, inflasi',
+    templates: ['Cover', 'TL;DR', 'Kronologi', 'Dampak Pasar', 'Diuntungkan', 'Perlu Diwaspadai', 'Kesimpulan', 'CTA'],
+    api: 'Sectors.app',
+    apiEndpoint: 'fetch-index-daily + fetch-company-report (top movers)',
+    promptStrategy: 'Focus on BI rate impact, IHSG movement, market cap, sector rotation',
+  },
+  {
+    id: 'sector_analysis',
+    name: 'Sector Analysis',
+    icon: '??',
+    description: 'Analisis Sektoral ï¿½ perbandingan antar sektor',
+    templates: ['Cover', 'TL;DR', 'Kronologi', 'Data Sektor', 'Saham Jagoan', 'Perlu Diwaspadai', 'Kesimpulan', 'CTA'],
+    api: 'Sectors.app',
+    apiEndpoint: 'fetch-subsector-report + fetch-company-report (top performers)',
+    promptStrategy: 'Focus on sector comparison, top performers, subsector performance',
+  },
+  {
+    id: 'corporate_action',
+    name: 'Corporate Action',
+    icon: '??',
+    description: 'Aksi Korporasi ï¿½ stock split, buyback, M&A',
+    templates: ['Cover', 'TL;DR', 'Kronologi', 'Detail Aksi', 'Untung Buat Investor', 'Perlu Diperhatikan', 'Kesimpulan', 'CTA'],
+    api: 'Sectors.app',
+    apiEndpoint: 'fetch-corporate-actions + fetch-company-report',
+    promptStrategy: 'Focus on action type, ratio, timeline, impact to shareholders',
+  },
+  {
+    id: 'ipo_rights_issue',
+    name: 'IPO & Rights Issue',
+    icon: '??',
+    description: 'IPO & Penawaran Umum ï¿½ listing baru, rights issue',
+    templates: ['Cover', 'TL;DR', 'Profil Perusahaan', 'Detail Penawaran', 'Kenapa Menarik', 'Risiko', 'Kesimpulan', 'CTA'],
+    api: 'Sectors.app',
+    apiEndpoint: 'fetch-ipo-performance + fetch-company-report (overview)',
+    promptStrategy: 'Focus on IPO price, listing performance, company fundamentals, risks',
+  },
+  {
+    id: 'suspension_delisting',
+    name: 'Suspension & Delisting',
+    icon: '??',
+    description: 'Suspensi & Delisting ï¿½ cooling down, gagal bayar',
+    templates: ['Cover', 'TL;DR', 'Kronologi', 'Fakta Suspensi', 'Apa Itu Suspensi', 'Yang Perlu Dilakukan', 'Kesimpulan', 'CTA'],
+    api: 'Sectors.app',
+    apiEndpoint: 'fetch-suspensions + fetch-company-report (overview)',
+    promptStrategy: 'Focus on suspension type (cooling down/default/delisting), BEI announcement, investor action',
+  },
+];
+
+const SAMPLE_DATA: Record<TemplateId, any> = {
+  cover: {
+    title: 'BBNI Kok Bisa Naik Terus?',
+    description: 'Analisis singkat pergerakan saham BBCA',
+  },
+  tldr: {
+    title: 'Ringkasan Cepat',
+    tldrCards: [
+      { id: '1', icon: 'TrendingUp', text: 'BBNI naik 5% dalam 1 hari' },
+      { id: '2', icon: 'BarChart3', text: 'Volume transaksi 2x rata-rata' },
+      { id: '3', icon: 'CheckCircle2', text: 'Analyst merekomendasikan BUY' },
+    ],
+  },
+  kronologi: {
+    title: 'Kronologi Kejadian',
+    description: '4 Sept 2026: BBNI mulai menguat setelah rilis kuartal II',
+  },
+  data: {
+    title: 'Bedah Data',
+    metrics: [
+      { id: '1', icon: 'TrendingUp', label: 'Harga', value: 'Rp9,800', caption: '+5.2% dari kemarin', tone: 'sage' },
+      { id: '2', icon: 'BarChart3', label: 'Volume', value: '125M', caption: 'Di atas rata-rata 90 hari', tone: 'amber' },
+    ],
+  },
+  pros: {
+    title: 'Sisi Positif',
+    bullets: [
+      { id: '1', icon: 'CheckCircle2', text: 'Fundamental kuat' },
+      { id: '2', icon: 'ThumbsUp', text: 'Analyst bullish' },
+      { id: '3', icon: 'Sparkles', text: 'Dividen tinggi' },
+    ],
+  },
+  cons: {
+    title: 'Sisi Negatif',
+    bullets: [
+      { id: '1', icon: 'AlertTriangle', text: 'Valuasi mahal' },
+      { id: '2', icon: 'TrendingDown', text: 'Tekanan jual' },
+    ],
+  },
+  standar: {
+    title: 'Kesimpulan',
+    description: 'Berdasarkan analisis di atas, BBNI memiliki prospek jangka menengah yang positif.',
+  },
+  cta: {
+    title: 'Follow untuk Info Selanjutnya!',
+    description: 'Like, Share dan Follow Untuk mendapatkan informasi menarik seperti ini.',
+  },
+};
+
+export default function TemplatesPage() {
+  const [selectedTemplate, setSelectedTemplate] = useState<TemplateId | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const renderPreview = (templateId: TemplateId) => {
+    const data = SAMPLE_DATA[templateId];
+    return (
+      <TemplateRenderer
+        template={templateId}
+        handle="@sahamfyp"
+        badgeText="BBCA"
+        badgeBgColor={PALETTE.navy}
+        badgeTextColor="#FFFFFF"
+        textColor={PALETTE.navy}
+        accentColor={PALETTE.amber}
+        bgColor={PALETTE.cream}
+        title={data.title || ''}
+        description={data.description || ''}
+        source="CNBC Indonesia"
+        disclaimer="DYOR - Do Your Own Research"
+        visualMode="icon"
+        visualIcon="TrendingUp"
+        illustrationUrl={null}
+        tldrCards={data.tldrCards || []}
+        metrics={data.metrics || []}
+        bullets={data.bullets || []}
+        slideIndex={0}
+      />
+    );
+  };
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-2xl font-bold text-slate-800">ðŸ“‹ Templates</h1>
+        <p className="text-sm text-slate-500 mt-1">Preview 8 template slide carousel</p>
+      </div>
+
+      {/* Template Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {TEMPLATES.map(template => (
+          <button
+            key={template.id}
+            onClick={() => setSelectedTemplate(template.id)}
+            className={`p-4 rounded-xl text-left transition border-2 ${
+              selectedTemplate === template.id
+                ? 'border-amber-500 bg-amber-50'
+                : 'border-transparent bg-white hover:border-amber-200 shadow-sm'
+            }`}
+          >
+            <span className="text-3xl block mb-2">{template.icon}</span>
+            <h3 className="font-semibold text-slate-800">{template.name}</h3>
+            <p className="text-xs text-slate-500 mt-1">{template.description}</p>
+            <p className="text-xs text-slate-400 mt-2 font-mono">{template.layout}</p>
+          </button>
+        ))}
+      </div>
+
+      {selectedTemplate && (
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+          <h2 className="text-lg font-semibold text-slate-800 mb-2">
+            Preview: {TEMPLATES.find(t => t.id === selectedTemplate)?.name}
+          </h2>
+          <p className="text-xs text-slate-500 mb-4 font-mono">
+            Layout: {TEMPLATES.find(t => t.id === selectedTemplate)?.layout}
+          </p>
+          <div className="flex justify-center">
+            <div className="transform scale-75 origin-top">
+              {renderPreview(selectedTemplate)}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Content Categories */}
+      <div className="border-t border-slate-200 pt-8">
+        <h2 className="text-xl font-bold text-slate-800 mb-2">ðŸ“ 6 Content Categories</h2>
+        <p className="text-sm text-slate-500 mb-6">Setiap kategori menggunakan 8 template dengan data dari API berbeda</p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {CONTENT_CATEGORIES.map(cat => (
+            <div
+              key={cat.id}
+              onClick={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
+              className={`p-5 rounded-xl cursor-pointer transition border-2 ${
+                selectedCategory === cat.id
+                  ? 'border-amber-500 bg-amber-50'
+                  : 'border-transparent bg-white hover:border-amber-200 shadow-sm'
+              }`}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-3xl">{cat.icon}</span>
+                <div>
+                  <h3 className="font-semibold text-slate-800">{cat.name}</h3>
+                  <p className="text-xs text-slate-500">{cat.description}</p>
+                </div>
+              </div>
+
+              {selectedCategory === cat.id && (
+                <div className="mt-4 space-y-3 pt-3 border-t border-slate-200">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-600 mb-1">ðŸ“¡ API Source</p>
+                    <p className="text-sm text-slate-800">{cat.api}</p>
+                    <p className="text-xs text-slate-500 font-mono">{cat.apiEndpoint}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-slate-600 mb-1">ðŸ“ Prompt Strategy</p>
+                    <p className="text-sm text-slate-800">{cat.promptStrategy}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-slate-600 mb-1">ðŸŽ¨ Templates Used</p>
+                    <div className="flex flex-wrap gap-1">
+                      {cat.templates.map((t, i) => (
+                        <span key={i} className="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded-full">{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
