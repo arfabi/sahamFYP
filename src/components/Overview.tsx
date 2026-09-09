@@ -35,10 +35,38 @@ export default function Overview({ onNavigate }: OverviewProps) {
 
   const services: ServiceInfo[] = [
     { name: 'Instagram (Repliz)', icon: '📱', description: 'Publish & schedule posts', connected: replizConnected, details: replizConnected ? 'Account connected' : 'Not configured', color: 'bg-pink-50 text-pink-600' },
-    { name: 'Cloudinary', icon: '☁️', description: 'Image hosting & CDN', connected: true, details: 'kementerian-hukum-dan-ham-diy', color: 'bg-blue-50 text-blue-600' },
-    { name: 'Gemini AI', icon: '🤖', description: 'Content generation', connected: true, details: 'API key configured', color: 'bg-purple-50 text-purple-600' },
-    { name: 'Sectors.app', icon: '📊', description: 'Stock market data', connected: true, details: 'API key configured', color: 'bg-green-50 text-green-600' },
-    { name: 'Supabase', icon: '🗄️', description: 'Database & storage', connected: true, details: 'Project connected', color: 'bg-slate-100 text-slate-600' },
+    {
+      name: 'Cloudinary',
+      icon: '☁️',
+      description: 'Image hosting & CDN',
+      connected: !!(import.meta.env.VITE_CLOUDINARY_CLOUD_NAME && import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET),
+      details: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'Not configured',
+      color: 'bg-blue-50 text-blue-600',
+    },
+    {
+      name: 'Gemini AI',
+      icon: '🤖',
+      description: 'Content generation',
+      connected: !!import.meta.env.VITE_GEMINI_API_KEY,
+      details: import.meta.env.VITE_GEMINI_API_KEY ? 'API key configured' : 'Not configured',
+      color: 'bg-purple-50 text-purple-600',
+    },
+    {
+      name: 'Sectors.app',
+      icon: '📊',
+      description: 'Stock market data',
+      connected: !!import.meta.env.VITE_SECTORS_API_KEY,
+      details: import.meta.env.VITE_SECTORS_API_KEY ? 'API key configured' : 'Not configured',
+      color: 'bg-green-50 text-green-600',
+    },
+    {
+      name: 'Supabase',
+      icon: '🗄️',
+      description: 'Database & storage',
+      connected: !!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY),
+      details: import.meta.env.VITE_SUPABASE_URL ? 'Project connected' : 'Not configured',
+      color: 'bg-slate-100 text-slate-600',
+    },
   ];
 
   return (
