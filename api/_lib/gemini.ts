@@ -65,7 +65,6 @@ DATA BERITA YANG HARUS DIKLASIFIKASIKAN:
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { responseMimeType: 'application/json' },
     }),
   });
 
@@ -80,7 +79,15 @@ DATA BERITA YANG HARUS DIKLASIFIKASIKAN:
     throw new Error('No response from Gemini');
   }
 
-  const rawOutput = data.candidates[0].content.parts[0].text;
+  let rawOutput = data.candidates[0].content.parts[0].text;
+
+  // Clean JSON from markdown code blocks
+  rawOutput = rawOutput.trim();
+  if (rawOutput.startsWith('```json')) {
+    rawOutput = rawOutput.replace(/^```json\n/, '').replace(/\n```$/, '');
+  } else if (rawOutput.startsWith('```')) {
+    rawOutput = rawOutput.replace(/^```\n/, '').replace(/\n```$/, '');
+  }
 
   try {
     return JSON.parse(rawOutput);
