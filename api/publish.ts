@@ -124,9 +124,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   } catch (error) {
     console.error('Publish error:', error);
+    const message = error instanceof Error ? error.message : JSON.stringify(error);
     return res.status(500).json({
       error: 'Failed to publish',
-      message: error instanceof Error ? error.message : 'Unknown error',
+      message,
     });
   }
 }

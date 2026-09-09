@@ -75,9 +75,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (error) {
     console.error('Posts error:', error);
+    const message = error instanceof Error ? error.message : JSON.stringify(error);
     return res.status(500).json({
       error: 'Failed to process request',
-      message: error instanceof Error ? error.message : 'Unknown error',
+      message,
     });
   }
 }
