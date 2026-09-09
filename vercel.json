@@ -1,6 +1,12 @@
 {
     "outputDirectory":  "dist",
     "buildCommand":  "npm run build",
+    "builds":  [
+                   {
+                       "src":  "api/**/*.ts",
+                       "use":  "@vercel/node"
+                   }
+               ],
     "version":  2,
     "rewrites":  [
                      {
