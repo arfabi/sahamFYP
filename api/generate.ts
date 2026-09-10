@@ -1,13 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import * as cheerio from 'cheerio';
-
-const N8N_API_KEY = process.env.N8N_API_KEY || '';
-
-function validateApiKey(req: VercelRequest): boolean {
-  if (!N8N_API_KEY) return true; // Skip validation if not configured
-  return req.headers['x-api-key'] === N8N_API_KEY;
-}
+import { validateApiKey, parseBody } from '../_lib/auth';
 
 // --- Gemini (self-contained) ---
 function getGeminiModel() {
@@ -232,7 +226,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { url, title: inputTitle, content: inputContent, category: inputCategory, ticker: inputTicker } = req.body;
+  const { url, title: inputTitle, content: inputContent, category: inputCategory, ticker: inputTicker } = parseBody(req);
 
   try {
     // Step 1: Scrape (if URL provided)

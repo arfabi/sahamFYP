@@ -1,11 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-
-const N8N_API_KEY = process.env.N8N_API_KEY || '';
-
-function validateApiKey(req: VercelRequest): boolean {
-  if (!N8N_API_KEY) return true; // Skip validation if not configured
-  return req.headers['x-api-key'] === N8N_API_KEY;
-}
+import { validateApiKey, parseBody } from '../_lib/auth';
 
 // --- Sectors.app API client (self-contained) ---
 const SECTORS_API_KEY = process.env.SECTORS_API_KEY || '';
@@ -75,7 +69,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { category, ticker } = req.body;
+  const { category, ticker } = parseBody(req);
 
   if (!category) {
     return res.status(400).json({ error: 'category is required' });

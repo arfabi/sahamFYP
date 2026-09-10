@@ -208,7 +208,7 @@ Selengkapnya baca di: [`docs/Struktur_Konten_6_Kategori_SahamFYP.md`](docs/Struk
 - **Referensi**: https://vercel.com/
 - **Cara kerja**:
   - Setiap file di `api/` folder di-deploy sebagai Vercel Function
-  - Build command: `npm run build`
+  - Build command: `node scripts/sync-env.mjs && npm run build`
   - Output directory: `dist`
   - Config di `vercel.json` untuk routing & rewrites
 
@@ -302,6 +302,8 @@ SECTORS_API_KEY=your_sectors_api_key_here
 REPLIZ_ACCESS_KEY=your_repliz_access_key
 REPLIZ_SECRET_KEY=your_repliz_secret_key
 REPLIZ_ACCOUNT_ID=your_repliz_account_id
+# Opsional: TikTok account ID (jika beda dari Instagram)
+# REPLIZ_TIKTOK_ACCOUNT_ID=your_repliz_tiktok_account_id
 REPLIZ_TIKTOK_ACCOUNT_ID=your_repliz_tiktok_account_id_optional
 
 # Cloudinary (CDN gambar)
@@ -315,6 +317,8 @@ SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 
 # n8n
+# Dipakai untuk autentikasi webhook calls dari n8n ke endpoint:
+# /api/enrich, /api/generate, /api/posts, /api/publish
 N8N_API_KEY=your_n8n_api_key_optional
 
 # Telegram Bot (opsional)
@@ -386,6 +390,9 @@ vercel
 ```
 
 Set environment variables di Vercel dashboard (Settings > Environment Variables) sesuai variabel di atas.
+
+> **Note**: Anda TIDAK PERLU menambahkan VITE_ keys secara manual. Build command 
+ode scripts/sync-env.mjs && npm run build akan auto-generate VITE_ duplicates dari non-prefixed keys (lihat .env.example dan scripts/sync-env.mjs).
 
 ### Setup n8n Workflow
 

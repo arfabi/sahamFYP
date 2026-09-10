@@ -1,12 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-
-const N8N_API_KEY = process.env.N8N_API_KEY || '';
-
-function validateApiKey(req: VercelRequest): boolean {
-  if (!N8N_API_KEY) return true; // Skip validation if not configured
-  return req.headers['x-api-key'] === N8N_API_KEY;
-}
+import { validateApiKey, parseBody } from '../_lib/auth';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -52,7 +46,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (req.method === 'POST') {
       // Save generated content to Supabase (matches current table schema)
-      const { category, ticker, title, content, naskah, classification, enrichment, image, siteName, logId } = req.body;
+      const { category, ticker, title, content, naskah, classification, enrichment, image, siteName, logId } = parseBody(req);
 
       const insertData: Record<string, any> = {
         handle: naskah?.handle || '@sahamfyp',

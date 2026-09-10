@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { parseBody } from '../_lib/auth';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS
@@ -13,7 +14,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { title, content } = req.body;
+  const { title, content } = parseBody(req);
 
   if (!title || !content) {
     return res.status(400).json({ error: 'title and content are required' });

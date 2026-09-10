@@ -1,12 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-
-const N8N_API_KEY = process.env.N8N_API_KEY || '';
-
-function validateApiKey(req: VercelRequest): boolean {
-  if (!N8N_API_KEY) return true; // Skip validation if not configured
-  return req.headers['x-api-key'] === N8N_API_KEY;
-}
+import { validateApiKey, parseBody } from '../_lib/auth';
 
 const REPLIZ_API_BASE = 'https://api.repliz.com';
 const REPLIZ_ACCESS_KEY = process.env.REPLIZ_ACCESS_KEY || '';
@@ -27,7 +21,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { postId, cloudinaryUrls, caption, platform = 'instagram', scheduleAt } = req.body;
+  const { postId, cloudinaryUrls, caption, platform = 'instagram', scheduleAt } = parseBody(req);
 
   if (!cloudinaryUrls || cloudinaryUrls.length === 0) {
     return res.status(400).json({ error: 'cloudinaryUrls are required' });
