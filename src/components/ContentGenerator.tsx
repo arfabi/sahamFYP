@@ -12,6 +12,9 @@ export default function ContentGenerator() {
   const [loading, setLoading] = useState(false);
   const [url, setUrl] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [scraped, setScraped] = useState<{ title: string; content: string } | null>(null);
+  const [classification, setClassification] = useState<{ category: string; ticker: string | null; sector: string | null; confidence: number; reason: string } | null>(null);
+  const [enrichmentData, setEnrichmentData] = useState<{ data: Record<string, any> } | null>(null);
 
   const handleGenerate = async () => {
     if (!url.trim()) {
@@ -30,27 +33,30 @@ export default function ContentGenerator() {
       const { generateNaskah } = await import('../services/naskahGenerator');
 
       // Step 1: Scrape
-      const scraped = await scrapeUrl(url);
-      if (!scraped) throw new Error('Failed to scrape URL');
+      const scrapedResult = await scrapeUrl(url);
+      if (!scrapedResult) throw new Error('Failed to scrape URL');
+      setScraped(scrapedResult);
 
       // Step 2: Classify
-      const classification = await classifyContent(scraped.title, scraped.content);
+      const classificationResult = await classifyContent(scrapedResult.title, scrapedResult.content);
+      setClassification(classificationResult);
 
-      if (classification.category === "SKIP") {
+      if (classificationResult.category === "SKIP") {
         setError("Berita tidak relevan untuk konten @sahamfyp");
         return;
       }
 
       // Step 3: Enrich
-      const enrichmentData = await enrichClassification(classification);
+      const enrichmentResult = await enrichClassification(classificationResult);
+      setEnrichmentData(enrichmentResult);
 
       // Step 4: Generate Naskah
       const naskah = await generateNaskah({
-        category: classification.category,
-        title: scraped.title,
-        content: scraped.content,
-        enrichmentData: enrichmentData.data,
-        ticker: classification.ticker,
+        category: classificationResult.category,
+        title: scrapedResult.title,
+        content: scrapedResult.content,
+        enrichmentData: enrichmentResult.data,
+        ticker: classificationResult.ticker,
       });
 
       setCarouselData(naskah);
@@ -72,9 +78,9 @@ export default function ContentGenerator() {
         </button>
         <FormWizard
           carouselData={carouselData}
-          scrapedContent={{ title: '', content: '', source: url }}
-          classification={{ category: '', ticker: null, sector: null, confidence: 0 }}
-          enrichmentData={{}}
+          scrapedContent={{ title: scraped?.title || '', content: scraped?.content || '', source: url }}
+          classification={{ category: classification?.category || '', ticker: classification?.ticker || null, sector: classification?.sector || null, confidence: classification?.confidence || 0 }}
+          enrichmentData={enrichmentData?.data || {}}
         />
       </div>
     );
