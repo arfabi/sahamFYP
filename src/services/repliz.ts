@@ -52,6 +52,7 @@ export function isReplizConfigured(): boolean {
 }
 
 // Publish carousel/album to Instagram via Repliz
+// Uses Vercel API proxy to avoid CORS issues
 export async function publishToInstagram(params: PublishToInstagramParams): Promise<PublishResult> {
   const config = getConfig();
   
@@ -79,56 +80,38 @@ export async function publishToInstagram(params: PublishToInstagramParams): Prom
       imageUrls = cloudinaryResults.map(r => r.secure_url);
     }
 
-    // Build medias array for album/carousel
-    const medias: ReplizMedia[] = imageUrls.map(url => ({
-      type: 'image',
-      url: url,
-      thumbnail: url,
-      alt: '',
-      customThumbnail: false,
-    }));
+    // Call Vercel API proxy instead of Repliz directly (avoids CORS)
+    const proxyUrl = typeof window !== 'undefined' 
+      ? '/api/publish' 
+      : `${import.meta.env.VITE_SITE_URL || 'https://saham-fyp.vercel.app'}/api/publish`;
 
-    const response = await fetch(`${REPLIZ_API_BASE}/public/schedule`, {
+    const response = await fetch(proxyUrl, {
       method: 'POST',
       headers: {
-        'X-Access-Key': config.accessKey,
-        'X-Secret-Key': config.secretKey,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        title: params.caption.slice(0, 50),
-        description: params.caption,
-        topic: '',
-        type: 'album',  // Carousel = album
-        medias: medias,
-        meta: { title: '', description: '', url: '' },
-        additionalInfo: {
-          isAiGenerated: false,
-          isDraft: params.isDraft ?? false,
-          isAutoAddMusic: false,
-          collaborators: [],
-          music: { id: '', artist: '', name: '', thumbnail: '' },
-          products: [],
-          tags: [],
-          mentions: [],
-          link: '',
-          targetCountries: [],
-        },
-        replies: [],
-        accountId: config.accountId,
+        cloudinaryUrls: imageUrls,
+        caption: params.caption,
+        platform: 'instagram',
         scheduleAt: params.scheduleAt || new Date().toISOString(),
       }),
     });
 
     if (!response.ok) {
       const error = await response.text();
-      return { success: false, error: `Repliz API error: ${response.status} - ${error}`, cloudinaryResults };
+      return { success: false, error: `Publish error: ${response.status} - ${error}`, cloudinaryResults };
     }
 
     const data = await response.json();
+    
+    if (data.error) {
+      return { success: false, error: data.error, cloudinaryResults };
+    }
+
     return {
       success: true,
-      scheduleId: data.scheduleId || data.id,
+      scheduleId: data.scheduleId,
       url: data.url,
       cloudinaryResults,
     };
