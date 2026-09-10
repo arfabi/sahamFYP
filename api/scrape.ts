@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import * as cheerio from 'cheerio';
-import { parseBody } from '../_lib/auth';
+import { parseBody } from './_lib/auth';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Enable CORS

@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { validateApiKey, parseBody } from '../_lib/auth';
+import { validateApiKey, parseBody } from './_lib/auth';
 
 // --- Sectors.app API client (self-contained) ---
 const SECTORS_API_KEY = process.env.SECTORS_API_KEY || '';

@@ -11,3 +11,5 @@ dist/
 # Vercel
 .vercel/
 .vercel_token
+.vercel
+.env*
