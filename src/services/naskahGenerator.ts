@@ -71,6 +71,32 @@ function extractJson(raw: string): any {
   }
 }
 
+/** Financial terms dictionary with Gen Z translations */
+export const FINANCIAL_TERMS: Record<string, { name: string; genZ: string }> = {
+  PBV: { name: 'Price to Book Value', genZ: 'Banding Harga vs Nilai Buku' },
+  PER: { name: 'Price to Earnings Ratio', genZ: 'Banding Harga vs Laba' },
+  ROE: { name: 'Return on Equity', genZ: 'Efek Uang Kembali' },
+  EPS: { name: 'Earnings Per Share', genZ: 'Lep saham' },
+  ROA: { name: 'Return on Assets', genZ: 'Efek Aset' },
+  DER: { name: 'Debt to Equity Ratio', genZ: 'Banding Utang vs Modal' },
+  DY: { name: 'Dividend Yield', genZ: 'Hasil Dividen' },
+  DPS: { name: 'Dividend Per Share', genZ: 'Lep Dividen' },
+  NPL: { name: 'Non Performing Loan', genZ: 'Kredit Macet' },
+  LDR: { name: 'Loan to Deposit Ratio', genZ: 'Banding Kredit vs Simpanan' },
+  CAR: { name: 'Capital Adequacy Ratio', genZ: 'Cukup Modal' },
+  BOPO: { name: 'Operating Expenses to Income', genZ: 'Banding Biaya vs Pendapatan' },
+  NIM: { name: 'Net Interest Margin', genZ: 'Lep Bersih' },
+  GDP: { name: 'Gross Domestic Product', genZ: 'Produk Domestik Bruto' },
+  CAGR: { name: 'Compound Annual Growth Rate', genZ: 'Efek Pertumbuhan Tahunan' },
+  PB: { name: 'Price to Book', genZ: 'Banding Harga vs Buku' },
+  PE: { name: 'Price to Earnings', genZ: 'Banding Harga vs Laba' },
+  ROI: { name: 'Return on Investment', genZ: 'Efek Uang Kembali Investasi' },
+  EPS_GROWTH: { name: 'EPS Growth', genZ: 'Efek Pertumbuhan Laba per Saham' },
+  YOY: { name: 'Year over Year', genZ: 'Tahun ke Tahun' },
+  QOQ: { name: 'Quarter over Quarter', genZ: 'Triwulan ke Triwulan' },
+  MOM: { name: 'Month over Month', genZ: 'Bulan ke Bulan' },
+};
+
 /** Parameter untuk generate naskah */
 export interface GenerateNaskahParams {
   category: CategoryType;
@@ -78,11 +104,13 @@ export interface GenerateNaskahParams {
   content: string;
   enrichmentData: Record<string, any>;
   ticker: string | null;
+  image?: string;
+  siteName?: string;
 }
 
 /** Generate naskah carousel dari berita + data enrichment */
 export async function generateNaskah(params: GenerateNaskahParams): Promise<CarouselData> {
-  const { category, title, content, enrichmentData, ticker } = params;
+  const { category, title, content, enrichmentData, ticker, image, siteName } = params;
 
   // 1. Build prompt sesuai kategori
   const prompt = buildNaskahPrompt(category, title, content, enrichmentData, ticker);
@@ -94,5 +122,22 @@ export async function generateNaskah(params: GenerateNaskahParams): Promise<Caro
   const parsed = extractJson(rawOutput);
 
   // 4. Validate & repair
-  return validateAndRepair(parsed);
+  const result = validateAndRepair(parsed);
+
+  // 5. Inject image into cover and kronologi slides
+  if (image && result.slides) {
+    // Cover slide (index 0)
+    if (result.slides[0] && result.slides[0].template === 'cover') {
+      result.slides[0].visualMode = 'image';
+      result.slides[0].illustrationUrl = image;
+      result.slides[0].source = siteName || '';
+    }
+    // Kronologi slide (index 2)
+    if (result.slides[2] && result.slides[2].template === 'kronologi') {
+      result.slides[2].visualMode = 'image';
+      result.slides[2].illustrationUrl = image;
+    }
+  }
+
+  return result;
 }

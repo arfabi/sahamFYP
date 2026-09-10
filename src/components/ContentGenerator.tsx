@@ -57,6 +57,8 @@ export default function ContentGenerator() {
         content: scrapedResult.content,
         enrichmentData: enrichmentResult.data,
         ticker: classificationResult.ticker,
+        image: scrapedResult.image,
+        siteName: scrapedResult.siteName,
       });
 
       setCarouselData(naskah);

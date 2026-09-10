@@ -595,10 +595,13 @@ function TldrTemplate(p: TemplateBaseProps) {
 }
 // ================= TEMPLATE 3: DATA (Bedah Data — Kartu Metrik)= =================
 function DataTemplate(p: TemplateBaseProps) {
-  const titleSize = scaleFont(p.title,28,  19);
-  // Limit to 3-4 cards, no more no less
-  const displayMetrics = p.metrics.slice(0, 4);
-  const isSmall = displayMetrics.length > 3;
+  const titleSize = scaleFont(p.title, 28, 19);
+  // Dynamic sizing based on number of metrics
+  const displayMetrics = p.metrics.slice(0, 5);
+  const count = displayMetrics.length;
+  // Adjust sizing: more items = smaller to fit without covering dots
+  const isCompact = count >= 4;
+  const isVeryCompact = count >= 5;
   return (
     <Shell bgColor={p.bgColor} textColor={p.textColor}>
       <CardHeader
@@ -607,22 +610,22 @@ function DataTemplate(p: TemplateBaseProps) {
         badgeBgColor={p.badgeBgColor}
         badgeTextColor={p.badgeTextColor}
       />
-      <div className="flex-1 flex flex-col pt-5">
+      <div className="flex-1 flex flex-col pt-4">
         <h2
           className="font-display font-extrabold leading-tight tracking-tight text-center"
           style={{ fontSize: titleSize, color: p.textColor }}
         >
           {renderTextWithBold(p.title)}
         </h2>
-        <div className={"flex-1 flex flex-col justify-center " + (isSmall ? "gap-1.5 py-1" : "gap-2 py-2")}>
+        <div className={"flex-1 flex flex-col justify-center " + (isVeryCompact ? "gap-1 py-0.5" : isCompact ? "gap-1.5 py-1" : "gap-2 py-2")}>
           {displayMetrics.map((m) => {
-            const valueSize = scaleFont(m.value, isSmall ? 22 : 28, 16, 10);
-            const captionSize = scaleFont(m.caption, isSmall ? 9 : 10, 7, 40);
+            const valueSize = scaleFont(m.value, isVeryCompact ? 18 : isCompact ? 22 : 28, 16, 10);
+            const captionSize = scaleFont(m.caption, isVeryCompact ? 8 : isCompact ? 9 : 10, 7, 40);
             const toneColor = m.tone === "sage" ? PALETTE.sage : p.accentColor;
             return (
               <div
                 key={m.id}
-                className={"rounded-xl border " + (isSmall ? "px-2.5 py-1.5" : "px-3 py-2")}
+                className={"rounded-xl border " + (isVeryCompact ? "px-2 py-1" : isCompact ? "px-2.5 py-1.5" : "px-3 py-2")}
                 style={{
                   backgroundColor: PALETTE.card,
                   borderColor: toneColor,
@@ -630,10 +633,10 @@ function DataTemplate(p: TemplateBaseProps) {
                 }}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className={"font-semibold uppercase tracking-wide opacity-70 " + (isSmall ? "text-[9px]" : "text-[10px]")}>
+                  <span className={"font-semibold uppercase tracking-wide opacity-70 " + (isVeryCompact ? "text-[8px]" : isCompact ? "text-[9px]" : "text-[10px]")}>
                     {m.label}
                   </span>
-                  {renderIcon(m.icon, isSmall ? 12 : 14, toneColor)}
+                  {renderIcon(m.icon, isVeryCompact ? 10 : isCompact ? 12 : 14, toneColor)}
                 </div>
                 <div
                   className="font-display font-extrabold"
@@ -648,7 +651,7 @@ function DataTemplate(p: TemplateBaseProps) {
             );
           })}
         </div>
-        <span className="text-[10px] italic opacity-60 text-center mt-1 pb-1">
+        <span className={"text-center mt-1 pb-1 italic opacity-60 " + (isVeryCompact ? "text-[8px]" : "text-[10px]")}>
           Sumber Data: sector.app
         </span>
       </div>

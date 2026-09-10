@@ -301,6 +301,22 @@ async function generateNaskah(params: {
 }) {
   const { category, ticker, title, content, image, siteName, enrichment } = params;
 
+  // Financial terms dictionary with Gen Z translations
+  const FINANCIAL_TERMS = {
+    PBV: { name: 'Price to Book Value', genZ: 'Banding Harga vs Nilai Buku' },
+    PER: { name: 'Price to Earnings Ratio', genZ: 'Banding Harga vs Laba' },
+    ROE: { name: 'Return on Equity', genZ: 'Efek Uang Kembali' },
+    EPS: { name: 'Earnings Per Share', genZ: 'Lep saham' },
+    ROA: { name: 'Return on Assets', genZ: 'Efek Aset' },
+    DER: { name: 'Debt to Equity Ratio', genZ: 'Banding Utang vs Modal' },
+    DY: { name: 'Dividend Yield', genZ: 'Hasil Dividen' },
+    NPL: { name: 'Non Performing Loan', genZ: 'Kredit Macet' },
+    NIM: { name: 'Net Interest Margin', genZ: 'Lep Bersih' },
+    BOPO: { name: 'Operating Expenses to Income', genZ: 'Banding Biaya vs Pendapatan' },
+    LDR: { name: 'Loan to Deposit Ratio', genZ: 'Banding Kredit vs Simpanan' },
+    CAR: { name: 'Capital Adequacy Ratio', genZ: 'Cukup Modal' },
+  };
+
   const prompt = `
 Kamu adalah AI Content Generator untuk @sahamfyp Instagram carousel.
 Generate naskah 8 slide carousel dalam format JSON valid.
@@ -312,6 +328,24 @@ KONTEN: ${content}
 SUMBER: ${siteName}
 DATA_ENRICHMENT: ${JSON.stringify(enrichment.data || {})}
 
+KAMUS ISTILAH KEUANGAN (Gunakan format: SINGKATAN (Nama Lengkap)):
+- PBV (Price Book Value): Banding harga vs nilai buku perusahaan
+- PER (Price Earnings Ratio): Banding harga vs laba per saham  
+- ROE (Return on Equity): Efek uang kembali dari modal
+- EPS (Earnings Per Share): Lep saham (laba per lembar)
+- DER (Debt to Equity Ratio): Banding utang vs modal
+- NPL (Non Performing Loan): Kredit macet
+- NIM (Net Interest Margin): Lep bersih dari bunga
+- BOPO (Biaya Operasional vs Pendapatan): Efisiensi biaya bank
+- LDR (Loan to Deposit Ratio): Banding kredit vs simpanan
+- CAR (Capital Adequacy Ratio): Cukup modal bank
+
+FORMAT DATA SLIDE:
+Gunakan format ini untuk setiap metrik:
+"PBV (Price Book Value)" sebagai label
+"0.86x" sebagai value  
+"Untuk Big Bank, ini lagi diskon banget. Ibaratnya Iphone 10jt, dijual dibawah harga pasaran." sebagai caption
+
 FORMAT OUTPUT (JSON valid, tanpa markdown):
 {
   "handle": "@sahamfyp",
@@ -320,7 +354,7 @@ FORMAT OUTPUT (JSON valid, tanpa markdown):
     { "template": "cover", "title": "...", "description": "..." },
     { "template": "tldr", "title": "...", "tldrCards": [{"icon": "TrendingUp", "text": "..."}] },
     { "template": "kronologi", "title": "...", "description": "...", "source": "${siteName}" },
-    { "template": "data", "title": "...", "metrics": [{"icon": "TrendingUp", "label": "...", "value": "...", "caption": "...", "tone": "amber"}] },
+    { "template": "data", "title": "...", "metrics": [{"icon": "TrendingUp", "label": "PBV (Price Book Value)", "value": "0.86x", "caption": "Untuk Big Bank, ini lagi diskon banget. Ibaratnya Iphone 10jt, dijual dibawah harga pasaran.", "tone": "amber"}] },
     { "template": "pros", "title": "...", "bullets": [{"icon": "CheckCircle2", "text": "..."}] },
     { "template": "cons", "title": "...", "bullets": [{"icon": "AlertTriangle", "text": "..."}] },
     { "template": "standar", "title": "...", "description": "..." },
@@ -333,11 +367,15 @@ FORMAT OUTPUT (JSON valid, tanpa markdown):
 }
 
 ATURAN:
-- Bahasa Indonesia kasual
+- Bahasa Indonesia kasual, vibe Gen Z
 - Caption IG: hook + info + CTA + 3 hashtags (#saham #investasi #${ticker?.toLowerCase() || 'saham'})
 - Caption TikTok: hook agresif + #fyp #foryou #sahamindonesia
 - DYOR disclaimer selalu di slide terakhir
-- DARIKAN DATA NYATA, jangan mengarang
+- DARIKAN DATA NYATA dari DATA_ENRICHMENT, jangan mengarang
+- Untuk data slide, GUNAKAN FORMAT: "SINGKATAN (Nama Lengkap)" sebagai label
+- Caption data harus penjelasan Gen Z yang mudah dipahami
+- Untuk bank besar (BBCA, BBRI, BMRI, BBNI): jika PBV rendah = "diskon banget"
+- Untuk perusahaan lain: jika murah bisa "hidden gem" atau "ada minus di barangnya"
 `;
 
   const rawOutput = await generateContentRaw(prompt);
