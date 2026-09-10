@@ -410,7 +410,15 @@ ATURAN:
   }
 
   try {
-    return JSON.parse(jsonStr);
+    const parsed = JSON.parse(jsonStr);
+    
+    // Fix CTA slide icon - always use MessageCircle (comment icon)
+    if (parsed?.slides && parsed.slides[7] && parsed.slides[7].template === 'cta') {
+      parsed.slides[7].visualIcon = 'MessageCircle';
+      parsed.slides[7].visualMode = 'icon';
+    }
+
+    return parsed;
   } catch {
     console.error('Failed to parse naskah JSON:', rawOutput);
     throw new Error('Failed to generate valid naskah JSON');

@@ -124,7 +124,7 @@ export async function generateNaskah(params: GenerateNaskahParams): Promise<Caro
   // 4. Validate & repair
   const result = validateAndRepair(parsed);
 
-  // 5. Inject image into cover and kronologi slides
+  // 5. Inject image into cover and kronologi slides, fix CTA icon
   if (image && result.slides) {
     // Cover slide (index 0)
     if (result.slides[0] && result.slides[0].template === 'cover') {
@@ -137,6 +137,12 @@ export async function generateNaskah(params: GenerateNaskahParams): Promise<Caro
       result.slides[2].visualMode = 'image';
       result.slides[2].illustrationUrl = image;
     }
+  }
+
+  // Fix CTA slide icon - always use MessageCircle (comment icon)
+  if (result.slides && result.slides[7] && result.slides[7].template === 'cta') {
+    result.slides[7].visualIcon = 'MessageCircle';
+    result.slides[7].visualMode = 'icon';
   }
 
   return result;
