@@ -27,31 +27,24 @@ async function fetchSectors(endpoint: string, params?: Record<string, string>) {
   return response.json();
 }
 
-async function fetchCompanyReport(symbol: string, sections: string[] = ['overview', 'valuation', 'financials']) {
-  const results: Record<string, any> = {};
-
-  await Promise.all(
-    sections.map(async (section) => {
-      try {
-        const data = await fetchSectors(`/stocks/${symbol}/company-report`, { section });
-        results[section] = data;
-      } catch (error) {
-        console.warn(`Failed to fetch ${section} for ${symbol}:`, error);
-        results[section] = { 
-          error: true, 
-          message: error instanceof Error ? error.message : 'Unknown error',
-          note: 'Sectors.app API endpoint may have changed. Check https://docs.sectors.app/'
-        };
-      }
-    })
-  );
-
-  return results;
+// Fetch company report - returns all sections in one call
+async function fetchCompanyReport(symbol: string) {
+  try {
+    return await fetchSectors(`/company/report/${symbol}/`);
+  } catch (error) {
+    console.warn(`Failed to fetch company report for ${symbol}:`, error);
+    return { 
+      error: true, 
+      message: error instanceof Error ? error.message : 'Unknown error',
+      note: 'Sectors.app API endpoint may have changed. Check https://docs.sectors.app/'
+    };
+  }
 }
 
+// Fetch foreign flow data
 async function fetchForeignFlow(symbol: string) {
   try {
-    return await fetchSectors(`/foreign-flow/${symbol}`);
+    return await fetchSectors(`/foreign-flow/${symbol}/`);
   } catch (error) {
     console.warn(`Failed to fetch foreign flow for ${symbol}:`, error);
     return { 
@@ -103,7 +96,7 @@ async function enrichByCategory(category: string, ticker: string | null) {
   const enrichmentMap: Record<string, () => Promise<any>> = {
     SINGLE_STOCK: async () => {
       const [report, foreignFlow] = await Promise.all([
-        fetchCompanyReport(ticker, ['overview', 'valuation', 'financials', 'dividend', 'ownership']),
+        fetchCompanyReport(ticker),
         fetchForeignFlow(ticker),
       ]);
       return { report, foreignFlow };
@@ -112,19 +105,19 @@ async function enrichByCategory(category: string, ticker: string | null) {
       return { note: 'Macro economy uses general market data, not ticker-specific' };
     },
     SECTOR_ANALYSIS: async () => {
-      const report = await fetchCompanyReport(ticker, ['overview', 'valuation']);
+      const report = await fetchCompanyReport(ticker);
       return { report };
     },
     CORPORATE_ACTION: async () => {
-      const report = await fetchCompanyReport(ticker, ['overview', 'financials']);
+      const report = await fetchCompanyReport(ticker);
       return { report };
     },
     IPO_RIGHTS_ISSUE: async () => {
-      const report = await fetchCompanyReport(ticker, ['overview', 'valuation', 'financials']);
+      const report = await fetchCompanyReport(ticker);
       return { report };
     },
     SUSPENSION_DELISTING: async () => {
-      const report = await fetchCompanyReport(ticker, ['overview']);
+      const report = await fetchCompanyReport(ticker);
       return { report };
     },
   };
