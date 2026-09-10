@@ -340,11 +340,32 @@ KAMUS ISTILAH KEUANGAN (Gunakan format: SINGKATAN (Nama Lengkap)):
 - LDR (Loan to Deposit Ratio): Banding kredit vs simpanan
 - CAR (Capital Adequacy Ratio): Cukup modal bank
 
+KAMUS GEN Z UNTUK DATA SLIDE (WAJIB GUNAKAN ISTILAH INI):
+- pricey / overpriced: Harga mahal, kemahalan
+- gak kaleng-kaleng: Bagus sekali, luar biasa
+- digoreng: Harga dimainkan pihak tertentu
+- cuan: Untung, profit
+- solid: Kuat, kokoh fundamentalnya
+- FOMO / Kemakan Hype: Ikut-ikutan naik cuma karena hype
+- Red Flag: Tanda bahaya, ada masalah
+- Bagger / To the Moon: Potensi naik berlipat
+- Nyangkut / Nyangkuters: Beli di puncak lalu turun drastis
+- Serok bawah / Bottom Fishing: Beli saat discount gede
+- Core Holding: Saham buat jangka panjang
+- Bakar Uang: Perusahaan masih rugi demi ekspansi
+- Priced In: Kabar sudah tercermin di harga
+- Gorengan / Saham Lapis Tiga: Small-cap volatil, gampang diatur
+- Exit Strategy: Rencana jual saat target tercapai
+- Bongkar Muatan / Distribusi: Bandar jual ke ritel
+- Akum / Serok Halus: Institusi kumpulkan saham diam-diam
+- Value Trap: Kelihatan murah tapi bisnis stagnan
+- Lagi Sale / Diskon: Kinerja bagus tapi harga anjlok sentimen
+
 FORMAT DATA SLIDE:
 Gunakan format ini untuk setiap metrik:
 "PBV (Price Book Value)" sebagai label
 "0.86x" sebagai value  
-"Untuk Big Bank, ini lagi diskon banget. Ibaratnya Iphone 10jt, dijual dibawah harga pasaran." sebagai caption
+"Lagi sale banget buat big bank. Ibarat iPhone 10jt dijual dibawah pasar. Core holding cocok buat lo!" sebagai caption
 
 FORMAT OUTPUT (JSON valid, tanpa markdown):
 {
@@ -354,7 +375,7 @@ FORMAT OUTPUT (JSON valid, tanpa markdown):
     { "template": "cover", "title": "...", "description": "..." },
     { "template": "tldr", "title": "...", "tldrCards": [{"icon": "TrendingUp", "text": "..."}] },
     { "template": "kronologi", "title": "...", "description": "...", "source": "${siteName}" },
-    { "template": "data", "title": "...", "metrics": [{"icon": "TrendingUp", "label": "PBV (Price Book Value)", "value": "0.86x", "caption": "Untuk Big Bank, ini lagi diskon banget. Ibaratnya Iphone 10jt, dijual dibawah harga pasaran.", "tone": "amber"}] },
+    { "template": "data", "title": "...", "metrics": [{"icon": "TrendingUp", "label": "PBV (Price Book Value)", "value": "0.86x", "caption": "Lagi sale banget buat big bank. Core holding cocok!", "tone": "amber"}] },
     { "template": "pros", "title": "...", "bullets": [{"icon": "CheckCircle2", "text": "..."}] },
     { "template": "cons", "title": "...", "bullets": [{"icon": "AlertTriangle", "text": "..."}] },
     { "template": "standar", "title": "...", "description": "..." },
@@ -368,14 +389,14 @@ FORMAT OUTPUT (JSON valid, tanpa markdown):
 
 ATURAN:
 - Bahasa Indonesia kasual, vibe Gen Z
+- KRONOLOGI: MAKSIMAL 30 KATA! Jangan lebih!
+- DATA SLIDE: GUNAKAN ISTILAH GEN Z dari kamus di atas (pricey, FOMO, solid, lagi sale, core holding, dll)
 - Caption IG: hook + info + CTA + 3 hashtags (#saham #investasi #${ticker?.toLowerCase() || 'saham'})
 - Caption TikTok: hook agresif + #fyp #foryou #sahamindonesia
 - DYOR disclaimer selalu di slide terakhir
 - DARIKAN DATA NYATA dari DATA_ENRICHMENT, jangan mengarang
 - Untuk data slide, GUNAKAN FORMAT: "SINGKATAN (Nama Lengkap)" sebagai label
-- Caption data harus penjelasan Gen Z yang mudah dipahami
-- Untuk bank besar (BBCA, BBRI, BMRI, BBNI): jika PBV rendah = "diskon banget"
-- Untuk perusahaan lain: jika murah bisa "hidden gem" atau "ada minus di barangnya"
+- Caption data harus penjelasan Gen Z yang mudah dipakai istilah kamus
 `;
 
   const rawOutput = await generateContentRaw(prompt);
