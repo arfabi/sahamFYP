@@ -13,7 +13,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  if (!validateApiKey(req)) {
+  // Skip API key validation for same-origin requests (from frontend)
+  // API key is only required for external requests (e.g., from n8n)
+  const isSameOrigin = req.headers['origin']?.includes('saham-fyp.vercel.app') || 
+                       req.headers['referer']?.includes('saham-fyp.vercel.app') ||
+                       !req.headers['origin']; // No origin = same-origin request
+  
+  if (!isSameOrigin && !validateApiKey(req)) {
     return res.status(401).json({ error: 'Invalid or missing API key' });
   }
 
