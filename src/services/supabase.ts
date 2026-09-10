@@ -136,15 +136,28 @@ export const contentLogsApi = {
 };
 
 // Generated Posts API
+// Uses Vercel API proxy to bypass RLS (Row-Level Security)
 export const generatedPostsApi = {
   async create(data: Partial<GeneratedPost>) {
-    const { data: result, error } = await supabase
-      .from('generated_posts')
-      .insert([data])
-      .select()
-      .single();
-    if (error) throw error;
-    return result;
+    // Use Vercel API proxy to bypass RLS
+    const proxyUrl = typeof window !== 'undefined' 
+      ? '/api/posts' 
+      : `${import.meta.env.VITE_SITE_URL || 'https://saham-fyp.vercel.app'}/api/posts`;
+    
+    const response = await fetch(proxyUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Failed to create post' }));
+      throw new Error(error.error || 'Failed to create post');
+    }
+    
+    return await response.json();
   },
 
   async getAll(limit = 50) {
