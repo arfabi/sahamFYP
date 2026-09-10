@@ -123,7 +123,6 @@ export default function ManualEditor() {
       });
       if (result.success) {
         await generatedPostsApi.create({
-          log_id: ticker || 'manual',
           handle: '@sahamfyp',
           badge_text: ticker || 'MANUAL',
           slides_json: slides,

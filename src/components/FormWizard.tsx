@@ -142,7 +142,6 @@ export default function FormWizard(props: FormWizardProps) {
         // Save post to Supabase
         try {
           const post = await generatedPostsApi.create({
-            log_id: classification.ticker || 'unknown',
             handle: data.handle,
             badge_text: data.badgeText,
             badge_bg_color: data.badgeBgColor,
