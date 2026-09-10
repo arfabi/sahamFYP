@@ -508,7 +508,7 @@ function CtaTemplate(p: TemplateBaseProps) {
         </h2>
         <VisualSlot
           visualMode={p.visualMode}
-          visualIcon="MessageCircle"
+          visualIcon={ctaIcon}
           illustrationUrl={p.illustrationUrl}
           accentColor={p.accentColor}
           iconSize={110}
