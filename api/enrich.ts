@@ -37,7 +37,11 @@ async function fetchCompanyReport(symbol: string, sections: string[] = ['overvie
         results[section] = data;
       } catch (error) {
         console.warn(`Failed to fetch ${section} for ${symbol}:`, error);
-        results[section] = null;
+        results[section] = { 
+          error: true, 
+          message: error instanceof Error ? error.message : 'Unknown error',
+          note: 'Sectors.app API endpoint may have changed. Check https://docs.sectors.app/'
+        };
       }
     })
   );
@@ -50,7 +54,11 @@ async function fetchForeignFlow(symbol: string) {
     return await fetchSectors(`/foreign-flow/${symbol}`);
   } catch (error) {
     console.warn(`Failed to fetch foreign flow for ${symbol}:`, error);
-    return null;
+    return { 
+      error: true, 
+      message: error instanceof Error ? error.message : 'Unknown error',
+      note: 'Sectors.app API endpoint may have changed. Check https://docs.sectors.app/'
+    };
   }
 }
 
