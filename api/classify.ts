@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { parseBody } from './_lib/auth';
+import { parseBody } from './_lib/auth.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS

@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import * as cheerio from 'cheerio';
-import { validateApiKey, parseBody } from './_lib/auth';
+import { validateApiKey, parseBody } from './_lib/auth.js';
 
 // --- Gemini (self-contained) ---
 function getGeminiModel() {

@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-import { validateApiKey, parseBody } from './_lib/auth';
+import { validateApiKey, parseBody } from './_lib/auth.js';
 
 const REPLIZ_API_BASE = 'https://api.repliz.com';
 const REPLIZ_ACCESS_KEY = process.env.REPLIZ_ACCESS_KEY || '';
