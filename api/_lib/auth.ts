@@ -24,12 +24,29 @@ export function isHealthEndpoint(url?: string): boolean {
  * Vercel serverless functions may not auto-parse JSON bodies in all cases.
  */
 export function parseBody<T = Record<string, any>>(req: VercelRequest): T {
-  if (typeof req.body === 'string') {
+  const body = req.body;
+  
+  if (!body) {
+    return {} as T;
+  }
+  
+  if (typeof body === 'string') {
     try {
-      return JSON.parse(req.body) as T;
+      return JSON.parse(body) as T;
     } catch {
       return {} as T;
     }
   }
-  return req.body as T;
+  
+  // Handle Buffer/Uint8Array (Vercel sometimes sends raw body)
+  if (body instanceof Uint8Array || Buffer.isBuffer(body)) {
+    try {
+      const str = Buffer.from(body).toString('utf-8');
+      return JSON.parse(str) as T;
+    } catch {
+      return {} as T;
+    }
+  }
+  
+  return body as T;
 }
