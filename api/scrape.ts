@@ -16,10 +16,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Debug: log body type and content
+  console.log('[Scraper] body type:', typeof req.body);
+  console.log('[Scraper] body is Buffer:', Buffer.isBuffer(req.body));
+  console.log('[Scraper] body is Uint8Array:', req.body instanceof Uint8Array);
+  console.log('[Scraper] body content:', JSON.stringify(req.body)?.substring(0, 200));
+  
   const { url } = parseBody(req);
 
   if (!url || typeof url !== 'string') {
-    return res.status(400).json({ error: 'URL is required' });
+    return res.status(400).json({ error: 'URL is required', debug: { bodyType: typeof req.body, hasBody: !!req.body } });
   }
 
   // Validate URL
