@@ -1,0 +1,97 @@
+﻿{
+  "name": "SahamFYP - RSS to Render & Publish",
+  "nodes": [
+    {
+      "parameters": { "rule": { "interval": [{ "field": "minutes", "minutesInterval": 30 }] } },
+      "id": "schedule-trigger",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": { "url": "https://www.cnbcindonesia.com/market/rss" },
+      "id": "rss-feed",
+      "name": "RSS Feed Read",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": { "fieldToSplitOut": "items", "options": {} },
+      "id": "split-items",
+      "name": "Split Items",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": { "conditions": { "options": { "caseSensitive": true, "leftValue": "", "type": "string" }, "conditions": [{ "id": "filter-market", "leftValue": "={{ $json.link }}", "rightValue": "/market/", "operator": { "type": "string", "operation": "contains" } }], "combinator": "and" } },
+      "id": "filter-market",
+      "name": "Filter Market URLs",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": { "method": "POST", "url": "https://saham-fyp.vercel.app/api/scrape", "sendHeaders": true, "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }] }, "sendBody": true, "bodyParameters": { "parameters": [{ "name": "url", "value": "={{ $json.link }}" }] } },
+      "id": "http-scrape",
+      "name": "1. Scrape",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": { "method": "POST", "url": "https://saham-fyp.vercel.app/api/classify", "sendHeaders": true, "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }] }, "sendBody": true, "bodyParameters": { "parameters": [{ "name": "title", "value": "={{ $json.title }}" }, { "name": "content", "value": "={{ $json.content }}" }] } },
+      "id": "http-classify",
+      "name": "2. Classify",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": { "method": "POST", "url": "https://saham-fyp.vercel.app/api/score", "sendHeaders": true, "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }] }, "sendBody": true, "bodyParameters": { "parameters": [{ "name": "title", "value": "={{ $json.title }}" }, { "name": "content", "value": "={{ $json.content }}" }, { "name": "category", "value": "={{ $json.category }}" }, { "name": "ticker", "value": "={{ $json.ticker }}" }, { "name": "reason", "value": "={{ $json.reason }}" }] } },
+      "id": "http-score",
+      "name": "3. Score",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1450, 300]
+    },
+    {
+      "parameters": { "conditions": { "conditions": [{ "id": "check-decision", "leftValue": "={{ $json.decision }}", "rightValue": "GENERATE", "operator": { "type": "string", "operation": "equals" } }], "combinator": "and" } },
+      "id": "if-generate",
+      "name": "4. Decision?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [1650, 300]
+    },
+    {
+      "parameters": { "method": "POST", "url": "https://saham-fyp.vercel.app/api/generate", "sendHeaders": true, "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }, { "name": "X-API-Key", "value": "={{$env.N8N_API_KEY}}" }] }, "sendBody": true, "bodyParameters": { "parameters": [{ "name": "url", "value": "={{ $json.url }}" }, { "name": "category", "value": "={{ $json.category }}" }, { "name": "ticker", "value": "={{ $json.ticker }}" }, { "name": "skipClassify", "value": true }] } },
+      "id": "http-generate",
+      "name": "5. Generate",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1850, 200]
+    },
+    {
+      "parameters": { "method": "POST", "url": "https://saham-fyp.vercel.app/api/posts", "sendHeaders": true, "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }, { "name": "X-API-Key", "value": "={{$env.N8N_API_KEY}}" }] }, "sendBody": true, "bodyParameters": { "parameters": [{ "name": "handle", "value": "@sahamfyp" }, { "name": "badge_text", "value": "={{ $json.ticker }}" }, { "name": "slides_json", "value": "={{ $json.naskah }}" }, { "name": "total_slides", "value": 8 }, { "name": "instagram_status", "value": "generated" }] } },
+      "id": "http-posts-save",
+      "name": "6. Save Draft",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2050, 200]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": { "main": [[{ "node": "RSS Feed Read", "type": "main", "index": 0 }]] },
+    "RSS Feed Read": { "main": [[{ "node": "Split Items", "type": "main", "index": 0 }]] },
+    "Split Items": { "main": [[{ "node": "Filter Market URLs", "type": "main", "index": 0 }]] },
+    "Filter Market URLs": { "main": [[{ "node": "1. Scrape", "type": "main", "index": 0 }]] },
+    "1. Scrape": { "main": [[{ "node": "2. Classify", "type": "main", "index": 0 }]] },
+    "2. Classify": { "main": [[{ "node": "3. Score", "type": "main", "index": 0 }]] },
+    "3. Score": { "main": [[{ "node": "4. Decision?", "type": "main", "index": 0 }]] },
+    "4. Decision?": { "main": [[{ "node": "5. Generate", "type": "main", "index": 0 }], null, [{ "node": "5. Generate", "type": "main", "index": 0 }]] },
+    "5. Generate": { "main": [[{ "node": "6. Save Draft", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}
