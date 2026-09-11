@@ -290,6 +290,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 }
 
+/** Limit teks ke maksimum N kata (buat enforce hard-limit KRONOLOGI) */
+function limitWords(text: string, maxWords = 30): string {
+  const trimmed = (text || '').trim();
+  if (!trimmed) return text;
+  const words = trimmed.split(/\s+/);
+  return words.length <= maxWords ? trimmed : words.slice(0, maxWords).join(' ');
+}
+
 async function generateNaskah(params: {
   category: string;
   ticker: string | null;
@@ -389,7 +397,7 @@ FORMAT OUTPUT (JSON valid, tanpa markdown):
 
 ATURAN:
 - Bahasa Indonesia kasual, vibe Gen Z
-- KRONOLOGI: MAKSIMAL 30 KATA! Jangan lebih!
+- KRONOLOGI: description WAJIB MAKSIMAL 30 KATA — JANGAN LEBIH! Cek word count (split by spasi), potong jika lebih. Sumber di field "source", NUN di description.
 - DATA SLIDE: GUNAKAN ISTILAH GEN Z dari kamus di atas (pricey, FOMO, solid, lagi sale, core holding, dll)
 - Caption IG: hook + info + CTA + 3 hashtags (#saham #investasi #${ticker?.toLowerCase() || 'saham'})
 - Caption TikTok: hook agresif + #fyp #foryou #sahamindonesia
@@ -416,6 +424,15 @@ ATURAN:
     if (parsed?.slides && parsed.slides[7] && parsed.slides[7].template === 'cta') {
       parsed.slides[7].visualIcon = 'MessageCircle';
       parsed.slides[7].visualMode = 'icon';
+    }
+
+    // Enforce hard limit: KRONOLOGI (slide 3) description maksimal 30 kata
+    if (parsed?.slides) {
+      for (const slide of parsed.slides) {
+        if (slide && slide.template === 'kronologi' && slide.description) {
+          slide.description = limitWords(slide.description, 30);
+        }
+      }
     }
 
     return parsed;

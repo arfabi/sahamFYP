@@ -2,6 +2,20 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { validateApiKey, parseBody } from '../_lib/auth.js';
 
+/** Coerce nilai menjadi array (handles stringified JSON too); null jika bukan array */
+function coerceArray(value: any): any[] | null {
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed;
+    } catch {
+      /* not JSON — ignore */
+    }
+  }
+  return null;
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -51,20 +65,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (req.method === 'POST') {
-      // Save generated content to Supabase (matches current table schema)
-      const { category, ticker, title, content, naskah, classification, enrichment, image, siteName, logId } = parseBody(req);
+      const body = parseBody(req);
+      const { category, ticker, naskah, logId, log_id } = body;
+
+      // Support BOTH payload shapes:
+      //  1) n8n wrapper:  { category, ticker, naskah: { handle, badgeText, slides, ... } }
+      //  2) frontend/flat: { handle, badge_text, badge_bg_color, badge_text_color, slides_json, total_slides, schedule_id, instagram_status, permalink, ... }
+      const slides = coerceArray(naskah?.slides) ?? coerceArray(body.slides_json) ?? coerceArray(naskah);
 
       const insertData: Record<string, any> = {
-        handle: naskah?.handle || '@sahamfyp',
-        badge_text: naskah?.badgeText || ticker || category,
-        slides_json: naskah?.slides || naskah,
-        total_slides: naskah?.slides?.length || 8,
-        instagram_status: 'generated',
+        handle: body.handle || naskah?.handle || '@sahamfyp',
+        // badge_text is NOT NULL in the table — always needs a final fallback
+        badge_text: body.badge_text || naskah?.badgeText || ticker || category || 'SAHAMFYP',
+        slides_json: slides || [],
+        total_slides: slides?.length || body.total_slides || 8,
+        instagram_status: body.instagram_status || 'generated',
       };
 
+      // Optional columns — passthrough jika diberikan (nun comment han)
+      const badgeBg = body.badge_bg_color || naskah?.badgeBgColor;
+      if (badgeBg) insertData.badge_bg_color = badgeBg;
+      const badgeTextColor = body.badge_text_color || naskah?.badgeTextColor;
+      if (badgeTextColor) insertData.badge_text_color = badgeTextColor;
+      if (body.schedule_id) insertData.schedule_id = body.schedule_id;
+      if (body.permalink) insertData.permalink = body.permalink;
+      if (body.tiktok_status) insertData.tiktok_status = body.tiktok_status;
+      if (body.tiktok_schedule_id) insertData.tiktok_schedule_id = body.tiktok_schedule_id;
+
       // log_id is a FK to content_logs.id (uuid) - only set if a valid content_log uuid is passed
-      if (logId) {
-        insertData.log_id = logId;
+      const resolvedLogId = logId || log_id;
+      if (resolvedLogId) {
+        insertData.log_id = resolvedLogId;
       }
 
       const { data, error } = await supabaseServer

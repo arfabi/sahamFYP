@@ -24,7 +24,7 @@ export const OUTPUT_SCHEMA = `{
   "slides": [
     { "template": "cover", "title": "...", "description": "...", "visualIcon": "TrendingUp", "accent": "#F2A93B" },
     { "template": "tldr", "title": "TL;DR", "tldrCards": [{ "icon": "...", "text": "..." }], "accent": "#F2A93B" },
-    { "template": "kronologi", "title": "Kronologi", "description": "...", "visualIcon": "Coins", "accent": "#F2A93B" },
+    { "template": "kronologi", "title": "Kronologi", "description": "... (maks 30 kata)", "source": "Nama sumber berita", "visualIcon": "Coins", "accent": "#F2A93B" },
     { "template": "data", "title": "...", "metrics": [{ "icon": "...", "label": "...", "value": "...", "caption": "...", "tone": "amber|sage" }], "accent": "#F2A93B" },
     { "template": "pros", "title": "...", "bullets": [{ "icon": "CheckCircle2", "text": "..." }], "accent": "#4CAF7D" },
     { "template": "cons", "title": "...", "bullets": [{ "icon": "AlertTriangle", "text": "..." }], "accent": "#E4572E" },
@@ -46,6 +46,7 @@ ATURAN WAJIB:
 8. visualIcon harus salah satu dari: ArrowLeftRight, ArrowRight, AlertTriangle, BadgePercent, BarChart3, ChartNoAxesCombined, CheckCircle2, Coins, DollarSign, Eye, Flame, Gauge, Globe, Handshake, MessageCircle, Pickaxe, Rocket, Scale, Sparkles, ThumbsUp, TrendingUp, Wallet.
 9. tone metrics hanya "amber" atau "sage".
 10. accent: cover/tldr/kronologi/data/standar/cta = "#F2A93B", pros = "#4CAF7D", cons = "#E4572E".
+11. KRONOLOGI (slide 3): description WAJIB MAKSIMAL 30 KATA — JANGAN LEBIH! Cek sendiri word count (split teks by spasi) sebelum output, potong jika lebih. Sumber/gambar kredit set di field "source", NUN di description.
 `;
 
 

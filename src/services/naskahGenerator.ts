@@ -51,6 +51,14 @@ function validateAndRepair(data: any): CarouselData {
   };
 }
 
+/** Limit teks ke maksimum N kata (buat enforce hard-limit KRONOLOGI) */
+function limitWords(text: string, maxWords = 30): string {
+  const trimmed = (text || '').trim();
+  if (!trimmed) return text;
+  const words = trimmed.split(/\s+/);
+  return words.length <= maxWords ? trimmed : words.slice(0, maxWords).join(' ');
+}
+
 /** Extract JSON string dari response LLM (handle markdown wrapping) */
 function extractJson(raw: string): any {
   // Coba parse langsung
@@ -123,6 +131,15 @@ export async function generateNaskah(params: GenerateNaskahParams): Promise<Caro
 
   // 4. Validate & repair
   const result = validateAndRepair(parsed);
+
+  // 4b. Enforce hard limit: KRONOLOGI (slide 3) description maksimal 30 kata
+  if (result.slides) {
+    for (const slide of result.slides) {
+      if (slide && slide.template === 'kronologi' && slide.description) {
+        slide.description = limitWords(slide.description, 30);
+      }
+    }
+  }
 
   // 5. Inject image into cover and kronologi slides, fix CTA icon
   if (image && result.slides) {

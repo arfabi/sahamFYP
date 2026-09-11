@@ -1,0 +1,64 @@
+================================================================================
+  TEST CASES /api/score — BAGIAN 1 (Test 1-3)
+================================================================================
+
+URL: https://saham-fyp.vercel.app/api/score
+Headers: Content-Type: application/json
+API Key: TIDAK PERLU
+
+================================================================================
+  TEST CASE 1: Berita Bagus (HARUS Score 9-10, GENERATE)
+================================================================================
+
+Input:
+{
+  "title": "BBCA Bayar Dividen Tunai Rp100 per Saham, Ini Jadwalnya",
+  "content": "PT Bank Central Asia Tbk (BBCA) mengumumkan dividen tunai Rp100 per saham. Total dividen yang dibagikan mencapai Rp2,5 triliun. Cum date 15 September 2026, payment date 30 September 2026. Direktur BBCA menyatakan ini merupakan dividen tertinggi dalam 5 tahun terakhir.",
+  "category": "CORPORATE_ACTION",
+  "ticker": "BBCA",
+  "reason": "Dividen tunai dengan nilai spesifik Rp100 per saham"
+}
+
+Expected:
+- score: 9-10
+- decision: "GENERATE"
+- catalyst: "dividen"
+- dataQuality: "high"
+
+================================================================================
+  TEST CASE 2: Fluff Macro (HARUS Score ≤6, PASS)
+================================================================================
+
+Input:
+{
+  "title": "IHSG Diprediksi Konsolidasi Pekan Ini",
+  "content": "Analis memprediksi Indeks Harga Saham Gabungan (IHSG) akan bergerak sideways atau konsolidasi pada pekan ini. Sentimen pasar masih mixed dengan menunggu data ekonomi baru. Investor disarankan untuk wait and see.",
+  "category": "MACRO_ECONOMY",
+  "ticker": null,
+  "reason": "Tidak ada ticker spesifik, prediksi tanpa data kuantitatif"
+}
+
+Expected:
+- score: 3-5
+- decision: "PASS"
+- catalyst: null
+- dataQuality: "low"
+
+================================================================================
+  TEST CASE 3: Rumor (HARUS Score ≤6, PASS)
+================================================================================
+
+Input:
+{
+  "title": "BBCA Akan Akuisisi Bank Kecil?",
+  "content": "Beredar rumor di kalangan pelaku pasar bahwa PT Bank Central Asia Tbk (BBCA) berencana mengakuisisi bank regional kecil. Namun hingga kini belum ada konfirmasi resmi dari manajemen BBCA. Analis menyebut rumor ini belum bisa dijadikan dasar investasi.",
+  "category": "CORPORATE_ACTION",
+  "ticker": "BBCA",
+  "reason": "Rumor akuisisi, belum ada konfirmasi resmi"
+}
+
+Expected:
+- score: 4-6
+- decision: "PASS"
+- catalyst: null
+- dataQuality: "low"
