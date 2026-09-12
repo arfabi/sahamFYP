@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+ï»¿import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { validateApiKey } from '../_lib/auth.js';
 import { fetchIndexDaily, fetchTopMovers, fetchFilings, getYesterdayDate } from '../_lib/sectorsMarket.js';
@@ -17,7 +17,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     const yesterday = getYesterdayDate();
     const [indexData, topMovers, filingsData] = await Promise.all([
       fetchIndexDaily(yesterday, yesterday),
-      fetchTopMovers({ classifications: ['top_gainers', 'top_losers'], periods: ['1d'], nStock: 3, minMcapBillion: 0.5 }),
+      fetchTopMovers({ classifications: ['top_gainers', 'top_losers'], periods: ['1d'], nStock: 3 }),
       fetchFilings({ start: yesterday, end: yesterday }),
     ]);
 
@@ -40,16 +40,17 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   }
 }
 
-function buildOpenPrompt(date: string, indexData: any[], topMovers: any, filings: any[]): string {
+function buildOpenPrompt(date: string, indexData: any[], topMovers: any, filings: any): string {
   const ihs = indexData[0] || {};
   const gainers = topMovers?.top_gainers?.['1d'] || [];
   const losers = topMovers?.top_losers?.['1d'] || [];
-  const filingsArray = Array.isArray(filings) ? filings : (filings?.data || filings?.results || []);`n  const insiderFilings = filingsArray.filter((f: any) => (f.transaction_value || 0) > 500000000);
+  const filingsArray = Array.isArray(filings) ? filings : (filings?.data || filings?.results || []);
+  const insiderFilings = filingsArray.filter((f: any) => (f.transaction_value || 0) > 500000000);
 
-  return `Kamu adalah AI Content Generator untuk @sahamfyp — akun edukasi saham Instagram.
+  return `Kamu adalah AI Content Generator untuk @sahamfyp.
 Tugasmu adalah membuat konten carousel "Market Open" untuk tanggal ${date}.
 
-## DATA PASAR (dari Sectors.app API):
+## DATA PASAR:
 
 ### IHSG Kemarin (${date}):
 - Closing: ${ihs.price || 'N/A'}
@@ -71,7 +72,7 @@ ${insiderFilings.map((f: any) => `- ${f.insider_name} (${f.insider_position}) ${
   "badgeBgColor": "#14182B",
   "badgeTextColor": "#FFFFFF",
   "slides": [
-    { "template": "cover", "title": "Selamat Pagi! ?? IHSG Kemarin Tutup di ${ihs.price || 'N/A'}", "description": "Hari ini bakal kemana? Cek recap lengkapnya!", "visualIcon": "TrendingUp", "accent": "#F2A93B" },
+    { "template": "cover", "title": "Selamat Pagi! IHSG Kemarin Tutup di ${ihs.price || 'N/A'}", "description": "Hari ini bakal kemana? Cek recap lengkapnya!", "visualIcon": "TrendingUp", "accent": "#F2A93B" },
     { "template": "tldr", "title": "TL;DR", "tldrCards": [{ "icon": "TrendingUp", "text": "IHSG kemarin: ${ihs.price || 'N/A'} (${ihs.change || 'N/A'}%)" }, { "icon": "TrendingUp", "text": "Gainer terbesar: ${gainers[0]?.symbol || 'N/A'} +${gainers[0]?.price_change || 0}%" }, { "icon": "AlertTriangle", "text": "Loser terbesar: ${losers[0]?.symbol || 'N/A'} ${losers[0]?.price_change || 0}%" }], "accent": "#F2A93B" },
     { "template": "kronologi", "title": "Pergerakan IHSG Kemarin", "description": "Narasi singkat pergerakan IHSG kemarin (maks 30 kata)", "visualIcon": "TrendingUp", "accent": "#F2A93B" },
     { "template": "data", "title": "Top Gainer & Loser", "metrics": [{ "icon": "TrendingUp", "label": "Top Gainer", "value": "${gainers[0]?.symbol || 'N/A'}", "caption": "+${gainers[0]?.price_change || 0}%", "tone": "amber" }, { "icon": "AlertTriangle", "label": "Top Loser", "value": "${losers[0]?.symbol || 'N/A'}", "caption": "${losers[0]?.price_change || 0}%", "tone": "amber" }], "accent": "#F2A93B" },
@@ -83,13 +84,12 @@ ${insiderFilings.map((f: any) => `- ${f.insider_name} (${f.insider_position}) ${
 }
 
 ## ATURAN:
-1. Output HARUS JSON valid — tanpa markdown, tanpa teks di luar JSON
-2. Slide 3 (kronologi) description MAKSIMAL 30 KATA
-3. Slide 8 (cta) WAJIB ada disclaimer DYOR
-4. Bahasa: Indonesia informal ala Instagram
-5. JANGAN mengarang data — gunakan data yang diberikan
+1. Output HARUS JSON valid
+2. Slide 3 description MAKSIMAL 30 KATA
+3. Slide 8 WAJIB ada disclaimer DYOR
+4. Bahasa: Indonesia informal
+5. JANGAN mengarang data
 `;
-
 }
 
 export default handler;

@@ -27,17 +27,15 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     const today = getTodayDate();
     const yesterday = getYesterdayDate();
 
-    // Fetch data in parallel (9 credits total)
     const [indexData, topMovers, foreignFlow, foreignNet, filings, brokers] = await Promise.all([
       fetchIndexDaily(today, today),
-      fetchTopMovers({ classifications: ['top_gainers', 'top_losers'], periods: ['1d'], nStock: 3, minMcapBillion: 0.5 }),
+      fetchTopMovers({ classifications: ['top_gainers', 'top_losers'], periods: ['1d'], nStock: 3 }),
       fetchForeignFlowTop({ start: yesterday, end: today, nStock: 5 }),
       fetchForeignNetTop({ start: yesterday, end: today, nStock: 5 }),
       fetchFilings({ start: yesterday, end: today }),
       fetchTopBrokers({ start: yesterday, end: today, origin: 'foreign', metric: 'net' }),
     ]);
 
-    // Get broker #1 net buy activity (1 credit)
     const topBroker = brokers?.[0];
     let brokerActivity = null;
     if (topBroker?.broker_code) {
@@ -81,14 +79,15 @@ function buildClosePrompt(
   const ihs = indexData[0] || {};
   const gainers = topMovers?.top_gainers?.['1d'] || [];
   const losers = topMovers?.top_losers?.['1d'] || [];
-  const insiderFilings = (filings || []).filter((f: any) => (f.transaction_value || 0) > 500000000);
+  const filingsArray = Array.isArray(filings) ? filings : (filings?.data || filings?.results || []);
+  const insiderFilings = filingsArray.filter((f: any) => (f.transaction_value || 0) > 500000000);
   const topBroker = brokers?.[0];
   const brokerStocks = brokerActivity?.stocks?.slice(0, 3) || [];
 
-  return `Kamu adalah AI Content Generator untuk @sahamfyp — akun edukasi saham Instagram.
+  return `Kamu adalah AI Content Generator untuk @sahamfyp.
 Tugasmu adalah membuat konten carousel "Market Close" untuk tanggal ${date}.
 
-## DATA PASAR (dari Sectors.app API):
+## DATA PASAR:
 
 ### IHSG Hari Ini (${date}):
 - Closing: ${ihs.price || 'N/A'}
@@ -117,7 +116,7 @@ ${insiderFilings.map((f: any) => `- ${f.insider_name} (${f.insider_position}) ${
   "badgeBgColor": "#14182B",
   "badgeTextColor": "#FFFFFF",
   "slides": [
-    { "template": "cover", "title": "📊 Recap Market — ${date}", "description": "IHSG hari ini: ${ihs.price || 'N/A'} (${ihs.change || 'N/A'}%)", "visualIcon": "TrendingUp", "accent": "#F2A93B" },
+    { "template": "cover", "title": "Recap Market - ${date}", "description": "IHSG hari ini: ${ihs.price || 'N/A'} (${ihs.change || 'N/A'}%)", "visualIcon": "TrendingUp", "accent": "#F2A93B" },
     { "template": "tldr", "title": "TL;DR", "tldrCards": [{ "icon": "TrendingUp", "text": "IHSG: ${ihs.price || 'N/A'} (${ihs.change || 'N/A'}%)" }, { "icon": "TrendingUp", "text": "Gainer: ${gainers[0]?.symbol || 'N/A'} +${gainers[0]?.price_change || 0}%" }, { "icon": "AlertTriangle", "text": "Loser: ${losers[0]?.symbol || 'N/A'} ${losers[0]?.price_change || 0}%" }], "accent": "#F2A93B" },
     { "template": "kronologi", "title": "Pergerakan IHSG Hari Ini", "description": "Narasi singkat pergerakan IHSG hari ini (maks 30 kata)", "visualIcon": "TrendingUp", "accent": "#F2A93B" },
     { "template": "data", "title": "Gainer, Loser & Volume", "metrics": [{ "icon": "TrendingUp", "label": "Top Gainer", "value": "${gainers[0]?.symbol || 'N/A'}", "caption": "+${gainers[0]?.price_change || 0}%", "tone": "amber" }, { "icon": "AlertTriangle", "label": "Top Loser", "value": "${losers[0]?.symbol || 'N/A'}", "caption": "${losers[0]?.price_change || 0}%", "tone": "amber" }], "accent": "#F2A93B" },
@@ -129,14 +128,13 @@ ${insiderFilings.map((f: any) => `- ${f.insider_name} (${f.insider_position}) ${
 }
 
 ## ATURAN:
-1. Output HARUS JSON valid — tanpa markdown, tanpa teks di luar JSON
-2. Slide 3 (kronologi) description MAKSIMAL 30 KATA
-3. Slide 8 (cta) WAJIB ada disclaimer DYOR
-4. Bahasa: Indonesia informal ala Instagram
-5. JANGAN mengarang data — gunakan data yang diberikan
+1. Output HARUS JSON valid
+2. Slide 3 description MAKSIMAL 30 KATA
+3. Slide 8 WAJIB ada disclaimer DYOR
+4. Bahasa: Indonesia informal
+5. JANGAN mengarang data
 6. Jika IHSG turun > -1.5%, gunakan tone hati-hati di slide 6
 `;
-
 }
 
 export default handler;
