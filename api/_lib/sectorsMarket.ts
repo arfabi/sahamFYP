@@ -45,7 +45,7 @@ export async function fetchTopMovers(opts?: {
   if (opts?.classifications?.length) p.classifications = opts.classifications.join(',');
   if (opts?.periods?.length) p.periods = opts.periods.join(',');
   if (opts?.nStock) p.n_stock = opts.nStock;
-  if (opts?.minMcapBillion !== undefined) p.min_mcap_billion = opts.minMcapBillion;
+  if (opts?.minMcapBillion !== undefined && opts.minMcapBillion >= 1) { p.min_mcap_billion = Math.floor(opts.minMcapBillion); }
   return fetchSectors('/companies/top-changes/', p);
 }
 
