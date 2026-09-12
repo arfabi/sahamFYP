@@ -31,7 +31,7 @@ export async function fetchIndexDaily(start?: string, end?: string) {
   const p: Record<string, string> = {};
   if (start) p.start = start;
   if (end) p.end = end;
-  return fetchSectors('/index-daily/JCI/', p);
+  return fetchSectors('/index-daily/IDX/', p);
 }
 
 // ─── Top Company Movers — 1 credit per classification+period combo ─────────────
