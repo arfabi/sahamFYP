@@ -31,7 +31,7 @@ export async function fetchIndexDaily(start?: string, end?: string) {
   const p: Record<string, string> = {};
   if (start) p.start = start;
   if (end) p.end = end;
-  return fetchSectors('/index-daily/IDXCOMPOSITE/', p);
+  return fetchSectors('/index-daily/IHSG/', p);
 }
 
 // ─── Top Company Movers — 1 credit per classification+period combo ─────────────
@@ -45,7 +45,7 @@ export async function fetchTopMovers(opts?: {
   if (opts?.classifications?.length) p.classifications = opts.classifications.join(',');
   if (opts?.periods?.length) p.periods = opts.periods.join(',');
   if (opts?.nStock) p.n_stock = opts.nStock;
-  if (opts?.minMcapBillion !== undefined && opts.minMcapBillion >= 1) { p.min_mcap_billion = Math.floor(opts.minMcapBillion); }
+  if (opts?.minMcapBillion !== undefined) p.min_mcap_billion = opts.minMcapBillion;
   return fetchSectors('/companies/top-changes/', p);
 }
 
