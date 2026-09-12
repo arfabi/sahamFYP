@@ -44,7 +44,7 @@ function buildOpenPrompt(date: string, indexData: any[], topMovers: any, filings
   const ihs = indexData[0] || {};
   const gainers = topMovers?.top_gainers?.['1d'] || [];
   const losers = topMovers?.top_losers?.['1d'] || [];
-  const insiderFilings = (filings || []).filter((f: any) => (f.transaction_value || 0) > 500000000);
+  const filingsArray = Array.isArray(filings) ? filings : (filings?.data || filings?.results || []);`n  const insiderFilings = filingsArray.filter((f: any) => (f.transaction_value || 0) > 500000000);
 
   return `Kamu adalah AI Content Generator untuk @sahamfyp — akun edukasi saham Instagram.
 Tugasmu adalah membuat konten carousel "Market Open" untuk tanggal ${date}.
