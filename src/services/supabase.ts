@@ -306,6 +306,11 @@ export const newsScrapeApi = {
     return !!data;
   },
 
+  async check(url: string): Promise<{ exists: boolean; data: NewsScrapeRecord | null }> {
+    const record = await this.getByUrl(url);
+    return { exists: !!record, data: record };
+  },
+
   async updateByUrl(url: string, data: Partial<NewsScrapeRecord>) {
     const { data: result, error } = await supabase
       .from('news_scrape')

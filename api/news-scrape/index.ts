@@ -24,7 +24,7 @@ interface NewsScrapeRecord {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key');
 
   if (req.method === 'OPTIONS') {
@@ -32,10 +32,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // GET - List all records
+    // ─── GET: List all records ───
     if (req.method === 'GET') {
       const limit = parseInt(req.query.limit as string) || 50;
-
       const { data, error } = await supabaseServer
         .from('news_scrape')
         .select('*')
@@ -46,10 +45,61 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ data, count: data?.length || 0 });
     }
 
-    // POST - Create new record
+    // ─── POST: Create, Check, or Update ───
     if (req.method === 'POST') {
-      const body = req.body as NewsScrapeRecord;
+      const body = req.body as NewsScrapeRecord & { action?: string };
+      const action = body.action || 'create';
 
+      // ── Check existence ──
+      if (action === 'check') {
+        if (!body.url) {
+          return res.status(400).json({ error: 'url is required' });
+        }
+        const { data, error } = await supabaseServer
+          .from('news_scrape')
+          .select('id, url, title, time_scrape')
+          .eq('url', body.url)
+          .single();
+
+        if (error && error.code !== 'PGRST116') throw error;
+        return res.status(200).json({ exists: !!data, data: data || null });
+      }
+
+      // ── Update by URL ──
+      if (action === 'update') {
+        if (!body.url) {
+          return res.status(400).json({ error: 'url is required' });
+        }
+
+        const updateData: Record<string, any> = { updated_at: new Date().toISOString() };
+        const fields = ['title', 'category', 'ticker', 'content', 'description', 'image', 'siteName', 'score', 'decision', 'reason'];
+
+        for (const field of fields) {
+          const val = (body as any)[field];
+          if (val !== undefined) {
+            if (field === 'score' && val !== null) {
+              updateData[field] = typeof val === 'string' ? parseInt(val, 10) || 0 : val;
+            } else {
+              updateData[field] = val;
+            }
+          }
+        }
+
+        const { data, error } = await supabaseServer
+          .from('news_scrape')
+          .update(updateData)
+          .eq('url', body.url)
+          .select()
+          .single();
+
+        if (error) {
+          if (error.code === 'PGRST116') return res.status(404).json({ error: 'URL not found' });
+          throw error;
+        }
+        return res.status(200).json({ data });
+      }
+
+      // ── Create new record (default) ──
       if (!body.url) {
         return res.status(400).json({ error: 'url is required' });
       }
@@ -76,7 +126,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .single();
 
       if (error) {
-        // If unique violation, return existing record
         if (error.code === '23505') {
           const { data: existing } = await supabaseServer
             .from('news_scrape')
@@ -91,6 +140,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(201).json({ data, exists: false });
     }
 
+    // ─── DELETE ───
+    if (req.method === 'DELETE') {
+      const id = req.query.id ? parseInt(req.query.id as string) : null;
+      if (!id) {
+        return res.status(400).json({ error: 'id query parameter is required' });
+      }
+      const { error } = await supabaseServer.from('news_scrape').delete().eq('id', id);
+      if (error) throw error;
+      return res.status(200).json({ success: true });
+    }
+
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (error) {
     console.error('[news-scrape] Error:', error);
@@ -100,3 +160,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 }
+
