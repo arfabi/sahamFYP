@@ -4,7 +4,7 @@
 const SECTORS_API_KEY = process.env.SECTORS_API_KEY || '';
 const SECTORS_BASE = 'https://api.sectors.app/v2';
 
-async function fetchSectors(endpoint: string, params?: Record<string, string>) {
+async function fetchSectors(endpoint: string, params?: Record<string, any>) {
   if (!SECTORS_API_KEY) {
     throw new Error('Sectors API key not configured');
   }

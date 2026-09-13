@@ -79,7 +79,8 @@ function buildClosePrompt(
   const ihs = indexData[0] || {};
   const gainers = topMovers?.top_gainers?.['1d'] || [];
   const losers = topMovers?.top_losers?.['1d'] || [];
-  const filingsArray = Array.isArray(filings) ? filings : (filings?.data || filings?.results || []);
+  const filingsAny = filings as any;
+  const filingsArray = Array.isArray(filingsAny) ? filingsAny : (filingsAny?.data || filingsAny?.results || []);
   const insiderFilings = filingsArray.filter((f: any) => (f.transaction_value || 0) > 500000000);
   const topBroker = brokers?.[0];
   const brokerStocks = brokerActivity?.stocks?.slice(0, 3) || [];
