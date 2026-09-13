@@ -12,9 +12,12 @@ import MediaLibrary from './MediaLibrary';
 import Analytics from './Analytics';
 import TemplatesPage from './TemplatesPage';
 import ManualEditor from './ManualEditor';
+import NewsMonitoring from './NewsMonitoring';
+
+import ManualEditor from './ManualEditor';
 import type { AuthUser } from '../services/auth';
 
-type DashboardPage = 'overview' | 'generator' | 'scheduled' | 'published' | 'media' | 'analytics' | 'settings' | 'templates' | 'manual';
+type DashboardPage = 'overview' | 'news-monitoring' | 'generator' | 'scheduled' | 'published' | 'media' | 'analytics' | 'settings' | 'templates' | 'manual';
 
 interface NavItem {
   id: DashboardPage;
@@ -24,6 +27,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { id: 'overview', label: 'Overview', icon: '📊' },
+  { id: 'news-monitoring', label: 'News Monitoring', icon: '📡' },
   { id: 'generator', label: 'Content Generator', icon: '📝' },
   { id: 'manual', label: 'Manual Editor', icon: '✏️' },
   { id: 'scheduled', label: 'Scheduled Posts', icon: '📅' },
@@ -47,6 +51,8 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
     switch (activePage) {
       case 'overview':
         return <Overview onNavigate={(p) => setActivePage(p as DashboardPage)} />;
+      case 'news-monitoring':
+        return <NewsMonitoring />;
       case 'generator':
         return <ContentGenerator />;
       case 'manual':
