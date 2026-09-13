@@ -250,3 +250,92 @@ export const postImagesApi = {
   },
 };
 
+// ============================================================
+// News Scrape — Untuk tracking berita yang sudah di-scrape
+// ============================================================
+
+export interface NewsScrapeRecord {
+  id?: number;
+  url: string;
+  time_scrape?: string;
+  title?: string;
+  category?: string;
+  ticker?: string;
+  content?: string;
+  description?: string;
+  image?: string;
+  siteName?: string;
+  score?: number;
+  decision?: string;
+  reason?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export const newsScrapeApi = {
+  async create(data: Partial<NewsScrapeRecord>) {
+    const { data: result, error } = await supabase
+      .from('news_scrape')
+      .insert([{
+        ...data,
+        time_scrape: data.time_scrape || new Date().toISOString(),
+      }])
+      .select()
+      .single();
+    if (error) throw error;
+    return result;
+  },
+
+  async getByUrl(url: string) {
+    const { data, error } = await supabase
+      .from('news_scrape')
+      .select('*')
+      .eq('url', url)
+      .single();
+    if (error && error.code !== 'PGRST116') throw error;
+    return data || null;
+  },
+
+  async exists(url: string): Promise<boolean> {
+    const { data, error } = await supabase
+      .from('news_scrape')
+      .select('id')
+      .eq('url', url)
+      .single();
+    if (error && error.code !== 'PGRST116') throw error;
+    return !!data;
+  },
+
+  async updateByUrl(url: string, data: Partial<NewsScrapeRecord>) {
+    const { data: result, error } = await supabase
+      .from('news_scrape')
+      .update({
+        ...data,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('url', url)
+      .select()
+      .single();
+    if (error) throw error;
+    return result;
+  },
+
+  async getAll(limit = 50) {
+    const { data, error } = await supabase
+      .from('news_scrape')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    if (error) throw error;
+    return data;
+  },
+
+  async delete(id: number) {
+    const { error } = await supabase
+      .from('news_scrape')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+  },
+};
+

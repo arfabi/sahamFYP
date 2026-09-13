@@ -1,0 +1,287 @@
+{
+  "name": "SahamFYP - RSS Trigger + News Scrape",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "rss-trigger",
+      "name": "RSS Feed Trigger",
+      "type": "n8n-nodes-base.rssFeedTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://saham-fyp.vercel.app/api/news-scrape/check?url={{$json.url}}",
+        "options": {}
+      },
+      "id": "check-exists",
+      "name": "1. Check Exists?",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "type": "boolean" },
+          "conditions": [
+            {
+              "id": "exists-check",
+              "leftValue": "={{ $json.exists }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-exists",
+      "name": "2. IF Exists?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [710, 300]
+    },
+    {
+      "parameters": {},
+      "id": "no-op-skip",
+      "name": "SKIP",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [940, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://saham-fyp.vercel.app/api/scrape",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }] },
+        "sendBody": true,
+        "bodyParameters": { "parameters": [{ "name": "url", "value": "={{ $json.url }}" }] },
+        "options": {}
+      },
+      "id": "http-scrape",
+      "name": "3. Scrape",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [940, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://saham-fyp.vercel.app/api/news-scrape",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }] },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "url", "value": "={{ $json.url }}" },
+            { "name": "title", "value": "={{ $json.title }}" },
+            { "name": "content", "value": "={{ $json.content }}" },
+            { "name": "description", "value": "={{ $json.description }}" },
+            { "name": "image", "value": "={{ $json.image }}" },
+            { "name": "siteName", "value": "={{ $json.siteName }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "http-save-scrape",
+      "name": "4. Save Scraped",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1170, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://saham-fyp.vercel.app/api/classify",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }] },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "title", "value": "={{ $json.title }}" },
+            { "name": "content", "value": "={{ $json.content }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "http-classify",
+      "name": "5. Classify",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1400, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://saham-fyp.vercel.app/api/news-scrape/update",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }] },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "url", "value": "={{ $json.url }}" },
+            { "name": "category", "value": "={{ $json.category }}" },
+            { "name": "ticker", "value": "={{ $json.ticker }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "http-update-cat",
+      "name": "6. Update Category",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1630, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://saham-fyp.vercel.app/api/score",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }] },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "title", "value": "={{ $json.title }}" },
+            { "name": "content", "value": "={{ $json.content }}" },
+            { "name": "category", "value": "={{ $json.category }}" },
+            { "name": "ticker", "value": "={{ $json.ticker }}" },
+            { "name": "reason", "value": "={{ $json.reason }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "http-score",
+      "name": "7. Score",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1860, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://saham-fyp.vercel.app/api/news-scrape/update",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }] },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "url", "value": "={{ $json.url }}" },
+            { "name": "score", "value": "={{ $json.score }}" },
+            { "name": "decision", "value": "={{ $json.decision }}" },
+            { "name": "reason", "value": "={{ $json.reason }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "http-update-score",
+      "name": "8. Update Score",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2090, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "type": "string" },
+          "conditions": [
+            {
+              "id": "decision-check",
+              "leftValue": "={{ $json.decision }}",
+              "rightValue": "GENERATE",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-generate",
+      "name": "9. Decision?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [2320, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://saham-fyp.vercel.app/api/generate",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "X-API-Key", "value": "={{$env.N8N_API_KEY}}" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "url", "value": "={{ $json.url }}" },
+            { "name": "category", "value": "={{ $json.category }}" },
+            { "name": "ticker", "value": "={{ $json.ticker }}" },
+            { "name": "skipClassify", "value": true }
+          ]
+        },
+        "options": {}
+      },
+      "id": "http-generate",
+      "name": "10. Generate",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2550, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://saham-fyp.vercel.app/api/posts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "X-API-Key", "value": "={{$env.N8N_API_KEY}}" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "handle", "value": "@sahamfyp" },
+            { "name": "badge_text", "value": "={{ $json.ticker }}" },
+            { "name": "slides_json", "value": "={{ $json.naskah }}" },
+            { "name": "total_slides", "value": 8 },
+            { "name": "instagram_status", "value": "generated" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "http-save-draft",
+      "name": "11. Save Draft",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2780, 300]
+    }
+  ],
+  "connections": {
+    "RSS Feed Trigger": { "main": [[{ "node": "1. Check Exists?", "type": "main", "index": 0 }]] },
+    "1. Check Exists?": { "main": [[{ "node": "2. IF Exists?", "type": "main", "index": 0 }]] },
+    "2. IF Exists?": {
+      "main": [
+        [{ "node": "SKIP", "type": "main", "index": 0 }],
+        [{ "node": "3. Scrape", "type": "main", "index": 0 }]
+      ]
+    },
+    "3. Scrape": { "main": [[{ "node": "4. Save Scraped", "type": "main", "index": 0 }]] },
+    "4. Save Scraped": { "main": [[{ "node": "5. Classify", "type": "main", "index": 0 }]] },
+    "5. Classify": { "main": [[{ "node": "6. Update Category", "type": "main", "index": 0 }]] },
+    "6. Update Category": { "main": [[{ "node": "7. Score", "type": "main", "index": 0 }]] },
+    "7. Score": { "main": [[{ "node": "8. Update Score", "type": "main", "index": 0 }]] },
+    "8. Update Score": { "main": [[{ "node": "9. Decision?", "type": "main", "index": 0 }]] },
+    "9. Decision?": {
+      "main": [
+        [{ "node": "10. Generate", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "10. Generate": { "main": [[{ "node": "11. Save Draft", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}
