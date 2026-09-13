@@ -17,7 +17,7 @@
         "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }] },
         "sendBody": true,
         "bodyParameters": { "parameters": [{ "name": "action", "value": "check" },
-            { "name": "url", "value": "={{ $json.url }}" }] },
+            { "name": "url", "value": "={{ $json.link }}" }] },
         "options": {}
       },
       "id": "check-exists",
@@ -62,7 +62,7 @@
         "sendHeaders": true,
         "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }] },
         "sendBody": true,
-        "bodyParameters": { "parameters": [{ "name": "url", "value": "={{ $json.url }}" }] },
+        "bodyParameters": { "parameters": [{ "name": "url", "value": "={{ $json.link }}" }] },
         "options": {}
       },
       "id": "http-scrape",
@@ -80,7 +80,7 @@
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
-            { "name": "url", "value": "={{ $json.url }}" },
+            { "name": "url", "value": "={{ $json.link }}" },
             { "name": "title", "value": "={{ $json.title }}" },
             { "name": "content", "value": "={{ $json.content }}" },
             { "name": "description", "value": "={{ $json.description }}" },
@@ -126,7 +126,7 @@
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
-            { "name": "url", "value": "={{ $json.url }}" },
+            { "name": "url", "value": "={{ $json.link }}" },
             { "name": "category", "value": "={{ $json.category }}" },
             { "name": "ticker", "value": "={{ $json.ticker }}" }
           ]
@@ -173,7 +173,7 @@
         "bodyParameters": {
           "parameters": [
             { "name": "action", "value": "update" },
-            { "name": "url", "value": "={{ $json.url }}" },
+            { "name": "url", "value": "={{ $json.link }}" },
             { "name": "score", "value": "={{ $json.score }}" },
             { "name": "decision", "value": "={{ $json.decision }}" },
             { "name": "reason", "value": "={{ $json.reason }}" }
@@ -223,7 +223,7 @@
         "bodyParameters": {
           "parameters": [
             { "name": "action", "value": "update" },
-            { "name": "url", "value": "={{ $json.url }}" },
+            { "name": "url", "value": "={{ $json.link }}" },
             { "name": "category", "value": "={{ $json.category }}" },
             { "name": "ticker", "value": "={{ $json.ticker }}" },
             { "name": "skipClassify", "value": true }
