@@ -6,16 +6,16 @@ interface NewsScrapeRecord {
   id?: number;
   url: string;
   time_scrape?: string;
-  title?: string;
-  category?: string;
-  ticker?: string;
-  content?: string;
-  description?: string;
-  image?: string;
-  siteName?: string;
-  score?: number;
-  decision?: string;
-  reason?: string;
+  title?: string | null;
+  category?: string | null;
+  ticker?: string | null;
+  content?: string | null;
+  description?: string | null;
+  image?: string | null;
+  siteName?: string | null;
+  score?: number | null;
+  decision?: string | null;
+  reason?: string | null;
   created_at?: string;
   updated_at?: string;
 }
