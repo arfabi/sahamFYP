@@ -12,7 +12,7 @@ interface NewsScrapeRecord {
   content?: string | null;
   description?: string | null;
   image?: string | null;
-  siteName?: string | null;
+  sitename?: string | null;
   score?: number | null;
   decision?: string | null;
   reason?: string | null;
@@ -72,7 +72,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         const updateData: Record<string, any> = { updated_at: new Date().toISOString() };
-        const fields = ['title', 'category', 'ticker', 'content', 'description', 'image', 'siteName', 'score', 'decision', 'reason'];
+        const fields = ['title', 'category', 'ticker', 'content', 'description', 'image', 'sitename', 'score', 'decision', 'reason'];
 
         for (const field of fields) {
           const val = (body as any)[field];
@@ -113,7 +113,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         content: body.content || null,
         description: body.description || null,
         image: body.image || null,
-        siteName: body.siteName || null,
+        sitename: body.sitename || null,
         score: body.score ?? null,
         decision: body.decision || 'PASS',
         reason: body.reason || null,

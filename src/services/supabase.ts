@@ -264,7 +264,7 @@ export interface NewsScrapeRecord {
   content?: string | null;
   description?: string | null;
   image?: string | null;
-  siteName?: string | null;
+  sitename?: string | null;
   score?: number | null;
   decision?: string | null;
   reason?: string | null;

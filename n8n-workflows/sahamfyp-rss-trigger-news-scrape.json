@@ -85,7 +85,7 @@
             { "name": "content", "value": "={{ $json.content }}" },
             { "name": "description", "value": "={{ $json.description }}" },
             { "name": "image", "value": "={{ $json.image }}" },
-            { "name": "siteName", "value": "={{ $json.siteName }}" }
+            { "name": "sitename", "value": "={{ $json.siteName }}" }
           ]
         },
         "options": {}
