@@ -62,7 +62,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           .single();
 
         if (error && error.code !== 'PGRST116') throw error;
-        return res.status(200).json({ exists: !!data, data: data || null });
+        return res.status(200).json({ exists: !!data, data: data || null, url: body.url });
       }
 
       // ── Update by URL ──
