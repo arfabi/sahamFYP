@@ -31,19 +31,141 @@ const FIXED_KAMUS = [
   }
 ];
 
+/** Safely coerce a finite number */
+function num(v: any): number | null {
+  return typeof v === 'number' && Number.isFinite(v) ? v : null;
+}
+
+/** Average of finite numbers mapped from rows (ignores null/missing) */
+function avgOf(rows: any[], fn: (r: any) => number | null): number {
+  const vals = rows.map(fn).filter((v): v is number => v !== null);
+  return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+}
+
 /**
  * Extract peer company rows from Sectors v2 company report `peers` section.
- * v2 structure: peers.peers_data.companies[] — each item is a peer company
- * with fields: pe_ttm, pb_mrq, market_cap, net_income, total_equity,
- * total_liabilities, total_revenue, company_name, symbol ...
- * Fallback: flat array (older shape).
+ * v2 structure: peers = [ { peers_data: { companies: [...], group_name } } ]
+ * Each company row carries: pe_ttm, pb_mrq, market_cap, net_income, total_equity,
+ * total_liabilities, total_revenue, company_name, symbol, group.
+ * The "self" row (group includes "self") is excluded so averages reflect real peers only.
  */
 function extractPeersCompanies(peersRaw: any): any[] {
   if (!peersRaw) return [];
-  const companies = peersRaw.peers_data?.companies;
-  if (Array.isArray(companies)) return companies;
+  const wrappers = Array.isArray(peersRaw) ? peersRaw : [peersRaw];
+  const out: any[] = [];
+  for (const w of wrappers) {
+    const companies = w?.peers_data?.companies;
+    if (Array.isArray(companies)) {
+      out.push(...companies.filter((c: any) => !(Array.isArray(c.group) && c.group.includes('self'))));
+    }
+  }
+  if (out.length) return out;
+  // Fallback: flat array (older shape)
   if (Array.isArray(peersRaw)) return peersRaw;
   return [];
+}
+
+/**
+ * Flatten Sectors v2 company report into the watchlist metrics.
+ * Source fields (from the live API response):
+ *  - valuation.last_close_price
+ *  - valuation.historical_valuation[last] -> { pe, pb, pe_peer_avg, pb_peer_avg }
+ *  - financials.historical_financials[last] -> { revenue, earnings }
+ *  - financials.historical_financial_ratio[last] -> { profitability.roe, leverage.debt_to_equity_ratio }
+ *  - overview.{ market_cap, sector }, top-level company_name
+ *  - peers[].peers_data.companies[] for cross-check averages
+ */
+function digestCompanyReport(report: any): {
+  companyName: string | null;
+  sector: string | null;
+  price: number | null;
+  marketCap: number | null;
+  PER: number | null;
+  PBV: number | null;
+  ROE: number | null; // percent
+  DER: number | null; // ratio
+  revenue: number | null;
+  netIncome: number | null;
+  avgPER: number;
+  avgPBV: number;
+  avgROE: number; // percent
+  avgDER: number;
+  peSignal: string | null;
+  pbvSignal: string | null;
+  roeSignal: string | null;
+  derSignal: string | null;
+} {
+  const empty = {
+    companyName: null, sector: null, price: null, marketCap: null,
+    PER: null, PBV: null, ROE: null, DER: null, revenue: null, netIncome: null,
+    avgPER: 0, avgPBV: 0, avgROE: 0, avgDER: 0,
+    peSignal: null, pbvSignal: null, roeSignal: null, derSignal: null,
+  };
+  if (!report || typeof report !== 'object' || Array.isArray(report)) return empty;
+
+  const valuation = report.valuation || {};
+  const financials = report.financials || {};
+  const overview = report.overview || {};
+
+  const histVal: any[] = Array.isArray(valuation.historical_valuation) ? valuation.historical_valuation : [];
+  const curVal: any = histVal.length ? histVal[histVal.length - 1] : {};
+
+  const histFin: any[] = Array.isArray(financials.historical_financials) ? financials.historical_financials : [];
+  const curFin: any = histFin.length ? histFin[histFin.length - 1] : {};
+
+  const histRatio: any[] = Array.isArray(financials.historical_financial_ratio) ? financials.historical_financial_ratio : [];
+  const curRatio: any = histRatio.length ? histRatio[histRatio.length - 1] : {};
+  const profit = curRatio.profitability || {};
+  const leverage = curRatio.leverage || {};
+
+  const peers = extractPeersCompanies(report.peers);
+  const avgPER = avgOf(peers, (p) => num(p.pe_ttm));
+  const avgPBV = avgOf(peers, (p) => num(p.pb_mrq));
+  const avgROERatio = avgOf(peers, (p) => {
+    const e = num(p.total_equity);
+    const ni = num(p.net_income);
+    return e !== null && ni !== null ? ni / e : null;
+  });
+  const avgDER = avgOf(peers, (p) => {
+    const e = num(p.total_equity);
+    const tl = num(p.total_liabilities);
+    return e !== null && tl !== null ? tl / e : null;
+  });
+
+  const price = num(valuation.last_close_price) ?? num(overview.last_close_price);
+  const marketCap = num(overview.market_cap);
+  const PER = num(curVal.pe);
+  const PBV = num(curVal.pb);
+  const roeRatio = num(profit.roe);
+  const ROE = roeRatio !== null ? roeRatio * 100 : null;
+  const DER = num(leverage.debt_to_equity_ratio);
+  const revenue = num(curFin.revenue);
+  const netIncome = num(curFin.earnings);
+
+  // Prefer Sectors' own peer average from the valuation row; fall back to computed peers average
+  const sectorPE = num(curVal.pe_peer_avg) ?? avgPER;
+  const sectorPBV = num(curVal.pb_peer_avg) ?? avgPBV;
+  const sectorROE = avgROERatio * 100;
+  const sectorDER = avgDER;
+
+  const peSignal = PER !== null && PER > 0 && sectorPE > 0
+    ? (PER < sectorPE ? 'lebih murah' : PER > sectorPE * 1.5 ? 'lebih mahal/berisiko' : 'netral')
+    : null;
+  const pbvSignal = PBV !== null && PBV > 0 && sectorPBV > 0
+    ? (PBV < sectorPBV ? 'lebih murah' : PBV > sectorPBV * 1.5 ? 'lebih mahal/berisiko' : 'netral')
+    : null;
+  const roeSignal = ROE !== null ? (ROE > sectorROE ? 'di atas sektor' : 'di bawah sektor') : null;
+  const derSignal = DER !== null
+    ? (DER < 0 ? 'berisiko tinggi' : DER > sectorDER * 1.5 ? 'berisiko tinggi' : 'wajar')
+    : null;
+
+  return {
+    companyName: report.company_name || null,
+    sector: overview.sector || null,
+    price, marketCap, PER, PBV, ROE, DER, revenue, netIncome,
+    avgPER: sectorPE, avgPBV: sectorPBV, avgROE: sectorROE, avgDER: sectorDER,
+    peSignal, pbvSignal, roeSignal, derSignal,
+  };
 }
 
 async function handler(req: VercelRequest, res: VercelResponse) {
@@ -209,7 +331,11 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     const candidates = await Promise.all(
       selectedTickers.map(async (ticker: string) => {
         const report = await fetchCompanyReport(ticker, ['valuation', 'financials', 'peers']);
-        const relatedNews = newsResults.filter((n: any) => n.symbols?.includes(ticker));
+        const relatedNews = newsResults.filter((n: any) =>
+          Array.isArray(n?.symbols) && n.symbols.some((s: string) =>
+            String(s).replace(/\.JK$/i, '') === String(ticker).replace(/\.JK$/i, '')
+          )
+        );
         return {
           symbol: ticker,
           newsTitle: relatedNews[0]?.title || 'N/A',
@@ -224,47 +350,32 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     // Insert candidates to database
     if (logId && candidates.length > 0) {
       const candidatesInserts = candidates.map((c: any) => {
-        const valuation = c.report?.valuation || {};
-        const financials = c.report?.financials || {};
-        const peers = extractPeersCompanies(c.report?.peers);
-
-        const peerCount = peers.length || 1;
-        const avgPER = peers.reduce((sum: number, p: any) => sum + (p.pe_ttm || 0), 0) / peerCount || 0;
-        const avgPBV = peers.reduce((sum: number, p: any) => sum + (p.pb_mrq || 0), 0) / peerCount || 0;
-        const avgROE = peers.reduce((sum: number, p: any) => sum + (p.net_income && p.total_equity ? (p.net_income / p.total_equity) : 0), 0) / peerCount * 100 || 0;
-        const avgDER = peers.reduce((sum: number, p: any) => sum + (p.total_liabilities && p.total_equity ? (p.total_liabilities / p.total_equity) : 0), 0) / peerCount || 0;
-
-        const roeV = typeof financials.roe === 'number'
-          ? (financials.roe <= 1 ? financials.roe * 100 : financials.roe)
-          : (financials.net_income && financials.total_equity ? (financials.net_income / financials.total_equity) * 100 : null);
-        const derV = typeof financials.debt_to_equity === 'number'
-          ? financials.debt_to_equity
-          : (financials.total_liabilities && financials.total_equity ? financials.total_liabilities / financials.total_equity : null);
+        const d = digestCompanyReport(c.report);
 
         return {
           log_id: logId,
           ticker: c.symbol,
-          company_name: valuation.company_name || c.report?.company_name || c.report?.overview?.company_name || null,
-          sector: c.sector,
+          company_name: d.companyName || c.symbol,
+          sector: c.sector || d.sector,
           news_title: c.newsTitle,
           news_tags: c.tags,
           news_body: c.newsBody,
-          price: valuation.close_price || valuation.price || null,
-          market_cap: valuation.market_cap || null,
-          pe_ratio: valuation.pe_ttm || valuation.pe_ratio || null,
-          pb_ratio: valuation.pb_mrq || valuation.pb_ratio || null,
-          roe: roeV,
-          der: derV,
-          revenue: financials.total_revenue || financials.revenue || null,
-          net_income: financials.net_income || null,
-          avg_sector_pe: avgPER || null,
-          avg_sector_pbv: avgPBV || null,
-          avg_sector_roe: avgROE || null,
-          avg_sector_der: avgDER || null,
-          pe_signal: valuation.pe_ttm !== undefined ? (valuation.pe_ttm < avgPER ? 'lebih murah' : valuation.pe_ttm > avgPER * 1.5 ? 'lebih mahal/berisiko' : 'netral') : null,
-          pbv_signal: valuation.pb_mrq !== undefined ? (valuation.pb_mrq < avgPBV ? 'lebih murah' : valuation.pb_mrq > avgPBV * 1.5 ? 'lebih mahal/berisiko' : 'netral') : null,
-          roe_signal: roeV !== null ? (roeV > avgROE ? 'di atas sektor' : 'di bawah sektor') : null,
-          der_signal: derV !== null ? (derV > avgDER * 1.5 ? 'berisiko tinggi' : 'wajar') : null,
+          price: d.price,
+          market_cap: d.marketCap,
+          pe_ratio: d.PER,
+          pb_ratio: d.PBV,
+          roe: d.ROE,
+          der: d.DER,
+          revenue: d.revenue,
+          net_income: d.netIncome,
+          avg_sector_pe: d.avgPER || null,
+          avg_sector_pbv: d.avgPBV || null,
+          avg_sector_roe: d.avgROE || null,
+          avg_sector_der: d.avgDER || null,
+          pe_signal: d.peSignal,
+          pbv_signal: d.pbvSignal,
+          roe_signal: d.roeSignal,
+          der_signal: d.derSignal,
           enrichment_json: c.report
         };
       });
@@ -400,44 +511,30 @@ async function generateSlidesWithGemini(
   });
 
   const candidatesData = candidates.map((c: any) => {
-    const valuation = c.report?.valuation || {};
-    const financials = c.report?.financials || {};
-    const peers = extractPeersCompanies(c.report?.peers);
-
-    const peerCount = peers.length || 1;
-    const avgPER = peers.reduce((sum: number, p: any) => sum + (p.pe_ttm || 0), 0) / peerCount || 0;
-    const avgPBV = peers.reduce((sum: number, p: any) => sum + (p.pb_mrq || 0), 0) / peerCount || 0;
-    const avgROE = peers.reduce((sum: number, p: any) => sum + (p.net_income && p.total_equity ? (p.net_income / p.total_equity) : 0), 0) / peerCount * 100 || 0;
-    const avgDER = peers.reduce((sum: number, p: any) => sum + (p.total_liabilities && p.total_equity ? (p.total_liabilities / p.total_equity) : 0), 0) / peerCount || 0;
-
-    const roeV = typeof financials.roe === 'number'
-      ? (financials.roe <= 1 ? financials.roe * 100 : financials.roe)
-      : (financials.net_income && financials.total_equity ? (financials.net_income / financials.total_equity) * 100 : null);
-    const derV = typeof financials.debt_to_equity === 'number'
-      ? financials.debt_to_equity
-      : (financials.total_liabilities && financials.total_equity ? financials.total_liabilities / financials.total_equity : null);
+    const d = digestCompanyReport(c.report);
 
     return {
       symbol: c.symbol,
+      companyName: d.companyName || c.symbol,
       newsTitle: c.newsTitle,
       tags: c.tags,
-      sector: c.sector,
-      harga: valuation.close_price || valuation.price || 'N/A',
-      marketCap: valuation.market_cap || 'N/A',
-      PER: valuation.pe_ttm || valuation.pe_ratio || 'N/A',
-      avgSectorPER: avgPER.toFixed(1),
-      signalPER: valuation.pe_ttm !== undefined ? (valuation.pe_ttm < avgPER ? 'lebih murah' : valuation.pe_ttm > avgPER * 1.5 ? 'lebih mahal/berisiko' : 'netral') : 'N/A',
-      PBV: valuation.pb_mrq || valuation.pb_ratio || 'N/A',
-      avgSectorPBV: avgPBV.toFixed(1),
-      signalPBV: valuation.pb_mrq !== undefined ? (valuation.pb_mrq < avgPBV ? 'lebih murah' : valuation.pb_mrq > avgPBV * 1.5 ? 'lebih mahal/berisiko' : 'netral') : 'N/A',
-      ROE: roeV !== null ? roeV.toFixed(1) : 'N/A',
-      avgSectorROE: avgROE.toFixed(1),
-      signalROE: roeV !== null ? (roeV > avgROE ? 'di atas sektor' : 'di bawah sektor') : 'N/A',
-      DER: derV !== null ? derV.toFixed(2) : 'N/A',
-      avgSectorDER: avgDER.toFixed(2),
-      signalDER: derV !== null ? (derV > avgDER * 1.5 ? 'berisiko tinggi' : 'wajar') : 'N/A',
-      revenue: financials.total_revenue || financials.revenue || 'N/A',
-      netIncome: financials.net_income || 'N/A',
+      sector: c.sector || d.sector,
+      harga: d.price !== null ? d.price : 'N/A',
+      marketCap: d.marketCap !== null ? d.marketCap : 'N/A',
+      PER: d.PER !== null ? d.PER : 'N/A',
+      avgSectorPER: d.avgPER > 0 ? d.avgPER.toFixed(1) : 'N/A',
+      signalPER: d.peSignal || 'N/A',
+      PBV: d.PBV !== null ? d.PBV : 'N/A',
+      avgSectorPBV: d.avgPBV > 0 ? d.avgPBV.toFixed(1) : 'N/A',
+      signalPBV: d.pbvSignal || 'N/A',
+      ROE: d.ROE !== null ? d.ROE.toFixed(1) : 'N/A',
+      avgSectorROE: d.avgROE > 0 ? d.avgROE.toFixed(1) : 'N/A',
+      signalROE: d.roeSignal || 'N/A',
+      DER: d.DER !== null ? d.DER.toFixed(2) : 'N/A',
+      avgSectorDER: d.avgDER > 0 ? d.avgDER.toFixed(2) : 'N/A',
+      signalDER: d.derSignal || 'N/A',
+      revenue: d.revenue !== null ? d.revenue : 'N/A',
+      netIncome: d.netIncome !== null ? d.netIncome : 'N/A',
     };
   });
 
