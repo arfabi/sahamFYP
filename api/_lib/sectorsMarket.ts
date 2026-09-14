@@ -128,6 +128,33 @@ export function getYesterdayDate(): string {
   return wib.toISOString().split('T')[0];
 }
 
+// ─── News Articles — 1 credit ──────────────────────────────────────────────
+export async function fetchNews(opts?: {
+  start?: string;
+  end?: string;
+  limit?: number;
+  offset?: number;
+  tags?: string;
+  symbols?: string;
+  sector?: string;
+  sub_sector?: string;
+  keyword?: string;
+  extension?: 'idx' | 'mining';
+}) {
+  const p: Record<string, string | number | undefined> = {};
+  if (opts?.start) p.start = opts.start;
+  if (opts?.end) p.end = opts.end;
+  if (opts?.limit) p.limit = opts.limit;
+  if (opts?.offset !== undefined) p.offset = opts.offset;
+  if (opts?.tags) p.tags = opts.tags;
+  if (opts?.symbols) p.symbols = opts.symbols;
+  if (opts?.sector) p.sector = opts.sector;
+  if (opts?.sub_sector) p.sub_sector = opts.sub_sector;
+  if (opts?.keyword) p.keyword = opts.keyword;
+  if (opts?.extension) p.extension = opts.extension;
+  return fetchSectors('/news/', p);
+}
+
 // ─── Helper: Get today's date (WIB) ──────────────────────────────────────────
 export function getTodayDate(): string {
   const now = new Date();
