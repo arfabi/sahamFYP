@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 // Daily Market Brief - Dashboard for viewing sector trigger logs
 // ============================================================
 
@@ -168,14 +168,14 @@ export default function DailyMarketBrief() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">\ud83d\udcc8 Daily Market Brief</h1>
+          <h1 className="text-2xl font-bold text-slate-800">📈 Daily Market Brief</h1>
           <p className="text-sm text-slate-500 mt-1">Riwayat trigger market open/close dengan data berita dan watchlist</p>
         </div>
         <button
           onClick={fetchLogs}
           className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800 border border-slate-200 rounded-lg hover:bg-slate-50"
         >
-          \ud83d\udd04 Refresh
+          🔄 Refresh
         </button>
       </div>
 
@@ -213,9 +213,9 @@ export default function DailyMarketBrief() {
                     </span>
                   </div>
                   <div className="flex items-center gap-4 text-xs text-slate-400 mt-1">
-                    <span>\ud83d\udcfc {log.news_fetched} berita</span>
-                    <span>\ud83c\udfaf {log.tickers_selected} ticker</span>
-                    <span>\ud83d\udcb3 {log.credits_used} credits</span>
+                    <span>📰 {log.news_fetched} berita</span>
+                    <span>🎯 {log.tickers_selected} ticker</span>
+                    <span>💳 {log.credits_used} credits</span>
                   </div>
                 </button>
               ))
@@ -255,7 +255,7 @@ export default function DailyMarketBrief() {
                   <h3 className="font-semibold text-slate-800 mb-3">Top Movers</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-xs font-medium text-green-600 mb-2">\ud83d\udfe2 Top Gainers</p>
+                      <p className="text-xs font-medium text-green-600 mb-2">🟢 Top Gainers</p>
                       <div className="space-y-1">
                         {movers.filter(m => m.classification === 'top_gainers').map((m) => (
                           <div key={m.id} className="flex justify-between text-sm">
@@ -266,7 +266,7 @@ export default function DailyMarketBrief() {
                       </div>
                     </div>
                     <div>
-                      <p className="text-xs font-medium text-red-600 mb-2">\ud83d\udd34 Top Losers</p>
+                      <p className="text-xs font-medium text-red-600 mb-2">🔴 Top Losers</p>
                       <div className="space-y-1">
                         {movers.filter(m => m.classification === 'top_losers').map((m) => (
                           <div key={m.id} className="flex justify-between text-sm">

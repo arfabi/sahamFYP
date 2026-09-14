@@ -25,21 +25,13 @@ async function fetchSectors(endpoint: string, params?: Record<string, string>) {
 }
 
 export async function fetchCompanyReport(symbol: string, sections: string[] = ['overview', 'valuation', 'financials']) {
-  const results: Record<string, any> = {};
-
-  await Promise.all(
-    sections.map(async (section) => {
-      try {
-        const data = await fetchSectors(`/stocks/${symbol}/company-report`, { section });
-        results[section] = data;
-      } catch (error) {
-        console.warn(`Failed to fetch ${section} for ${symbol}:`, error);
-        results[section] = null;
-      }
-    })
-  );
-
-  return results;
+  try {
+    const data = await fetchSectors(`/company/report/${symbol}/`, { sections: sections.join(',') });
+    return data;
+  } catch (error) {
+    console.warn(`Failed to fetch company report for ${symbol}:`, error);
+    return null;
+  }
 }
 
 export async function fetchForeignFlow(symbol: string) {
