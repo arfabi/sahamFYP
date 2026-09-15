@@ -759,6 +759,7 @@ Tugasmu: Dari daftar berita berikut, pilih 1 hingga maksimal 4 saham terbaik unt
 1. **Prioritas Utama (Skor 8-10)**: M&A / Akuisisi Pengendali Baru, Rights Issue / Private Placement Besar, Turnaround Kinerja Laba, atau Isu Hukum/Manajemen Krusial.
 2. **Prioritas Kedua (Skor 5-7)**: Dividen Jumbo di luar perkiraan, Kontrak/Ekspansi Baru Signifikan.
 3. **Penyaringan Kualitatif (Hard Filter)**:
+   - JANGAN pilih saham gocap / penny stock / emiten tidur (harga di bawah Rp 50 / Notasi Khusus FCA tanpa likuiditas).
    - JANGAN pilih saham yang beritanya hanya klaim sentimen tanpa katalis aksi korporasi konkret.
    - Jangan pilih emiten yang beritanya hanya laporan keuangan rutin tanpa kejutan (surprise).
    - Usahakan DIVERSIFIKASI (maksimal 1-2 emiten per sektor).
