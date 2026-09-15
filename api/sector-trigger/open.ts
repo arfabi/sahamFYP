@@ -578,16 +578,32 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       const candidatesInserts = candidates.map((c: any) => {
         const d = digestCompanyReport(c.report);
 
-        // Sanitize signal text for DB CHECK constraints if DB has strict string ENUM/CHECK constraints
-        const sanitizeSignal = (sig: string | null) => {
+        // Sanitize signal text for DB CHECK constraints specifically per column constraint rules
+        const sanitizePeSignal = (sig: string | null) => {
           if (!sig) return null;
-          if (sig.includes('Rugi') || sig.includes('mahal')) return 'lebih mahal/berisiko';
-          if (sig.includes('RED FLAG') || sig.includes('berisiko') || sig.includes('Utang Melebihi')) return 'berisiko tinggi';
           if (sig.includes('diskon') || sig.includes('murah')) return 'lebih murah';
-          if (sig.includes('efisien') || sig.includes('di atas')) return 'di atas sektor';
-          if (sig.includes('bawah')) return 'di bawah sektor';
-          if (sig.includes('wajar') || sig.includes('terjaga')) return 'wajar';
+          if (sig.includes('Rugi') || sig.includes('mahal') || sig.includes('RED FLAG') || sig.includes('berisiko')) return 'lebih mahal/berisiko';
           return 'netral';
+        };
+
+        const sanitizePbvSignal = (sig: string | null) => {
+          if (!sig) return null;
+          if (sig.includes('diskon') || sig.includes('murah')) return 'lebih murah';
+          if (sig.includes('Rugi') || sig.includes('mahal') || sig.includes('RED FLAG') || sig.includes('berisiko') || sig.includes('Negatif') || sig.includes('Defisit') || sig.includes(' reliable')) return 'lebih mahal/berisiko';
+          return 'netral';
+        };
+
+        const sanitizeRoeSignal = (sig: string | null) => {
+          if (!sig) return null;
+          if (sig.includes('efisien') || sig.includes('di atas') || sig.includes('tinggi') || sig.includes('Bagus')) return 'di atas sektor';
+          if (sig.includes('bawah') || sig.includes('rendah') || sig.includes('Rugi') || sig.includes('Negatif')) return 'di bawah sektor';
+          return 'netral';
+        };
+
+        const sanitizeDerSignal = (sig: string | null) => {
+          if (!sig) return null;
+          if (sig.includes('RED FLAG') || sig.includes('berisiko') || sig.includes('Utang Melebihi') || sig.includes('Negatif') || sig.includes('Tinggi')) return 'berisiko tinggi';
+          return 'wajar';
         };
 
         return {
@@ -610,10 +626,10 @@ async function handler(req: VercelRequest, res: VercelResponse) {
           avg_sector_pbv: d.avgPBV || null,
           avg_sector_roe: d.avgROE || null,
           avg_sector_der: d.avgDER || null,
-          pe_signal: sanitizeSignal(d.peSignal),
-          pbv_signal: sanitizeSignal(d.pbvSignal),
-          roe_signal: sanitizeSignal(d.roeSignal),
-          der_signal: sanitizeSignal(d.derSignal),
+          pe_signal: sanitizePeSignal(d.peSignal),
+          pbv_signal: sanitizePbvSignal(d.pbvSignal),
+          roe_signal: sanitizeRoeSignal(d.roeSignal),
+          der_signal: sanitizeDerSignal(d.derSignal),
           technical_json: c.technical || null,
           enrichment_json: c.report
         };
