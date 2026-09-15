@@ -627,38 +627,50 @@ function StockCandidateDetailModal({
             </h3>
             <div className="bg-slate-900 text-white rounded-xl p-5 space-y-4">
               {/* Metrics Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-                <div className="bg-slate-800 p-2.5 rounded-lg text-center">
-                  <span className="text-[11px] text-slate-400 block">Harga Terakhir</span>
-                  <span className="font-mono font-bold text-amber-400 text-sm">{fmtNum(displayPrice, 0)}</span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2.5">
+                <div className="bg-slate-800 p-2 rounded-lg text-center">
+                  <span className="text-[10px] text-slate-400 block">Harga Terakhir</span>
+                  <span className="font-mono font-bold text-amber-400 text-xs">{fmtNum(displayPrice, 0)}</span>
                 </div>
-                <div className="bg-slate-800 p-2.5 rounded-lg text-center">
-                  <span className="text-[11px] text-slate-400 block">MA20 (Support)</span>
-                  <span className="font-mono font-bold text-blue-400 text-sm">{fmtNum(tech.ma20, 0)}</span>
+                <div className="bg-slate-800 p-2 rounded-lg text-center">
+                  <span className="text-[10px] text-slate-400 block">MA20 (Support)</span>
+                  <span className="font-mono font-bold text-blue-400 text-xs">{fmtNum(tech.ma20, 0)}</span>
                 </div>
-                <div className="bg-slate-800 p-2.5 rounded-lg text-center">
-                  <span className="text-[11px] text-slate-400 block">Chg 1D</span>
-                  <span className={`font-mono font-bold text-sm ${String(tech.chg1d).includes('-') ? 'text-rose-400' : 'text-emerald-400'}`}>
+                <div className="bg-slate-800 p-2 rounded-lg text-center">
+                  <span className="text-[10px] text-slate-400 block">MA50 (Trend)</span>
+                  <span className="font-mono font-bold text-cyan-400 text-xs">{fmtNum(tech.ma50, 0)}</span>
+                </div>
+                <div className="bg-slate-800 p-2 rounded-lg text-center">
+                  <span className="text-[10px] text-slate-400 block">Chg 1D</span>
+                  <span className={`font-mono font-bold text-xs ${String(tech.chg1d).includes('-') ? 'text-rose-400' : 'text-emerald-400'}`}>
                     {fmtPct(tech.chg1d)}
                   </span>
                 </div>
-                <div className="bg-slate-800 p-2.5 rounded-lg text-center">
-                  <span className="text-[11px] text-slate-400 block">Chg 5D</span>
-                  <span className={`font-mono font-bold text-sm ${String(tech.chg5d).includes('-') ? 'text-rose-400' : 'text-emerald-400'}`}>
+                <div className="bg-slate-800 p-2 rounded-lg text-center">
+                  <span className="text-[10px] text-slate-400 block">Chg 5D</span>
+                  <span className={`font-mono font-bold text-xs ${String(tech.chg5d).includes('-') ? 'text-rose-400' : 'text-emerald-400'}`}>
                     {fmtPct(tech.chg5d)}
                   </span>
                 </div>
-                <div className="bg-slate-800 p-2.5 rounded-lg text-center">
-                  <span className="text-[11px] text-slate-400 block">Chg 20D</span>
-                  <span className={`font-mono font-bold text-sm ${String(tech.chg20d).includes('-') ? 'text-rose-400' : 'text-emerald-400'}`}>
+                <div className="bg-slate-800 p-2 rounded-lg text-center">
+                  <span className="text-[10px] text-slate-400 block">Chg 20D</span>
+                  <span className={`font-mono font-bold text-xs ${String(tech.chg20d).includes('-') ? 'text-rose-400' : 'text-emerald-400'}`}>
                     {fmtPct(tech.chg20d)}
                   </span>
                 </div>
-                <div className="bg-slate-800 p-2.5 rounded-lg text-center">
-                  <span className="text-[11px] text-slate-400 block">Volume Signal</span>
-                  <span className="font-mono font-bold text-purple-400 text-sm">{tech.volumeSignal || 'normal'}</span>
+                <div className="bg-slate-800 p-2 rounded-lg text-center col-span-2">
+                  <span className="text-[10px] text-slate-400 block">Volume Signal</span>
+                  <span className="font-mono font-bold text-purple-400 text-xs">{tech.volumeSignal || 'normal'}</span>
                 </div>
               </div>
+
+              {/* Technical Sinyal Cross (Golden/Death Cross) */}
+              {tech.crossSignal && (
+                <div className="bg-slate-800/90 px-3.5 py-2 rounded-xl border border-slate-700 flex items-center justify-between">
+                  <span className="text-xs text-slate-400 font-medium">MA Crossover Signal:</span>
+                  <span className="text-xs font-bold text-amber-300 font-mono">{tech.crossSignal}</span>
+                </div>
+              )}
 
               {/* vibeCheck, Trigger, TLDR & Warning Analysis */}
               {(tech.vibeCheck || tech.trigger || tech.tldr || tech.warning) && (
@@ -693,8 +705,8 @@ function StockCandidateDetailModal({
               {/* Kamus Teknikal Gen Z Guide Box */}
               <div className="p-3 bg-slate-800/90 border border-slate-700 rounded-xl text-xs space-y-1.5 text-slate-300">
                 <p className="font-bold text-amber-300 text-xs flex items-center gap-1">💡 Kamus Teknikal Gen Z & Analogi:</p>
-                <p>• <strong>MA20 (Moving Average 20 Hari)</strong>: Garis rata-rata harga 20 hari terakhir (bantal penopang tren).<br/>
-                <span className="text-slate-400 italic pl-3 inline-block">💬 Analogi: Batas aman 'napas' harga. Di atas MA20 = tren lagi aman/uptrend, kalau jebol = lampu kuning.</span></p>
+                <p>• <strong>MA20 & MA50 (Moving Average 20 & 50 Hari)</strong>: Garis bantal rata-rata harga 20 & 50 hari terakhir.<br/>
+                <span className="text-slate-400 italic pl-3 inline-block">💬 Analogi: Batas aman 'napas' harga. Golden Cross 🚀 (MA20 potong ke atas MA50 = sinyal terbang), Death Cross ☠️ (potong ke bawah = sinyal downtrend).</span></p>
                 <p>• <strong>Bullish vs Bearish</strong>:<br/>
                 <span className="text-slate-400 italic pl-3 inline-block">💬 Analogi: Bullish (banteng menyundul ke atas = tren naik), Bearish (beruang mencakar ke bawah = tren lesu/turun).</span></p>
                 <p>• <strong>Chg 1D / 5D / 20D & Volume</strong>: Persentase naik-turun harga 1 hari, 1 minggu, 1 bulan bursa. Volume "rame" = transaksi besar; "sepi" = transaksi sepi.</p>

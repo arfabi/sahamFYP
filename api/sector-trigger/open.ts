@@ -88,6 +88,9 @@ function extractPeersCompanies(peersRaw: any): any[] {
 interface TechnicalResult {
   last: number | null;
   ma20: number | null;
+  ma50: number | null;
+  ma200: number | null;
+  crossSignal: string | null; // "Golden Cross 🚀" | "Death Cross ☠️" | "Bullish Trend" | "Bearish Trend" | "Neutral"
   chg1d: number | null;
   chg5d: number | null;
   chg20d: number | null;
@@ -95,7 +98,7 @@ interface TechnicalResult {
   pctFromHigh52w: number | null;
   lastVolume: number | null;
   avgVol20: number | null;
-  volumeSignal: 'rame' | 'normal' | 'sepi' | null;
+  volumeSignal: 'rame' | 'sepi' | 'normal' | null;
   asOf: string | null;
   windowDays: number;
 }
@@ -115,9 +118,9 @@ function chgPct(last: number | null, prev: number | null): number | null {
 
 function computeTechnical(dailyRows: any[]): TechnicalResult {
   const empty: TechnicalResult = {
-    last: null, ma20: null, chg1d: null, chg5d: null, chg20d: null,
-    high52w: null, pctFromHigh52w: null, lastVolume: null, avgVol20: null,
-    volumeSignal: null, asOf: null, windowDays: 0,
+    last: null, ma20: null, ma50: null, ma200: null, crossSignal: null,
+    chg1d: null, chg5d: null, chg20d: null, high52w: null, pctFromHigh52w: null,
+    lastVolume: null, avgVol20: null, volumeSignal: null, asOf: null, windowDays: 0,
   };
   const rows = (Array.isArray(dailyRows) ? dailyRows : [])
     .map((r: any) => ({ date: r?.date || r?.trading_date || null, close: pickClose(r), volume: pickVolume(r) }))
@@ -128,9 +131,41 @@ function computeTechnical(dailyRows: any[]): TechnicalResult {
   const closes = rows.map((r) => r.close as number);
   const last = closes[closes.length - 1];
   const at = (n: number) => (closes.length > n ? closes[closes.length - 1 - n] : null);
+  
   const ma20 = closes.length >= 20
     ? closes.slice(-20).reduce((a, b) => a + b, 0) / 20
     : null;
+  const ma50 = closes.length >= 50
+    ? closes.slice(-50).reduce((a, b) => a + b, 0) / 50
+    : null;
+  const ma200 = closes.length >= 200
+    ? closes.slice(-200).reduce((a, b) => a + b, 0) / 200
+    : null;
+
+  // Previous MA values for Golden/Death Cross detection
+  const prevCloses = closes.slice(0, -1);
+  const prevMa20 = prevCloses.length >= 20
+    ? prevCloses.slice(-20).reduce((a, b) => a + b, 0) / 20
+    : null;
+  const prevMa50 = prevCloses.length >= 50
+    ? prevCloses.slice(-50).reduce((a, b) => a + b, 0) / 50
+    : null;
+
+  let crossSignal: string | null = null;
+  if (ma20 !== null && ma50 !== null) {
+    if (prevMa20 !== null && prevMa50 !== null && prevMa20 <= prevMa50 && ma20 > ma50) {
+      crossSignal = 'Golden Cross 🚀 (Sinyal Bullish Kuat)';
+    } else if (prevMa20 !== null && prevMa50 !== null && prevMa20 >= prevMa50 && ma20 < ma50) {
+      crossSignal = 'Death Cross ☠️ (Sinyal Downtrend)';
+    } else if (last > ma20 && ma20 > ma50) {
+      crossSignal = 'Bullish Trend 🟢 (Di atas MA20 & MA50)';
+    } else if (last < ma20 && ma20 < ma50) {
+      crossSignal = 'Bearish Trend 🔴 (Di bawah MA20 & MA50)';
+    } else {
+      crossSignal = 'Konsolidasi 🟡';
+    }
+  }
+
   const windowRows = rows.slice(-252);
   const high52w = windowRows.length ? Math.max(...windowRows.map((r) => r.close as number)) : null;
   const vols = rows.map((r) => r.volume).filter((v): v is number => v !== null);
@@ -148,6 +183,9 @@ function computeTechnical(dailyRows: any[]): TechnicalResult {
   return {
     last,
     ma20,
+    ma50,
+    ma200,
+    crossSignal,
     chg1d: chgPct(last, at(1)),
     chg5d: chgPct(last, at(5)),
     chg20d: chgPct(last, at(20)),
@@ -249,16 +287,37 @@ function digestCompanyReport(report: any): DigestResult {
   const sectorROE = avgROERatio * 100;
   const sectorDER = avgDER;
 
-  const peSignal = PER !== null && PER > 0 && sectorPE > 0
-    ? (PER < sectorPE ? 'lebih murah' : PER > sectorPE * 1.5 ? 'lebih mahal/berisiko' : 'netral')
-    : null;
-  const pbvSignal = PBV !== null && PBV > 0 && sectorPBV > 0
-    ? (PBV < sectorPBV ? 'lebih murah' : PBV > sectorPBV * 1.5 ? 'lebih mahal/berisiko' : 'netral')
-    : null;
-  const roeSignal = ROE !== null ? (ROE > sectorROE ? 'di atas sektor' : 'di bawah sektor') : null;
-  const derSignal = DER !== null
-    ? (DER < 0 ? 'berisiko tinggi' : DER > sectorDER * 1.5 ? 'berisiko tinggi' : 'wajar')
-    : null;
+  const peSignal = PER === null
+    ? null
+    : PER < 0
+    ? '⚠️ Rugi bersih (PER tidak bermakna)'
+    : sectorPE > 0
+    ? (PER < sectorPE ? '✅ Lebih murah dari sektor' : PER > sectorPE * 1.5 ? '⚠️ Lebih mahal dari sektor' : '— Wajar')
+    : '— Wajar';
+
+  const pbvSignal = PBV === null
+    ? null
+    : PBV < 0
+    ? '🔴 RED FLAG: Ekuitas Negatif (Defisit Modal)'
+    : sectorPBV > 0
+    ? (PBV < sectorPBV ? '✅ Lebih diskon dari sektor' : PBV > sectorPBV * 1.5 ? '⚠️ Mahal / Premium' : '— Wajar')
+    : '— Wajar';
+
+  const roeSignal = ROE === null
+    ? null
+    : PBV !== null && PBV < 0
+    ? '⚠️ Tidak reliable (Modal Negatif)'
+    : sectorROE !== null
+    ? (ROE > sectorROE ? '✅ Lebih efisien dari sektor' : '⚠️ Di bawah sektor')
+    : '— Netral';
+
+  const derSignal = DER === null
+    ? null
+    : DER < 0 || (PBV !== null && PBV < 0)
+    ? '🔴 RED FLAG: Utang Melebihi Aset'
+    : sectorDER > 0
+    ? (DER > sectorDER * 1.5 ? '⚠️ Beban utang tinggi' : '✅ Utang terjaga/wajar')
+    : '— Wajar';
 
   return {
     companyName: report.company_name || null,
@@ -597,22 +656,22 @@ async function selectTickersWithLlm(newsResults: any[], filingsArray: any[]): Pr
     timestamp: n.timestamp,
   }));
 
-  const prompt = `Kamu adalah Manajer Investasi senior di sekuritas terkemuka Indonesia dengan pengalaman 15+ tahun menganalisis saham IDX.
+  const prompt = `Kamu adalah Chief Investment Officer (CIO) senior yang menyeleksi kandidat saham paling berpotensi dan edukatif untuk konten @sahamfyp.
 
-Tugasmu: Dari daftar berita berikut, pilih 1-4 saham yang paling menarik untuk dijadikan watchlist hari ini.
+Tugasmu: Dari daftar berita berikut, pilih 1 hingga maksimal 4 saham terbaik untuk dimasukkan ke Watchlist hari ini.
 
-## KRITERIA SELEKSI (urutan prioritas):
-1. **Katalis kuat**: Rights issue besar, M&A, perubahan direksi/resign massal, akuisisi signifikan
-2. **Dampak harga potensial**: Event yang bisa gerakkan signifikan dalam 1-5 hari
-3. **Unik/interesting**: Cerita yang tidak biasa, kontroversial, atau jarang terjadi
-4. **Relevansi pasar**: Semakin banyak simbol yang terlibat = semakin menarik
+## KRITERIA SELEKSI & BOBOT KATALIS:
+1. **Prioritas Utama (Skor 8-10)**: M&A / Akuisisi Pengendali Baru, Rights Issue / Private Placement Besar, Turnaround Kinerja Laba, atau Isu Hukum/Manajemen Krusial.
+2. **Prioritas Kedua (Skor 5-7)**: Dividen Jumbo di luar perkiraan, Kontrak/Ekspansi Baru Signifikan.
+3. **Penyaringan Kualitatif (Hard Filter)**:
+   - JANGAN pilih saham yang beritanya hanya klaim sentimen tanpa katalis aksi korporasi konkret.
+   - Jangan pilih emiten yang beritanya hanya laporan keuangan rutin tanpa kejutan (surprise).
+   - Usahakan DIVERSIFIKASI (maksimal 1-2 emiten per sektor).
 
-## ATURAN:
-- Minimal 1 saham, maksimal 4 saham
-- Kalau tidak ada yang cukup menarik, kembalikan array kosong (tickers: [])
-- Jangan pilih saham yang hanya karena "bullish" tanpa katalis spesifik
-- Lebih baik 1 saham berkualitas daripada 4 saham lemah
-- Prioritaskan saham dengan katalis KORPORASI (bukan sekadar sentimen)
+## KOMBINASI WATCHLIST YANG IDEAL:
+- 2 Saham Katalis Positif (Bullish/Growth/M&A)
+- 1 Saham Katalis Risk / Warning (seperti isu KPK/manajemen) sebagai edukasi kewaspadaan pembaca
+- 1 Saham Value / Dividend / Turnaround
 
 ## DAFTAR BERITA (total: ${newsResults.length}):
 ${JSON.stringify(newsSummary, null, 2)}
@@ -620,13 +679,13 @@ ${JSON.stringify(newsSummary, null, 2)}
 ## FORMAT OUTPUT (JSON VALID):
 {
   "tickers": ["TICKER1", "TICKER2"],
-  "reasoning": "Alasan singkat kenapa memilih saham-saham ini (maks 50 kata)",
+  "reasoning": "Alasan singkat mengapa memilih saham-saham ini (maks 50 kata)",
   "skipped": [
-    { "ticker": "XXX", "reason": "Alasan skip" }
+    { "ticker": "XXX", "reason": "Alasan spesifik kenapa di-skip" }
   ]
 }
 
-Output HANYA JSON, tanpa markdown atau penjelasan tambahan.`;
+Output HANYA JSON, tanpa markdown.`;
 
   try {
     const parsed = await generateJson(prompt);
@@ -679,6 +738,9 @@ async function generateSlidesWithLlm(
       technicalData: {
         last: tech.last || d.price,
         ma20: tech.ma20 ? Math.round(tech.ma20) : 'N/A',
+        ma50: tech.ma50 ? Math.round(tech.ma50) : 'N/A',
+        ma200: tech.ma200 ? Math.round(tech.ma200) : 'N/A',
+        crossSignal: tech.crossSignal || 'N/A',
         chg1d: tech.chg1d !== null && tech.chg1d !== undefined ? `${tech.chg1d >= 0 ? '+' : ''}${tech.chg1d.toFixed(1)}%` : 'N/A',
         chg5d: tech.chg5d !== null && tech.chg5d !== undefined ? `${tech.chg5d >= 0 ? '+' : ''}${tech.chg5d.toFixed(1)}%` : 'N/A',
         chg20d: tech.chg20d !== null && tech.chg20d !== undefined ? `${tech.chg20d >= 0 ? '+' : ''}${tech.chg20d.toFixed(1)}%` : 'N/A',
@@ -706,9 +768,9 @@ async function generateSlidesWithLlm(
   const fmtIhsChange = (c: number | null | undefined): string =>
     c === null || c === undefined ? 'N/A' : `${c >= 0 ? '+' : ''}${c.toFixed(2)}%`;
 
-  const prompt = `Kamu adalah Content Creator ahli untuk @sahamfyp — akun edukasi saham Gen Z dengan 100K+ followers.
+  const prompt = `Kamu adalah Content Creator & Analyst ahli untuk @sahamfyp — akun edukasi saham Gen Z dengan 100K+ followers.
 
-Tugasmu: Buat konten carousel Instagram "Market Open" yang engaging, informatif, dan actionable.
+Tugasmu: Buat konten carousel Instagram "Market Open" yang engaging, informatif, presisi, dan edukatif.
 
 ## DATA MARKET:
 - Tanggal: ${today}
@@ -731,6 +793,17 @@ ${JSON.stringify(candidatesData, null, 2)}
 
 ## KAMUS FIX (dari docs, jangan ubah):
 ${JSON.stringify(FIXED_KAMUS, null, 2)}
+
+## MATRIX MATRIX ANALISIS 2x2 (FUNDAMENTAL x TEKNIKAL):
+- 🟢 **Fund Bagus x Tech Bagus** ➔ Kuadran Hijau: "Kandidat Kuat Semua Horizon (Swing / Day Trade / Value Holding)".
+- 🟡 **Fund Bagus x Tech Jelek** ➔ Kuadran Kuning: "Kandidat Long-term / Value. JANGAN Day Trade dulu (Falling Knife), tunggu reversal!".
+- 🟠 **Fund Jelek x Tech Bagus** ➔ Kuadran Orange: "Spekulatif Jangka Pendek / Momentum-driven. JANGAN HOLD JANGKA PANJANG!".
+- 🔴 **Fund Jelek x Tech Jelek** ➔ Kuadran Merah: "HINDARI / RISK WARNING. Risiko struktural/ekuitas negatif/delisting/gocap".
+
+## ATURAN EVALUASI VIBE CHECK & TRIGGER:
+1. Manfaatkan field crossSignal (misal Golden Cross 🚀 atau Death Cross ☠️) dan MA50 untuk narasi vibeCheck & trigger.
+2. PER & PBV Negatif BUKAN DISKON, tapi RED FLAG (Rugi / Defisit Modal).
+3. Evaluasi warning: Jika berita bullish tapi fundamental sangat jelek atau modal minus, WAJIB beri peringatan di field warning.
 
 ## FORMAT OUTPUT (JSON VALID - TANPA MARKDOWN):
 {
@@ -773,7 +846,7 @@ ${JSON.stringify(FIXED_KAMUS, null, 2)}
         { "term": "PBV", "definition": "Price to Book Value — Bayar berapa kali lipat dari aset bersih.", "analogi": "Harga asli Rp1jt bayar Rp3jt (PBV 3x) = bayar mahal buat ekspektasi/brand." },
         { "term": "ROE", "definition": "Return on Equity — Efisiensi modal sendiri menghasilkan cuan.", "analogi": "Modal Rp1jt untung Rp200rb (ROE 20%) vs modal Rp5jt untung Rp200rb (ROE 4%)." },
         { "term": "DER", "definition": "Debt to Equity Ratio — Utang dibanding modal sendiri.", "analogi": "DER 1x = utang 100% modal. DER 3x = utang 3x lipat modal." },
-        { "term": "MA20", "definition": "Moving Average 20 Hari — Garis rata-rata harga 20 hari terakhir (bantal penopang tren).", "analogi": "Batas aman 'napas' harga. Kalau di atas MA20 = lagi aman, kalau jebol = lampu kuning." },
+        { "term": "MA20 & MA50", "definition": "Moving Average — Garis rata-rata harga 20 hari & 50 hari terakhir (bantal penopang tren).", "analogi": "Batas aman 'napas' harga. Kalau potong ke atas = Golden Cross 🚀 (terbang), kalau potong ke bawah = Death Cross ☠️." },
         { "term": "Bullish / Bearish", "definition": "Bullish = tren naik (bergairah), Bearish = tren turun (lesu).", "analogi": "Bullish = banteng menyundul ke atas; Bearish = beruang mencakar ke bawah." }
       ],
       "note": "Nggak ada angka 'pasti bagus' — semua musti dibandingin sama rata-rata sektornya.",
@@ -797,7 +870,7 @@ ${JSON.stringify(FIXED_KAMUS, null, 2)}
   ]
 }
 
-## ATURAN:
+## ATURAN Tambahan:
 1. {{STOCK_SLIDES}} harus di-replace dengan array slides (1 per kandidat)
 2. Tiap stock slide WAJIB mempunyai format (termasuk objek technical):
    {
@@ -811,37 +884,37 @@ ${JSON.stringify(FIXED_KAMUS, null, 2)}
      "fundamentals": {
        "per": "nilai",
        "perSector": "rata-rata",
-       "perSignal": "✅ lebih murah / ⚠️ lebih mahal / — netral",
+       "perSignal": "✅ lebih murah / ⚠️ lebih mahal / ⚠️ Rugi bersih",
        "pbv": "nilai",
        "pbvSector": "rata-rata",
-       "pbvSignal": "✅ lebih murah / ⚠️ lebih mahal / — netral",
+       "pbvSignal": "✅ lebih diskon / ⚠️ mahal / 🔴 RED FLAG (Ekuitas Negatif)",
        "roe": "nilai",
        "roeSector": "rata-rata",
-       "roeSignal": "✅ di atas / ⚠️ di bawah / — netral",
+       "roeSignal": "✅ lebih efisien / ⚠️ di bawah / ⚠️ tidak reliable",
        "der": "nilai",
        "derSector": "rata-rata",
-       "derSignal": "⚠️ berisiko / — wajar"
+       "derSignal": "✅ utang terjaga / ⚠️ beban utang tinggi / 🔴 RED FLAG"
      },
      "technical": {
        "last": 13750,
        "ma20": 11120,
+       "ma50": 10500,
+       "crossSignal": "Golden Cross 🚀 (Sinyal Bullish Kuat)",
        "chg1d": "+5.0%",
        "chg5d": "-8.8%",
        "chg20d": "+96.4%",
        "pctFromHigh52w": "-8.8%",
        "volumeSignal": "normal",
-       "vibeCheck": "🟢 Bullish — mampir bentar abis naik kenceng / 🟡 Cooling down — abis lari kenceng, lagi ngos-ngosan / 🔴 Bearish — tekanan jual tinggi",
-       "trigger": "Penjelasan singkat batas aman/support/resistance ala Gen Z (contoh: Stabil di atas Rp11.100 (MA20) = istirahat doang. Jebol ke bawah situ = profit-taking beneran.)"
+       "vibeCheck": "🟢 Bullish / 🟡 Cooling down / 🔴 Bearish",
+       "trigger": "Penjelasan singkat batas aman/support/resistance & MA50/Golden Cross ala Gen Z"
      },
-     "tldr": "1 kalimat kesimpulan (bullish/bearish/netral + alasan)",
+     "tldr": "1 kalimat kesimpulan (bullish/bearish/netral + alasan kuadran)",
      "warning": "Catatan risiko/peringatan jika fundamental atau teknikal menunjukkan ancaman"
    }
 3. Manfaatkan data TOP GAINERS/LOSERS & teknikal untuk narasi vibeCheck & trigger.
-4. Slide KAMUS: sertakan penjelasan istilah teknikal (MA20, Bullish/Bearish, Cooling Down) dalam bahasa analogi Gen Z yang mudah dipahami.
-5. Kalau fundamental BERTENTANGAN dengan cerita berita (berita bullish tapi valuasi ekstrem/rugi), WAJIB tambah note peringatan di field "warning"
-6. Bahasa: Indonesia informal, Gen Z friendly, scannable
-7. JANGAN prediksi arah harga — deskriptif saja
-8. Output HANYA JSON valid, tanpa markdown`;
+4. Bahasa: Indonesia informal, Gen Z friendly, scannable
+5. JANGAN prediksi arah harga — deskriptif saja
+6. Output HANYA JSON valid, tanpa markdown`;
 
   try {
     return await generateJson(prompt);
