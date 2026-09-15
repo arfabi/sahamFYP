@@ -578,6 +578,18 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       const candidatesInserts = candidates.map((c: any) => {
         const d = digestCompanyReport(c.report);
 
+        // Sanitize signal text for DB CHECK constraints if DB has strict string ENUM/CHECK constraints
+        const sanitizeSignal = (sig: string | null) => {
+          if (!sig) return null;
+          if (sig.includes('Rugi') || sig.includes('mahal')) return 'lebih mahal/berisiko';
+          if (sig.includes('RED FLAG') || sig.includes('berisiko') || sig.includes('Utang Melebihi')) return 'berisiko tinggi';
+          if (sig.includes('diskon') || sig.includes('murah')) return 'lebih murah';
+          if (sig.includes('efisien') || sig.includes('di atas')) return 'di atas sektor';
+          if (sig.includes('bawah')) return 'di bawah sektor';
+          if (sig.includes('wajar') || sig.includes('terjaga')) return 'wajar';
+          return 'netral';
+        };
+
         return {
           log_id: logId,
           ticker: c.symbol,
@@ -598,10 +610,10 @@ async function handler(req: VercelRequest, res: VercelResponse) {
           avg_sector_pbv: d.avgPBV || null,
           avg_sector_roe: d.avgROE || null,
           avg_sector_der: d.avgDER || null,
-          pe_signal: d.peSignal,
-          pbv_signal: d.pbvSignal,
-          roe_signal: d.roeSignal,
-          der_signal: d.derSignal,
+          pe_signal: sanitizeSignal(d.peSignal),
+          pbv_signal: sanitizeSignal(d.pbvSignal),
+          roe_signal: sanitizeSignal(d.roeSignal),
+          der_signal: sanitizeSignal(d.derSignal),
           technical_json: c.technical || null,
           enrichment_json: c.report
         };
