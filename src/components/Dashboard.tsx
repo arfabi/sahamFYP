@@ -51,13 +51,6 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    label: 'CREATE',
-    items: [
-      { id: 'generator', label: 'Content Generator', icon: '📝' },
-      { id: 'manual', label: 'Manual Editor', icon: '✏️' },
-    ],
-  },
-  {
     label: 'PUBLISHING',
     items: [
       { id: 'accounts', label: 'Accounts', icon: '🔗' },
