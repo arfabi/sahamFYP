@@ -437,8 +437,25 @@ function StockCandidateDetailModal({
   const fmtNum = (n: number | null | undefined, d = 2) =>
     n == null ? '-' : n.toLocaleString('id-ID', { minimumFractionDigits: d, maximumFractionDigits: d });
 
+  const fmtPct = (val: any) => {
+    if (val == null || val === 'N/A' || val === '') return '-';
+    if (typeof val === 'number') {
+      return `${val >= 0 ? '+' : ''}${val.toFixed(2)}%`;
+    }
+    const str = String(val).trim();
+    if (str.endsWith('%')) {
+      const parsed = parseFloat(str.slice(0, -1));
+      if (!isNaN(parsed)) return `${parsed >= 0 ? '+' : ''}${parsed.toFixed(2)}%`;
+      return str;
+    }
+    const parsed = parseFloat(str);
+    if (isNaN(parsed)) return str;
+    return `${parsed >= 0 ? '+' : ''}${parsed.toFixed(2)}%`;
+  };
+
   const tech = c.technical_json || {};
   const tags = c.news_tags || [];
+  const displayPrice = tech.last || c.price;
 
   return (
     <div
@@ -462,7 +479,7 @@ function StockCandidateDetailModal({
             </div>
             <h2 className="text-xl font-bold text-white mt-2">{c.company_name || c.ticker}</h2>
             <div className="flex items-center gap-4 mt-2 text-sm">
-              <span>Harga Terakhir: <strong className="font-mono text-amber-400 text-base">Rp {fmtNum(c.price, 0)}</strong></span>
+              <span>Harga Terakhir: <strong className="font-mono text-amber-400 text-base">Rp {fmtNum(displayPrice, 0)}</strong></span>
               {c.market_cap && <span>Market Cap: <strong className="text-slate-300">Rp {fmtNum(c.market_cap / 1e12, 2)} T</strong></span>}
             </div>
           </div>
@@ -588,6 +605,15 @@ function StockCandidateDetailModal({
                 </div>
               </div>
             </div>
+
+            {/* Kamus Fundamental Gen Z Guide Box */}
+            <div className="mt-3 p-3.5 bg-amber-50/50 border border-amber-200 rounded-xl text-xs space-y-1 text-slate-700">
+              <p className="font-bold text-amber-900 text-xs flex items-center gap-1">💡 Kamus Fundamental Gen Z:</p>
+              <p>• <strong>PER (Price to Earnings Ratio)</strong>: Banding harga vs laba per saham. <span className="text-emerald-700 font-semibold">Lebih KECIL dari sektor = LEBIH MURAH</span> (balik modal lebih cepat).</p>
+              <p>• <strong>PBV (Price to Book Value)</strong>: Bayar berapa kali aset bersih perusahaan. <span className="text-emerald-700 font-semibold">Lebih KECIL dari sektor = LEBIH DISKON</span> (harga murah dibanding nilai modal murni).</p>
+              <p>• <strong>ROE (Return on Equity)</strong>: Efisiensi modal sendiri menghasilkan laba. <span className="text-emerald-700 font-semibold">Lebih BESAR dari sektor = LEBIH JAGO CUAN</span>.</p>
+              <p>• <strong>DER (Debt to Equity Ratio)</strong>: Banding utang vs modal sendiri. <span className="text-emerald-700 font-semibold">Lebih KECIL dari sektor = LEBIH AMAN</span> (beban utang/paylater terjaga).</p>
+            </div>
           </div>
 
           {/* Data Technical Lengkap */}
@@ -600,7 +626,7 @@ function StockCandidateDetailModal({
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
                 <div className="bg-slate-800 p-2.5 rounded-lg text-center">
                   <span className="text-[11px] text-slate-400 block">Harga Terakhir</span>
-                  <span className="font-mono font-bold text-amber-400 text-sm">{fmtNum(tech.last || c.price, 0)}</span>
+                  <span className="font-mono font-bold text-amber-400 text-sm">{fmtNum(displayPrice, 0)}</span>
                 </div>
                 <div className="bg-slate-800 p-2.5 rounded-lg text-center">
                   <span className="text-[11px] text-slate-400 block">MA20 (Support)</span>
@@ -609,19 +635,19 @@ function StockCandidateDetailModal({
                 <div className="bg-slate-800 p-2.5 rounded-lg text-center">
                   <span className="text-[11px] text-slate-400 block">Chg 1D</span>
                   <span className={`font-mono font-bold text-sm ${String(tech.chg1d).includes('-') ? 'text-rose-400' : 'text-emerald-400'}`}>
-                    {tech.chg1d || '-'}
+                    {fmtPct(tech.chg1d)}
                   </span>
                 </div>
                 <div className="bg-slate-800 p-2.5 rounded-lg text-center">
                   <span className="text-[11px] text-slate-400 block">Chg 5D</span>
                   <span className={`font-mono font-bold text-sm ${String(tech.chg5d).includes('-') ? 'text-rose-400' : 'text-emerald-400'}`}>
-                    {tech.chg5d || '-'}
+                    {fmtPct(tech.chg5d)}
                   </span>
                 </div>
                 <div className="bg-slate-800 p-2.5 rounded-lg text-center">
                   <span className="text-[11px] text-slate-400 block">Chg 20D</span>
                   <span className={`font-mono font-bold text-sm ${String(tech.chg20d).includes('-') ? 'text-rose-400' : 'text-emerald-400'}`}>
-                    {tech.chg20d || '-'}
+                    {fmtPct(tech.chg20d)}
                   </span>
                 </div>
                 <div className="bg-slate-800 p-2.5 rounded-lg text-center">
@@ -647,6 +673,14 @@ function StockCandidateDetailModal({
                   )}
                 </div>
               )}
+
+              {/* Kamus Teknikal Gen Z Guide Box */}
+              <div className="p-3 bg-slate-800/90 border border-slate-700 rounded-xl text-xs space-y-1 text-slate-300">
+                <p className="font-bold text-amber-300 text-xs flex items-center gap-1">💡 Kamus Teknikal Gen Z:</p>
+                <p>• <strong>MA20 (Moving Average 20 Hari)</strong>: Garis bantal rata-rata harga 20 hari terakhir. <span className="text-emerald-400 font-semibold">Di atas MA20 = tren lagi aman/uptrend</span>; <span className="text-rose-400 font-semibold">Jebol MA20 = awas tekanan jual/profit taking</span>.</p>
+                <p>• <strong>Chg 1D / 5D / 20D</strong>: Persentase perubahan harga dalam 1 hari bursa, 1 minggu (5 hari), dan 1 bulan (20 hari bursa).</p>
+                <p>• <strong>Volume Signal</strong>: Rame = ada transaksi/akumulasi besar; Sepi = transaksi sepi, hati-hati likuiditas.</p>
+              </div>
             </div>
           </div>
         </div>
