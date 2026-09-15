@@ -119,95 +119,62 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   return (
     <div className="h-screen bg-slate-50 flex overflow-hidden">
       {/* Sidebar */}
-      <aside
-        className={`bg-slate-900 text-white flex flex-col transition-all duration-300 ${
-          sidebarCollapsed ? 'w-16' : 'w-64'
-        }`}
-      >
+      <aside className="w-64 bg-slate-900 text-white flex flex-col">
         {/* Logo */}
-        <div className="p-4 border-b border-slate-700">
-          <div className="flex items-center justify-between">
-            {!sidebarCollapsed && <h1 className="text-lg font-bold">📰 SahamFYP</h1>}
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="p-1.5 rounded-lg hover:bg-slate-700 transition"
-            >
-              {sidebarCollapsed ? '→' : '←'}
-            </button>
-          </div>
+        <div className="p-4 border-b border-slate-800">
+          <h1 className="text-lg font-bold flex items-center gap-2">📰 SahamFYP</h1>
         </div>
 
-        {/* Navigation — grouped, collapsible per section */}
+        {/* Navigation — clean fixed navigation */}
         <nav className="flex-1 overflow-y-auto space-y-6 p-3">
           {NAV_GROUPS.map((group) => {
-            const isExpanded = openGroups[group.label] ?? true;
-            const isActive = group.items.some((i) => i.id === activePage);
-            const showItems = isExpanded || isActive;
             return (
               <div key={group.label} className="space-y-1">
-                {!sidebarCollapsed && (
-                  <button
-                    type="button"
-                    onClick={() => toggleGroup(group.label)}
-                    className="flex w-full items-center justify-between px-3 text-left"
-                  >
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-                      {group.label}
-                    </span>
-                    <span className="text-xs text-slate-500 transition-transform">
-                      {isExpanded ? '▼' : '▶'}
-                    </span>
-                  </button>
-                )}
-                {showItems &&
-                  group.items.map((item) => {
-                    const disabled = item.badge === 'soon';
-                    const active = activePage === item.id;
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => (disabled ? undefined : setActivePage(item.id))}
-                        disabled={disabled}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition text-left ${
-                          disabled
-                            ? 'cursor-not-allowed opacity-60'
-                            : active
-                            ? 'bg-amber-500 text-white'
-                            : 'text-slate-300 hover:bg-slate-700 hover:text-white'
-                        }`}
-                      >
-                        <span className="text-lg">{item.icon}</span>
-                        {!sidebarCollapsed && (
-                          <span className="text-sm font-medium flex items-center gap-1.5">
-                            {item.label}
-                            {item.badge === 'beta' && (
-                              <span className="px-1.5 py-0.25 text-[10px] font-semibold bg-amber-100 text-amber-700 rounded">
-                                Beta
-                              </span>
-                            )}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
+                <div className="px-3 py-1">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                    {group.label}
+                  </span>
+                </div>
+                {group.items.map((item) => {
+                  const disabled = item.badge === 'soon';
+                  const active = activePage === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => (disabled ? undefined : setActivePage(item.id))}
+                      disabled={disabled}
+                      className={`flex w-full items-center justify-between px-3 py-2 text-sm rounded-xl font-medium transition ${
+                        active
+                          ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
+                          : disabled
+                          ? 'text-slate-600 cursor-not-allowed'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                    >
+                      <span className="flex items-center gap-2.5">
+                        <span className="text-base">{item.icon}</span>
+                        <span>{item.label}</span>
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             );
           })}
-
           {/* Utility pages pinned at the bottom (Settings) */}
-          <div className="pt-2 border-t border-slate-700 space-y-1">
+          <div className="pt-2 border-t border-slate-800 space-y-1">
             {UTILITY_PAGES.map((item) => (
               <button
                 key={item.id}
                 onClick={() => setActivePage(item.id)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition text-left ${
+                className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded-xl font-medium transition text-left ${
                   activePage === item.id
-                    ? 'bg-amber-500 text-white'
-                    : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+                    ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
+                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                 }`}
               >
-                <span className="text-lg">{item.icon}</span>
-                {!sidebarCollapsed && <span className="text-sm font-medium">{item.label}</span>}
+                <span className="text-base">{item.icon}</span>
+                <span>{item.label}</span>
               </button>
             ))}
           </div>
