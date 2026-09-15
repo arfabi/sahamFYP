@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 // Dashboard Layout - Grouped navigation (content pipeline)
 // SOURCES -> ANALYSIS -> CREATE -> PUBLISHING (+ Settings utility)
 // ============================================================
@@ -41,6 +41,7 @@ interface NavGroup {
 }
 
 const NAV_GROUPS: NavGroup[] = [
+  { label: 'HOME', items: [{ id: 'overview', label: 'Dashboard Overview', icon: '📊' }] },
   { label: 'SOURCES', items: [{ id: 'news-monitoring', label: 'News Monitoring', icon: '📡' }] },
   {
     label: 'ANALYSIS',

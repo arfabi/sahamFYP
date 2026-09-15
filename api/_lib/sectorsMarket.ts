@@ -62,6 +62,16 @@ export async function fetchFilings(opts?: {
   return fetchSectors('/filings/', p);
 }
 
+// ─── Daily Transaction (per stock) — 1 credit ─────────────────────────────────
+// GET /v2/daily/{symbol}/ — riwayat harga harian. Butuh window ~365d ke belakang
+// supaya MA20 + high52w valid. Response: array rows { date, close, volume, ... }.
+export async function fetchDaily(symbol: string, start?: string, end?: string) {
+  const p: Record<string, string> = {};
+  if (start) p.start = start;
+  if (end) p.end = end;
+  return fetchSectors(`/daily/${symbol}/`, p);
+}
+
 // ─── Foreign Flow Top — 2 credits ──────────────────────────────────────────────
 export async function fetchForeignFlowTop(opts?: {
   start?: string;

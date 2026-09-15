@@ -1,10 +1,6 @@
-// ============================================================
-// Overview Page - Phase 1
-// Dashboard home with stats and quick actions
-// ============================================================
-
 import React, { useState, useEffect } from 'react';
 import { isReplizConfigured } from '../services/repliz';
+import { supabase } from '../services/supabase';
 
 interface OverviewProps {
   onNavigate: (page: string) => void;
@@ -21,27 +17,64 @@ interface ServiceInfo {
 
 export default function Overview({ onNavigate }: OverviewProps) {
   const [replizConnected, setReplizConnected] = useState(false);
+  const [statsData, setStatsData] = useState({
+    totalNews: 0,
+    totalBriefs: 0,
+    totalPosts: 0,
+    watchlistToday: 0,
+  });
+  const [loadingStats, setLoadingStats] = useState(true);
 
   useEffect(() => {
     setReplizConnected(isReplizConfigured());
+    loadStats();
   }, []);
 
+  const loadStats = async () => {
+    setLoadingStats(true);
+    try {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const [newsRes, briefRes, postsRes, watchRes] = await Promise.all([
+        supabase.from('sector_trigger_news').select('id', { count: 'exact', head: true }),
+        supabase.from('sector_trigger_logs').select('id', { count: 'exact', head: true }),
+        supabase.from('generated_posts').select('id', { count: 'exact', head: true }),
+        supabase.from('sector_trigger_candidates').select('id', { count: 'exact', head: true }).gte('created_at', `${todayStr}T00:00:00`),
+      ]);
+
+      setStatsData({
+        totalNews: newsRes.count || 0,
+        totalBriefs: briefRes.count || 0,
+        totalPosts: postsRes.count || 0,
+        watchlistToday: watchRes.count || 0,
+      });
+    } catch (e) {
+      console.error('Failed to load Overview stats:', e);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
   const stats = [
-    { label: 'Total Posts', value: 0, icon: '📝', color: 'bg-blue-50 text-blue-600' },
-    { label: 'Scheduled', value: 0, icon: '📅', color: 'bg-amber-50 text-amber-600' },
-    { label: 'Published', value: 0, icon: '✅', color: 'bg-green-50 text-green-600' },
-    { label: 'Engagement', value: 0, icon: '❤️', color: 'bg-pink-50 text-pink-600' },
+    { label: 'Total Berita', value: loadingStats ? '...' : statsData.totalNews, icon: '📡', color: 'bg-blue-50 text-blue-600', page: 'news-monitoring' },
+    { label: 'Total Market Brief', value: loadingStats ? '...' : statsData.totalBriefs, icon: '📈', color: 'bg-purple-50 text-purple-600', page: 'daily-market-brief' },
+    { label: 'Total Posts', value: loadingStats ? '...' : statsData.totalPosts, icon: '📝', color: 'bg-amber-50 text-amber-600', page: 'posts' },
+    { label: 'Stock Watchlist Today', value: loadingStats ? '...' : statsData.watchlistToday, icon: '👁️', color: 'bg-green-50 text-green-600', page: 'stock-watchlist' },
   ];
 
+  // Exact 5 Services Order requested:
+  // 1. Sectors.app : Stocks Market Data, Stocks News & Filling
+  // 2. Sumopod LLM
+  // 3. Supabase
+  // 4. Cloudinary
+  // 5. Repliz (Sosial Media Aggregator)
   const services: ServiceInfo[] = [
-    { name: 'Instagram (Repliz)', icon: '📱', description: 'Publish & schedule posts', connected: replizConnected, details: replizConnected ? 'Account connected' : 'Not configured', color: 'bg-pink-50 text-pink-600' },
     {
-      name: 'Cloudinary',
-      icon: '☁️',
-      description: 'Image hosting & CDN',
-      connected: !!(import.meta.env.VITE_CLOUDINARY_CLOUD_NAME && import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET),
-      details: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'Not configured',
-      color: 'bg-blue-50 text-blue-600',
+      name: 'Sectors.app',
+      icon: '📊',
+      description: 'Stocks Market Data, Stocks News & Filing',
+      connected: !!import.meta.env.VITE_SECTORS_API_KEY,
+      details: import.meta.env.VITE_SECTORS_API_KEY ? 'API key configured' : 'Not configured',
+      color: 'bg-green-50 text-green-600',
     },
     {
       name: 'Sumopod LLM',
@@ -52,14 +85,6 @@ export default function Overview({ onNavigate }: OverviewProps) {
       color: 'bg-purple-50 text-purple-600',
     },
     {
-      name: 'Sectors.app',
-      icon: '📊',
-      description: 'Stock market data',
-      connected: !!import.meta.env.VITE_SECTORS_API_KEY,
-      details: import.meta.env.VITE_SECTORS_API_KEY ? 'API key configured' : 'Not configured',
-      color: 'bg-green-50 text-green-600',
-    },
-    {
       name: 'Supabase',
       icon: '🗄️',
       description: 'Database & storage',
@@ -67,14 +92,30 @@ export default function Overview({ onNavigate }: OverviewProps) {
       details: import.meta.env.VITE_SUPABASE_URL ? 'Project connected' : 'Not configured',
       color: 'bg-slate-100 text-slate-600',
     },
+    {
+      name: 'Cloudinary',
+      icon: '☁️',
+      description: 'Image hosting & CDN',
+      connected: !!(import.meta.env.VITE_CLOUDINARY_CLOUD_NAME && import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET),
+      details: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'Not configured',
+      color: 'bg-blue-50 text-blue-600',
+    },
+    {
+      name: 'Repliz (Sosial Media Aggregator)',
+      icon: '📱',
+      description: 'Multi-platform social media posting (Instagram, TikTok, Threads, FB, Telegram)',
+      connected: replizConnected,
+      details: replizConnected ? 'Account connected' : 'Not configured',
+      color: 'bg-pink-50 text-pink-600',
+    },
   ];
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">📊 Overview</h1>
-          <p className="text-sm text-slate-500 mt-1">Ringkasan aktivitas konten SahamFYP</p>
+          <h1 className="text-2xl font-bold text-slate-800">📊 Dashboard Overview</h1>
+          <p className="text-sm text-slate-500 mt-1">Ringkasan statistik & status infrastruktur SahamFYP</p>
         </div>
         <button
           onClick={() => onNavigate('generator')}
@@ -86,11 +127,15 @@ export default function Overview({ onNavigate }: OverviewProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, i) => (
-          <div key={i} className="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
+          <div
+            key={i}
+            onClick={() => onNavigate(stat.page)}
+            className="bg-white rounded-xl p-5 shadow-sm border border-slate-200 cursor-pointer hover:border-amber-300 hover:shadow transition"
+          >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-500">{stat.label}</p>
-                <p className="text-2xl font-bold text-slate-800 mt-1">{stat.value}</p>
+                <p className="text-sm font-medium text-slate-500">{stat.label}</p>
+                <p className="text-3xl font-extrabold text-slate-800 mt-1">{stat.value}</p>
               </div>
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${stat.color}`}>
                 {stat.icon}
@@ -102,7 +147,7 @@ export default function Overview({ onNavigate }: OverviewProps) {
 
       {/* Connection Status - Detailed */}
       <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
-        <h2 className="text-lg font-semibold text-slate-800 mb-4">🔗 Connection Status</h2>
+        <h2 className="text-lg font-bold text-slate-800 mb-4">🔗 Connection Status</h2>
         <div className="space-y-3">
           {services.map((service, i) => (
             <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition">
@@ -113,18 +158,18 @@ export default function Overview({ onNavigate }: OverviewProps) {
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-slate-800">{service.name}</h3>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${service.connected ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${service.connected ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
                       {service.connected ? 'Connected' : 'Disconnected'}
                     </span>
                   </div>
-                  <p className="text-sm text-slate-500 mt-0.5">{service.description}</p>
-                  <p className="text-xs text-slate-400 mt-1">{service.details}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">{service.description}</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">{service.details}</p>
                 </div>
               </div>
               {!service.connected && (
                 <button
                   onClick={() => onNavigate('settings')}
-                  className="px-4 py-2 text-sm font-medium text-amber-600 hover:text-amber-700 border border-amber-200 rounded-lg hover:bg-amber-50 transition"
+                  className="px-4 py-2 text-xs font-medium text-amber-600 hover:text-amber-700 border border-amber-200 rounded-lg hover:bg-amber-50 transition"
                 >
                   Setup
                 </button>
@@ -136,19 +181,11 @@ export default function Overview({ onNavigate }: OverviewProps) {
 
       <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
         <h2 className="text-lg font-semibold text-slate-800 mb-4">⚡ Quick Actions</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
           <ActionCard icon="📝" title="Generate Konten" desc="Buat carousel dari berita" onClick={() => onNavigate('generator')} />
-                    <ActionCard icon="📅" title="Posts" desc="Cek seluruh post yang ada" onClick={() => onNavigate('posts')} />
+          <ActionCard icon="📅" title="Posts" desc="Cek seluruh post yang ada" onClick={() => onNavigate('posts')} />
           <ActionCard icon="🔗" title="Accounts" desc="Kelola IG / TikTok / Telegram" onClick={() => onNavigate('accounts')} />
           <ActionCard icon="⚙️" title="Settings" desc="Konfigurasi API keys" onClick={() => onNavigate('settings')} />
-        </div>
-      </div>
-
-      <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
-        <h2 className="text-lg font-semibold text-slate-800 mb-4">🕐 Recent Activity</h2>
-        <div className="text-center py-8 text-slate-400">
-          <span className="text-4xl block mb-2">📭</span>
-          <p className="text-sm">Belum ada aktivitas terbaru</p>
         </div>
       </div>
     </div>

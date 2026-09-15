@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { validateApiKey } from '../_lib/auth.js';
 import { generateJson } from '../_lib/llm.js';
-import { fetchIndexDaily, fetchFilings, fetchNews, fetchTopMovers, getYesterdayDate, getTodayDate } from '../_lib/sectorsMarket.js';
+import { fetchIndexDaily, fetchFilings, fetchNews, fetchTopMovers, fetchDaily, getYesterdayDate, getTodayDate } from '../_lib/sectorsMarket.js';
 import { fetchCompanyReport } from '../_lib/sectors.js';
 import { supabaseServer } from '../_lib/supabase.js';
 
@@ -35,6 +35,7 @@ const IHSG_WINDOW_DAYS = 10; // fetch a range so weekend/holiday gaps resolve to
 const TOP_MOVERS_MIN_MCAP_BILLION = 500; // filter micro/penny caps so top movers match real market screens (e.g. Stockbit)
 const BASE_CREDITS = 5; // index-daily(1) + news(1) + filings(1) + top-changes gainers+losers(2)
 const REPORT_CREDITS_PER_TICKER = 3; // company report sections requested: valuation + financials + peers
+const TECHNICAL_CREDITS_PER_TICKER = 1; // GET /v2/daily/{symbol}/ per ticker lolos LLM
 
 /** WIB date `n` days ago as YYYY-MM-DD */
 function dateNDaysAgo(n: number): string {
@@ -76,6 +77,88 @@ function extractPeersCompanies(peersRaw: any): any[] {
   // Fallback: flat array (older shape)
   if (Array.isArray(peersRaw)) return peersRaw;
   return [];
+}
+
+/**
+ * Hitung metrik teknikal dari riwayat GET /v2/daily/{symbol}/.
+ * Semua angka mentah (number), formatting (+/-/%/Rp) urusan display & LLM.
+ * Response diasumsikan array rows { date, close|price|last_close_price, volume }
+ * urutan apapun — di-sort ascending by date dulu.
+ */
+interface TechnicalResult {
+  last: number | null;
+  ma20: number | null;
+  chg1d: number | null;
+  chg5d: number | null;
+  chg20d: number | null;
+  high52w: number | null;
+  pctFromHigh52w: number | null;
+  lastVolume: number | null;
+  avgVol20: number | null;
+  volumeSignal: 'rame' | 'normal' | 'sepi' | null;
+  asOf: string | null;
+  windowDays: number;
+}
+
+function pickClose(r: any): number | null {
+  return num(r?.close) ?? num(r?.close_price) ?? num(r?.last_close_price) ?? num(r?.price);
+}
+
+function pickVolume(r: any): number | null {
+  return num(r?.volume) ?? num(r?.total_volume) ?? num(r?.volume_traded);
+}
+
+function chgPct(last: number | null, prev: number | null): number | null {
+  if (last === null || prev === null || prev === 0) return null;
+  return ((last - prev) / Math.abs(prev)) * 100;
+}
+
+function computeTechnical(dailyRows: any[]): TechnicalResult {
+  const empty: TechnicalResult = {
+    last: null, ma20: null, chg1d: null, chg5d: null, chg20d: null,
+    high52w: null, pctFromHigh52w: null, lastVolume: null, avgVol20: null,
+    volumeSignal: null, asOf: null, windowDays: 0,
+  };
+  const rows = (Array.isArray(dailyRows) ? dailyRows : [])
+    .map((r: any) => ({ date: r?.date || r?.trading_date || null, close: pickClose(r), volume: pickVolume(r) }))
+    .filter((r) => r.date && r.close !== null)
+    .sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  if (!rows.length) return empty;
+
+  const closes = rows.map((r) => r.close as number);
+  const last = closes[closes.length - 1];
+  const at = (n: number) => (closes.length > n ? closes[closes.length - 1 - n] : null);
+  const ma20 = closes.length >= 20
+    ? closes.slice(-20).reduce((a, b) => a + b, 0) / 20
+    : null;
+  const windowRows = rows.slice(-252);
+  const high52w = windowRows.length ? Math.max(...windowRows.map((r) => r.close as number)) : null;
+  const vols = rows.map((r) => r.volume).filter((v): v is number => v !== null);
+  const lastVolume = vols.length ? vols[vols.length - 1] : null;
+  const avgVol20 = vols.length >= 20
+    ? vols.slice(-20).reduce((a, b) => a + b, 0) / 20
+    : null;
+  const volumeSignal: TechnicalResult['volumeSignal'] =
+    lastVolume === null || avgVol20 === null || avgVol20 === 0
+      ? null
+      : lastVolume > avgVol20 * 1.5 ? 'rame'
+      : lastVolume < avgVol20 * 0.7 ? 'sepi'
+      : 'normal';
+
+  return {
+    last,
+    ma20,
+    chg1d: chgPct(last, at(1)),
+    chg5d: chgPct(last, at(5)),
+    chg20d: chgPct(last, at(20)),
+    high52w,
+    pctFromHigh52w: chgPct(last, high52w),
+    lastVolume,
+    avgVol20,
+    volumeSignal,
+    asOf: rows[rows.length - 1].date,
+    windowDays: windowRows.length,
+  };
 }
 
 /**
@@ -375,10 +458,18 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    // Step 3: Fetch company reports ONLY for selected tickers
+    // Step 3: Fetch company reports + daily teknikal ONLY for selected tickers
+    const techStart = dateNDaysAgo(400); // window ~1 thn supaya MA20 + high52w valid
     const candidates = await Promise.all(
       selectedTickers.map(async (ticker: string) => {
-        const report = await fetchCompanyReport(ticker, ['valuation', 'financials', 'peers']);
+        const [report, dailyRaw] = await Promise.all([
+          fetchCompanyReport(ticker, ['valuation', 'financials', 'peers']),
+          fetchDaily(ticker, techStart, today).catch((e: any) => {
+            console.warn(`[SectorTrigger Open] fetchDaily gagal untuk ${ticker}:`, e?.message || e);
+            return [];
+          }),
+        ]);
+        const technical = computeTechnical(Array.isArray(dailyRaw) ? dailyRaw : (dailyRaw?.data || dailyRaw?.results || []));
         const relatedNews = newsResults.filter((n: any) =>
           Array.isArray(n?.symbols) && n.symbols.some((s: string) =>
             String(s).replace(/\.JK$/i, '') === String(ticker).replace(/\.JK$/i, '')
@@ -391,6 +482,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
           tags: relatedNews[0]?.tags || [],
           sector: relatedNews[0]?.sector || null,
           report,
+          technical,
         };
       })
     );
@@ -424,6 +516,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
           pbv_signal: d.pbvSignal,
           roe_signal: d.roeSignal,
           der_signal: d.derSignal,
+          technical_json: c.technical || null,
           enrichment_json: c.report
         };
       });
@@ -449,7 +542,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     // Step 4: LLM (Sumopod) generates final slides
     const naskah = await generateSlidesWithLlm(today, dataDate, ihs, candidates, newsResults, selection, topMovers);
 
-    const totalCredits = BASE_CREDITS + candidates.length * REPORT_CREDITS_PER_TICKER;
+    const totalCredits = BASE_CREDITS + candidates.length * (REPORT_CREDITS_PER_TICKER + TECHNICAL_CREDITS_PER_TICKER);
 
     // Update log with final credits
     if (logId) {
@@ -546,6 +639,7 @@ async function generateSlidesWithLlm(
 ): Promise<any> {
   const candidatesData = candidates.map((c: any) => {
     const d = digestCompanyReport(c.report);
+    const tech = c.technical || {};
 
     return {
       symbol: c.symbol,
@@ -569,6 +663,15 @@ async function generateSlidesWithLlm(
       signalDER: d.derSignal || 'N/A',
       revenue: d.revenue !== null ? d.revenue : 'N/A',
       netIncome: d.netIncome !== null ? d.netIncome : 'N/A',
+      technicalData: {
+        last: tech.last || d.price,
+        ma20: tech.ma20 ? Math.round(tech.ma20) : 'N/A',
+        chg1d: tech.chg1d !== null && tech.chg1d !== undefined ? `${tech.chg1d >= 0 ? '+' : ''}${tech.chg1d.toFixed(1)}%` : 'N/A',
+        chg5d: tech.chg5d !== null && tech.chg5d !== undefined ? `${tech.chg5d >= 0 ? '+' : ''}${tech.chg5d.toFixed(1)}%` : 'N/A',
+        chg20d: tech.chg20d !== null && tech.chg20d !== undefined ? `${tech.chg20d >= 0 ? '+' : ''}${tech.chg20d.toFixed(1)}%` : 'N/A',
+        pctFromHigh52w: tech.pctFromHigh52w !== null && tech.pctFromHigh52w !== undefined ? `${tech.pctFromHigh52w >= 0 ? '+' : ''}${tech.pctFromHigh52w.toFixed(1)}%` : 'N/A',
+        volumeSignal: tech.volumeSignal || 'normal',
+      }
     };
   });
 
@@ -590,7 +693,7 @@ async function generateSlidesWithLlm(
   const fmtIhsChange = (c: number | null | undefined): string =>
     c === null || c === undefined ? 'N/A' : `${c >= 0 ? '+' : ''}${c.toFixed(2)}%`;
 
-  const prompt = `Kamu adalah Content Creator ahli untuk @sahamfyp \u2014 akun edukasi saham Gen Z dengan 100K+ followers.
+  const prompt = `Kamu adalah Content Creator ahli untuk @sahamfyp — akun edukasi saham Gen Z dengan 100K+ followers.
 
 Tugasmu: Buat konten carousel Instagram "Market Open" yang engaging, informatif, dan actionable.
 
@@ -652,14 +755,21 @@ ${JSON.stringify(FIXED_KAMUS, null, 2)}
       "template": "kamus",
       "title": "Kamus Ala Gen Z",
       "intro": "Biar lo ngerti istilah di slide sebelumnya",
-      "terms": "GUNAKAN_FIX_KAMUS_DI_ATAS + tambah istilah baru jika ada di slides (maks 6 items total)",
-      "note": "Nggak ada angka 'pasti bagus' \u2014 semua musti dibandingin sama rata-rata sektornya.",
+      "terms": [
+        { "term": "PER", "definition": "Price to Earnings Ratio — Berapa tahun balik modal kalau laba perusahaan segini terus.", "analogi": "Beli HP Rp15jt, tiap tahun lo \"untung\" Rp1jt → PER = 15x." },
+        { "term": "PBV", "definition": "Price to Book Value — Bayar berapa kali lipat dari aset bersih.", "analogi": "Harga asli Rp1jt bayar Rp3jt (PBV 3x) = bayar mahal buat ekspektasi/brand." },
+        { "term": "ROE", "definition": "Return on Equity — Efisiensi modal sendiri menghasilkan cuan.", "analogi": "Modal Rp1jt untung Rp200rb (ROE 20%) vs modal Rp5jt untung Rp200rb (ROE 4%)." },
+        { "term": "DER", "definition": "Debt to Equity Ratio — Utang dibanding modal sendiri.", "analogi": "DER 1x = utang 100% modal. DER 3x = utang 3x lipat modal." },
+        { "term": "MA20", "definition": "Moving Average 20 Hari — Garis rata-rata harga 20 hari terakhir (bantal penopang tren).", "analogi": "Batas aman 'napas' harga. Kalau di atas MA20 = lagi aman, kalau jebol = lampu kuning." },
+        { "term": "Bullish / Bearish", "definition": "Bullish = tren naik (bergairah), Bearish = tren turun (lesu).", "analogi": "Bullish = banteng menyundul ke atas; Bearish = beruang mencakar ke bawah." }
+      ],
+      "note": "Nggak ada angka 'pasti bagus' — semua musti dibandingin sama rata-rata sektornya.",
       "accent": "#F2A93B"
     },
     {
       "template": "standar",
       "title": "Kesimpulan",
-      "description": "${candidatesData.length} saham ini kepilih dari ${newsResults.length} berita \u2014 murni karena katalis korporasi, bukan karena udah naik/turun harga.",
+      "description": "${candidatesData.length} saham ini kepilih dari ${newsResults.length} berita — murni karena katalis korporasi, bukan karena udah naik/turun harga.",
       "visualIcon": "Scale",
       "accent": "#F2A93B"
     },
@@ -667,7 +777,7 @@ ${JSON.stringify(FIXED_KAMUS, null, 2)}
       "template": "cta",
       "title": "Gimana Menurutmu?",
       "description": "Dari ${candidatesData.length} katalis hari ini, mana yang paling bikin lo penasaran? Drop di komen!",
-      "disclaimer": "DYOR \u2014 Konten ini edukasi, bukan ajakan jual/beli. Bedakan 'ramai karena berita' sama 'naik karena kinerja'.",
+      "disclaimer": "DYOR — Konten ini edukasi, bukan ajakan jual/beli. Bedakan 'ramai karena berita' sama 'naik karena kinerja'.",
       "visualIcon": "MessageCircle",
       "accent": "#F2A93B"
     }
@@ -676,7 +786,7 @@ ${JSON.stringify(FIXED_KAMUS, null, 2)}
 
 ## ATURAN:
 1. {{STOCK_SLIDES}} harus di-replace dengan array slides (1 per kandidat)
-2. Tiap stock slide punya format:
+2. Tiap stock slide WAJIB mempunyai format (termasuk objek technical):
    {
      "template": "stock",
      "ticker": "SYMBOL",
@@ -688,24 +798,36 @@ ${JSON.stringify(FIXED_KAMUS, null, 2)}
      "fundamentals": {
        "per": "nilai",
        "perSector": "rata-rata",
-       "perSignal": "\u2705 lebih murah / \u26a0\ufe0f lebih mahal / \u2014 netral",
+       "perSignal": "✅ lebih murah / ⚠️ lebih mahal / — netral",
        "pbv": "nilai",
        "pbvSector": "rata-rata",
-       "pbvSignal": "\u2705 lebih murah / \u26a0\ufe0f lebih mahal / \u2014 netral",
+       "pbvSignal": "✅ lebih murah / ⚠️ lebih mahal / — netral",
        "roe": "nilai",
        "roeSector": "rata-rata",
-       "roeSignal": "\u2705 di atas / \u26a0\ufe0f di bawah / \u2014 netral",
+       "roeSignal": "✅ di atas / ⚠️ di bawah / — netral",
        "der": "nilai",
        "derSector": "rata-rata",
-       "derSignal": "\u26a0\ufe0f berisiko / \u2014 wajar"
+       "derSignal": "⚠️ berisiko / — wajar"
      },
-     "tldr": "1 kalimat kesimpulan (bullish/bearish/netral + alasan)"
+     "technical": {
+       "last": 13750,
+       "ma20": 11120,
+       "chg1d": "+5.0%",
+       "chg5d": "-8.8%",
+       "chg20d": "+96.4%",
+       "pctFromHigh52w": "-8.8%",
+       "volumeSignal": "normal",
+       "vibeCheck": "🟢 Bullish — mampir bentar abis naik kenceng / 🟡 Cooling down — abis lari kenceng, lagi ngos-ngosan / 🔴 Bearish — tekanan jual tinggi",
+       "trigger": "Penjelasan singkat batas aman/support/resistance ala Gen Z (contoh: Stabil di atas Rp11.100 (MA20) = istirahat doang. Jebol ke bawah situ = profit-taking beneran.)"
+     },
+     "tldr": "1 kalimat kesimpulan (bullish/bearish/netral + alasan)",
+     "warning": "Catatan risiko/peringatan jika fundamental atau teknikal menunjukkan ancaman"
    }
-3. Manfaatkan data TOP GAINERS/LOSERS untuk narasi (contoh: "TINS masih lanjut bullish, dari kemarin sudah naik 4.2%")
-4. Slide KAMUS: gunakan data FIX_KAMUS di atas, jangan definisi ulang. Tambah istilah baru hanya jika ada di slides.
+3. Manfaatkan data TOP GAINERS/LOSERS & teknikal untuk narasi vibeCheck & trigger.
+4. Slide KAMUS: sertakan penjelasan istilah teknikal (MA20, Bullish/Bearish, Cooling Down) dalam bahasa analogi Gen Z yang mudah dipahami.
 5. Kalau fundamental BERTENTANGAN dengan cerita berita (berita bullish tapi valuasi ekstrem/rugi), WAJIB tambah note peringatan di field "warning"
 6. Bahasa: Indonesia informal, Gen Z friendly, scannable
-7. JANGAN prediksi arah harga \u2014 deskriptif saja
+7. JANGAN prediksi arah harga — deskriptif saja
 8. Output HANYA JSON valid, tanpa markdown`;
 
   try {
