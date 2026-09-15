@@ -28,7 +28,7 @@ export default function ContentGenerator() {
     try {
       // Dynamic import to avoid circular dependencies
       const { scrapeUrl } = await import('../services/scraper');
-      const { classifyContent } = await import('../services/gemini');
+      const { classifyContent } = await import('../services/llm');
       const { enrichClassification } = await import('../services/enrichment');
       const { generateNaskah } = await import('../services/naskahGenerator');
 

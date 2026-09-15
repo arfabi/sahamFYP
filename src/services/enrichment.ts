@@ -7,7 +7,7 @@
  */
 
 import { enrichData } from './api';
-import type { ClassificationResult } from './gemini';
+import type { ClassificationResult } from './llm';
 
 export interface EnrichmentResult {
   category: ClassificationResult['category'];

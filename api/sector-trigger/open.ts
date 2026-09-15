@@ -1,11 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { validateApiKey } from '../_lib/auth.js';
+import { generateJson } from '../_lib/llm.js';
 import { fetchIndexDaily, fetchFilings, fetchNews, fetchTopMovers, getYesterdayDate, getTodayDate } from '../_lib/sectorsMarket.js';
 import { fetchCompanyReport } from '../_lib/sectors.js';
 import { supabaseServer } from '../_lib/supabase.js';
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 // Fixed kamus from docs/format-brief-revisi-14-sept-2026.md
 const FIXED_KAMUS = [
@@ -30,6 +28,21 @@ const FIXED_KAMUS = [
     analogi: 'Kayak paylater. DER 1x = utang lo sama gede sama modal sendiri. DER 3x = utang lo 3x lipat modal sendiri \u2014 makin gede, makin gampang "kepontal" kalau ada masalah.'
   }
 ];
+
+// ─── Sectors API usage / credit bookkeeping ───────────────────────────────────
+const NEWS_TAGS = 'bullish,rights-issue,executive-changes';
+const IHSG_WINDOW_DAYS = 10; // fetch a range so weekend/holiday gaps resolve to latest trading day
+const TOP_MOVERS_MIN_MCAP_BILLION = 500; // filter micro/penny caps so top movers match real market screens (e.g. Stockbit)
+const BASE_CREDITS = 5; // index-daily(1) + news(1) + filings(1) + top-changes gainers+losers(2)
+const REPORT_CREDITS_PER_TICKER = 3; // company report sections requested: valuation + financials + peers
+
+/** WIB date `n` days ago as YYYY-MM-DD */
+function dateNDaysAgo(n: number): string {
+  const now = new Date();
+  const wib = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+  wib.setDate(wib.getDate() - n);
+  return wib.toISOString().split('T')[0];
+}
 
 /** Safely coerce a finite number */
 function num(v: any): number | null {
@@ -75,7 +88,7 @@ function extractPeersCompanies(peersRaw: any): any[] {
  *  - overview.{ market_cap, sector }, top-level company_name
  *  - peers[].peers_data.companies[] for cross-check averages
  */
-function digestCompanyReport(report: any): {
+interface DigestResult {
   companyName: string | null;
   sector: string | null;
   price: number | null;
@@ -94,8 +107,10 @@ function digestCompanyReport(report: any): {
   pbvSignal: string | null;
   roeSignal: string | null;
   derSignal: string | null;
-} {
-  const empty = {
+}
+
+function digestCompanyReport(report: any): DigestResult {
+  const empty: DigestResult = {
     companyName: null, sector: null, price: null, marketCap: null,
     PER: null, PBV: null, ROE: null, DER: null, revenue: null, netIncome: null,
     avgPER: 0, avgPBV: 0, avgROE: 0, avgDER: 0,
@@ -132,15 +147,18 @@ function digestCompanyReport(report: any): {
     return e !== null && tl !== null ? tl / e : null;
   });
 
-  const price = num(valuation.last_close_price) ?? num(overview.last_close_price);
-  const marketCap = num(overview.market_cap);
-  const PER = num(curVal.pe);
-  const PBV = num(curVal.pb);
-  const roeRatio = num(profit.roe);
+  // Multi-field fallback untuk price: close_price > last_close_price > harga
+  const price = num(valuation.close_price) ?? num(valuation.last_close_price) ?? num(overview.last_close_price) ?? num(valuation.price);
+  const marketCap = num(overview.market_cap) ?? num(valuation.market_cap);
+  // PER: hist_val.pe > hist_val.pe_ttm > valuation.pe_ratio
+  const PER = num(curVal.pe) ?? num(curVal.pe_ttm) ?? num(valuation.pe_ratio);
+  // PBV: hist_val.pb > hist_val.pb_mrq > valuation.pb_ratio
+  const PBV = num(curVal.pb) ?? num(curVal.pb_mrq) ?? num(valuation.pb_ratio);
+  const roeRatio = num(profit.roe) ?? num(financials.roe);
   const ROE = roeRatio !== null ? roeRatio * 100 : null;
-  const DER = num(leverage.debt_to_equity_ratio);
-  const revenue = num(curFin.revenue);
-  const netIncome = num(curFin.earnings);
+  const DER = num(leverage.debt_to_equity_ratio) ?? num(financials.debt_to_equity) ?? num(leverage.debt_to_equity);
+  const revenue = num(curFin.revenue) ?? num(financials.revenue) ?? num(curFin.total_revenue);
+  const netIncome = num(curFin.earnings) ?? num(financials.net_income) ?? num(curFin.net_income);
 
   // Prefer Sectors' own peer average from the valuation row; fall back to computed peers average
   const sectorPE = num(curVal.pe_peer_avg) ?? avgPER;
@@ -179,18 +197,40 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const yesterday = getYesterdayDate();
     const today = getTodayDate();
+    const ihsStart = dateNDaysAgo(IHSG_WINDOW_DAYS);
 
     // Step 1: Fetch raw data (IHSG + news + filings + top movers)
     const [indexData, newsData, filingsData, topMovers] = await Promise.all([
-      fetchIndexDaily(yesterday, yesterday),
-      fetchNews({ start: yesterday, end: today, limit: 15, tags: 'bullish,rights-issue,executive-changes' }),
+      fetchIndexDaily(ihsStart, today),
+      fetchNews({ start: yesterday, end: today, limit: 15, tags: NEWS_TAGS }),
       fetchFilings({ start: yesterday, end: today }),
-      fetchTopMovers({ classifications: ['top_gainers', 'top_losers'], periods: ['1d'], nStock: 5 }),
+      fetchTopMovers({
+        classifications: ['top_gainers', 'top_losers'],
+        periods: ['1d'],
+        nStock: 5,
+        minMcapBillion: TOP_MOVERS_MIN_MCAP_BILLION,
+      }),
     ]);
 
     const newsResults = Array.isArray(newsData?.results) ? newsData.results : [];
     const filingsArray = Array.isArray(filingsData) ? filingsData : (filingsData?.data || filingsData?.results || []);
-    const ihs = Array.isArray(indexData) ? indexData[0] : indexData;
+
+    // IHSG: index-daily returns { index_code, date, price } rows (no change field).
+    // Latest trading day = last row of the window; change% computed vs previous row.
+    const idxRows = Array.isArray(indexData) ? indexData : [];
+    const idxLast = idxRows.length ? idxRows[idxRows.length - 1] : null;
+    const idxPrev = idxRows.length > 1 ? idxRows[idxRows.length - 2] : null;
+    const lastPrice = idxLast ? num(idxLast.price) : null;
+    const prevPrice = idxPrev ? num(idxPrev.price) : null;
+    const ihs = idxLast
+      ? {
+          price: lastPrice,
+          prev: prevPrice,
+          change: lastPrice !== null && prevPrice !== null ? ((lastPrice - prevPrice) / prevPrice) * 100 : null,
+          date: idxLast.date,
+        }
+      : null;
+    const dataDate = ihs?.date || yesterday;
 
     // Insert main log to database
     const { data: logData, error: logError } = await supabaseServer
@@ -198,9 +238,9 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       .insert({
         session: 'open',
         trigger_date: today,
-        data_date: yesterday,
-        ihsg_price: ihs?.price || null,
-        ihsg_change: ihs?.change || null,
+        data_date: dataDate,
+        ihsg_price: ihs?.price ?? null,
+        ihsg_change: ihs?.change ?? null,
         news_fetched: newsResults.length,
         status: 'success'
       })
@@ -244,22 +284,24 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       const losers = topMovers?.top_losers?.['1d'] || [];
 
       gainers.forEach((g: any) => {
+        const pct = num(g.price_change);
         moversInserts.push({
           log_id: logId,
           classification: 'top_gainers',
           symbol: g.symbol,
           company_name: g.name,
-          price_change: g.price_change
+          price_change: pct !== null ? pct * 100 : null // store as percent (Sectors returns decimal: 0.05 = +5%)
         });
       });
 
       losers.forEach((l: any) => {
+        const pct = num(l.price_change);
         moversInserts.push({
           log_id: logId,
           classification: 'top_losers',
           symbol: l.symbol,
           company_name: l.name,
-          price_change: l.price_change
+          price_change: pct !== null ? pct * 100 : null
         });
       });
 
@@ -274,8 +316,8 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    // Step 2: Gemini selects best tickers from news
-    const selection = await selectTickersWithGemini(newsResults, filingsArray);
+    // Step 2: LLM (Sumopod) selects best tickers from news
+    const selection = await selectTickersWithLlm(newsResults, filingsArray);
     const selectedTickers = selection.tickers;
 
     // Update log with selection info
@@ -319,10 +361,10 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         success: true,
         session: 'open',
         date: today,
-        dataDate: yesterday,
+        dataDate: dataDate,
         naskah: null,
         message: 'Tidak ada katalis yang cukup kuat hari ini',
-        creditsUsed: 5,
+        creditsUsed: BASE_CREDITS,
         selection,        logId
       });
     }
@@ -398,10 +440,10 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    // Step 4: Gemini generates final slides
-    const naskah = await generateSlidesWithGemini(today, yesterday, ihs, candidates, newsResults, selection, topMovers);
+    // Step 4: LLM (Sumopod) generates final slides
+    const naskah = await generateSlidesWithLlm(today, dataDate, ihs, candidates, newsResults, selection, topMovers);
 
-    const totalCredits = 5 + candidates.length;
+    const totalCredits = BASE_CREDITS + candidates.length * REPORT_CREDITS_PER_TICKER;
 
     // Update log with final credits
     if (logId) {
@@ -415,7 +457,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       success: true,
       session: 'open',
       date: today,
-      dataDate: yesterday,
+      dataDate: dataDate,
       naskah,
       creditsUsed: totalCredits,
       selection,
@@ -429,16 +471,11 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
 export default handler;
 
-async function selectTickersWithGemini(newsResults: any[], filingsArray: any[]): Promise<{
+async function selectTickersWithLlm(newsResults: any[], filingsArray: any[]): Promise<{
   tickers: string[];
   reasoning: string;
   skipped: Array<{ ticker: string; reason: string }>;
 }> {
-  const model = genAI.getGenerativeModel({
-    model: 'gemini-3.5-flash-lite',
-    generationConfig: { responseMimeType: 'application/json' },
-  });
-
   const newsSummary = newsResults.map((n: any, i: number) => ({
     idx: i + 1,
     title: n.title,
@@ -479,37 +516,28 @@ ${JSON.stringify(newsSummary, null, 2)}
 
 Output HANYA JSON, tanpa markdown atau penjelasan tambahan.`;
 
-  const result = await model.generateContent(prompt);
-  let jsonStr = result.response.text().trim();
-  if (jsonStr.startsWith('\`\`\`json')) jsonStr = jsonStr.replace(/^\`\`\`json\s*\n?/, '').replace(/\n?\`\`\`\s*$/, '');
-  
   try {
-    const parsed = JSON.parse(jsonStr);
+    const parsed = await generateJson(prompt);
     return {
       tickers: parsed.tickers || [],
       reasoning: parsed.reasoning || '',
       skipped: parsed.skipped || [],
     };
-  } catch {
-    console.error('[SelectTickers] Failed to parse Gemini response:', jsonStr);
+  } catch (error) {
+    console.error('[SelectTickers] Failed to generate/parse LLM response:', error);
     return { tickers: [], reasoning: 'Gagal menganalisis berita', skipped: [] };
   }
 }
 
-async function generateSlidesWithGemini(
+async function generateSlidesWithLlm(
   today: string,
-  yesterday: string,
+  dataDate: string,
   ihs: any,
   candidates: any[],
   newsResults: any[],
   selection: { tickers: string[]; reasoning: string; skipped: Array<{ ticker: string; reason: string }> },
   topMovers: any
 ): Promise<any> {
-  const model = genAI.getGenerativeModel({
-    model: 'gemini-3.5-flash-lite',
-    generationConfig: { responseMimeType: 'application/json' },
-  });
-
   const candidatesData = candidates.map((c: any) => {
     const d = digestCompanyReport(c.report);
 
@@ -541,20 +569,35 @@ async function generateSlidesWithGemini(
   const gainers = topMovers?.top_gainers?.['1d'] || [];
   const losers = topMovers?.top_losers?.['1d'] || [];
 
+  // Format: "harga terakhir (+nilai perubahan) (persentase%)"
+  // Sectors returns price_change as decimal (0.05 = +5%); last_close_price = closing price.
+  const fmtMover = (m: any): string => {
+    const pct = num(m.price_change);
+    const last = num(m.last_close_price);
+    if (pct === null || last === null) return `${m.symbol} (${m.name}): data tidak lengkap`;
+    const prev = last / (1 + pct); // perubahan nilai dihitung dari harga penutupan
+    const valChange = last - prev;
+    const sign = valChange >= 0 ? '+' : '';
+    return `${m.symbol} (${m.name}): ${last.toLocaleString('id-ID')} (${sign}${valChange.toFixed(0)}) (${sign}${(pct * 100).toFixed(2)}%)`;
+  };
+
+  const fmtIhsChange = (c: number | null | undefined): string =>
+    c === null || c === undefined ? 'N/A' : `${c >= 0 ? '+' : ''}${c.toFixed(2)}%`;
+
   const prompt = `Kamu adalah Content Creator ahli untuk @sahamfyp \u2014 akun edukasi saham Gen Z dengan 100K+ followers.
 
 Tugasmu: Buat konten carousel Instagram "Market Open" yang engaging, informatif, dan actionable.
 
 ## DATA MARKET:
 - Tanggal: ${today}
-- Data harga: ${yesterday} (hari terakhir IDX buka)
-- IHSG: ${ihs?.price || 'N/A'} (${ihs?.change || 'N/A'}%)
+- Data harga: ${dataDate} (hari terakhir IDX buka)
+- IHSG: ${ihs?.price ?? 'N/A'} (${fmtIhsChange(ihs?.change)})
 
 ## TOP GAINERS (1D):
-${gainers.map((g: any) => `- ${g.symbol} (${g.name}): +${g.price_change}%`).join('\n') || 'Tidak ada data'}
+${gainers.map((g: any) => `- ${fmtMover(g)}`).join('\n') || 'Tidak ada data'}
 
 ## TOP LOSERS (1D):
-${losers.map((l: any) => `- ${l.symbol} (${l.name}): ${l.price_change}%`).join('\n') || 'Tidak ada data'}
+${losers.map((l: any) => `- ${fmtMover(l)}`).join('\n') || 'Tidak ada data'}
 
 ## WATCHLIST TERPILIH (${candidatesData.length} saham):
 ${JSON.stringify(candidatesData, null, 2)}
@@ -659,14 +702,10 @@ ${JSON.stringify(FIXED_KAMUS, null, 2)}
 7. JANGAN prediksi arah harga \u2014 deskriptif saja
 8. Output HANYA JSON valid, tanpa markdown`;
 
-  const result = await model.generateContent(prompt);
-  let jsonStr = result.response.text().trim();
-  if (jsonStr.startsWith('\`\`\`json')) jsonStr = jsonStr.replace(/^\`\`\`json\s*\n?/, '').replace(/\n?\`\`\`\s*$/, '');
-  
   try {
-    return JSON.parse(jsonStr);
+    return await generateJson(prompt);
   } catch (error) {
-    console.error('[GenerateSlides] Failed to parse Gemini response:', jsonStr);
+    console.error('[GenerateSlides] Failed to generate/parse LLM response:', error);
     throw error;
   }
 }

@@ -12,7 +12,7 @@ import * as LucideIcons from 'lucide-react';
 import TemplateRenderer, { PALETTE, type TemplateId, type CardItem, type MetricCard } from '../Templates';
 import { generateAllSlides, downloadAllImages } from '../services/imageGenerator';
 import { publishToInstagram, isReplizConfigured } from '../services/repliz';
-import { generateInstagramCaption } from '../services/gemini';
+import { generateInstagramCaption } from '../services/llm';
 import { contentLogsApi, generatedPostsApi, postImagesApi } from '../services/supabase';
 import type { CarouselData, SlideData } from '../types';
 
@@ -84,7 +84,7 @@ export default function FormWizard(props: FormWizardProps) {
   }, [data]);
 
   // Publish to Instagram via Repliz
-  // Auto generate caption via Gemini
+  // Auto generate caption via LLM (Sumopod)
   const handleAutoCaption = useCallback(async () => {
     setCaptionLoading(true);
     setPublishResult(null);

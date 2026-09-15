@@ -3,7 +3,7 @@ import React, { useState, useCallback } from 'react';
 import TemplateRenderer, { PALETTE } from '../Templates';
 import { generateAllSlides, downloadAllImages } from '../services/imageGenerator';
 import { publishToInstagram, isReplizConfigured } from '../services/repliz';
-import { generateInstagramCaption } from '../services/gemini';
+import { generateInstagramCaption } from '../services/llm';
 import { contentLogsApi, generatedPostsApi } from '../services/supabase';
 import type { CarouselData, SlideData } from '../types';
 import { CATEGORIES, TEMPLATE_ICONS, DEFAULT_SLIDES, uid, type ManualSlideData, type ContentCategory } from './manualEditorData';
@@ -82,7 +82,7 @@ export default function ManualEditor() {
     setDownloading(false);
   };
 
-  // Auto generate caption via Gemini
+  // Auto generate caption via LLM (Sumopod)
   const handleAutoCaption = async () => {
     setCaptionLoading(true);
     setMessage('');

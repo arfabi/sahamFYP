@@ -127,11 +127,11 @@ Tidak perlu menunggu berita — dipicu oleh jam:
 ```
 RSS Feed / Jadwal Cron
         ↓
-  [AI Classifier]          ← Gemini: tentukan kategori & ticker
+  [AI Classifier]          ← LLM (Sumopod): tentukan kategori & ticker
         ↓
   [Data Enrichment]        ← Sectors.app API: tarik data fundamental
         ↓
-  [AI Content Generator]   ← Gemini: buat naskah 8 slide carousel
+  [AI Content Generator]   ← LLM (Sumopod): buat naskah 8 slide carousel
         ↓
   [Carousel Builder]       ← React + html2image: render visual
         ↓
@@ -267,14 +267,14 @@ Bukan cuma tahu asing masuk atau keluar — tapi bisa lihat pola dan intensitasn
 
 **Pagi 08.00** — n8n trigger otomatis:
 1. Fetch data IHSG T-1, top gainer/loser, insider filing dari Sectors.app
-2. Gemini generate naskah 8 slide
+2. LLM (Sumopod) generate naskah 8 slide
 3. React render carousel → upload ke Cloudinary
 4. Repliz publish ke Instagram jam 08.00 tepat
 5. Supabase log status, Telegram kirim notifikasi ke admin
 
 **Sore 17.00** — n8n trigger otomatis:
 1. Fetch IHSG closing, market cap, foreign flow, broker asing dari Sectors.app
-2. Gemini generate naskah 8 slide
+2. LLM (Sumopod) generate naskah 8 slide
 3. Render → upload → publish → log → notifikasi
 
 **Sepanjang hari** — RSS berita masuk:
@@ -299,7 +299,7 @@ Bukan cuma tahu asing masuk atau keluar — tapi bisa lihat pola dan intensitasn
 
 ```
 Data Layer    : Sectors.app API + RSS Feed (CNBC Indonesia, Kontan, Bisnis.com, dll)
-AI Layer      : Google Gemini (klasifikasi + generate konten)
+AI Layer      : Sumopod LLM — OpenAI compatible (klasifikasi + generate konten)
 Render Layer  : React + Vite + html2image (carousel visual)
 Storage Layer : Cloudinary (CDN gambar) + Supabase (database)
 Publish Layer : Repliz (Instagram/TikTok scheduling)

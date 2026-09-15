@@ -44,11 +44,11 @@ export default function Overview({ onNavigate }: OverviewProps) {
       color: 'bg-blue-50 text-blue-600',
     },
     {
-      name: 'Gemini AI',
+      name: 'Sumopod LLM',
       icon: '🤖',
-      description: 'Content generation',
-      connected: !!import.meta.env.VITE_GEMINI_API_KEY,
-      details: import.meta.env.VITE_GEMINI_API_KEY ? 'API key configured' : 'Not configured',
+      description: 'Content generation (OpenAI compatible)',
+      connected: !!import.meta.env.VITE_LLM_MODEL,
+      details: import.meta.env.VITE_LLM_MODEL ? `Model: ${import.meta.env.VITE_LLM_MODEL}` : 'Not configured',
       color: 'bg-purple-50 text-purple-600',
     },
     {

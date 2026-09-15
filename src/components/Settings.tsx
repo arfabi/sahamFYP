@@ -48,7 +48,7 @@ export default function Settings() {
 
 function ApiKeysTab({ showKeys, toggleShowKey }: { showKeys: Record<string, boolean>; toggleShowKey: (key: string) => void }) {
   const configs = [
-    { key: 'VITE_GEMINI_API_KEY', label: 'Gemini AI', desc: 'https://makersuite.google.com/app/apikey' },
+    { key: 'VITE_LLM_MODEL', label: 'LLM (Sumopod — OpenAI compatible)', desc: 'https://ai.sumopod.com (diisi via SUMOPOD_MODEL)' },
     { key: 'VITE_SECTORS_API_KEY', label: 'Sectors.app', desc: 'https://sectors.app' },
     { key: 'VITE_REPLIZ_ACCESS_KEY', label: 'Repliz Access Key', desc: 'https://repliz.com → API' },
     { key: 'VITE_REPLIZ_SECRET_KEY', label: 'Repliz Secret Key', desc: 'https://repliz.com → API' },

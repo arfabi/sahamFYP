@@ -1,5 +1,5 @@
 ﻿import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { generateJson } from '../_lib/llm.js';
 import { validateApiKey } from '../_lib/auth.js';
 import {
   fetchIndexDaily,
@@ -12,8 +12,6 @@ import {
   getTodayDate,
   getYesterdayDate,
 } from '../_lib/sectorsMarket.js';
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -48,11 +46,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const prompt = buildClosePrompt(today, indexData, topMovers, foreignFlow, foreignNet, filings, brokers, brokerActivity);
-    const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash-lite', generationConfig: { responseMimeType: 'application/json' } });
-    const result = await model.generateContent(prompt);
-    let jsonStr = result.response.text().trim();
-    if (jsonStr.startsWith('```json')) jsonStr = jsonStr.replace(/^```json\s*\n?/, '').replace(/\n?```\s*$/, '');
-    const naskah = JSON.parse(jsonStr);
+    const naskah = await generateJson(prompt);
 
     if (naskah.slides?.[7]?.template === 'cta') {
       naskah.slides[7].visualIcon = 'MessageCircle';

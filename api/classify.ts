@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { parseBody } from './_lib/auth.js';
+import { generateJson, isLlmConfigured } from './_lib/llm.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS
@@ -20,9 +20,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'title and content are required' });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
+  if (!isLlmConfigured()) {
+    return res.status(500).json({ error: 'LLM not configured (SUMOPOD_API_KEY missing)' });
   }
 
   const prompt = `
@@ -47,24 +46,7 @@ DATA BERITA YANG HARUS DIKLASIFIKASIKAN:
 `;
 
   try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-3.5-flash-lite',
-      generationConfig: { responseMimeType: 'application/json' },
-    });
-
-    const result = await model.generateContent(prompt);
-    const rawOutput = result.response.text();
-
-    // Clean JSON from markdown code blocks
-    let jsonStr = rawOutput.trim();
-    if (jsonStr.startsWith('```json')) {
-      jsonStr = jsonStr.replace(/^```json\s*\n?/, '').replace(/\n?```\s*$/, '');
-    } else if (jsonStr.startsWith('```')) {
-      jsonStr = jsonStr.replace(/^```\s*\n?/, '').replace(/\n?```\s*$/, '');
-    }
-
-    const parsed = JSON.parse(jsonStr);
+    const parsed = await generateJson(prompt, { temperature: 0.2 });
     console.log('[Classify] Success:', parsed);
     return res.status(200).json(parsed);
   } catch (error) {

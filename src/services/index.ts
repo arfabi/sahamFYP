@@ -13,13 +13,13 @@ export type {
   PostImage 
 } from './supabase';
 
-// Gemini
+// LLM (Sumopod — OpenAI compatible)
 export { 
   generateContent, 
   classifyContent,
   generateInstagramCaption
-} from './gemini';
-export type { ClassificationResult, CaptionContext } from './gemini';
+} from './llm';
+export type { ClassificationResult, CaptionContext } from './llm';
 
 
 // Sectors.app

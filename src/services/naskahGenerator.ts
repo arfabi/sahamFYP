@@ -1,10 +1,10 @@
 // ============================================================
 // Naskah Generator Service (LLM 2)
-// Menghubungkan prompt builder dengan Gemini API
+// Menghubungkan prompt builder dengan LLM (Sumopod, OpenAI compatible)
 // Output: CarouselData (8 slide) yang siap dirender
 // ============================================================
 
-import { generateContent } from './gemini';
+import { generateContent } from './llm';
 import { buildNaskahPrompt, type CategoryType } from '../prompts/naskahGenerator';
 import type { CarouselData } from '../types';
 
@@ -123,7 +123,7 @@ export async function generateNaskah(params: GenerateNaskahParams): Promise<Caro
   // 1. Build prompt sesuai kategori
   const prompt = buildNaskahPrompt(category, title, content, enrichmentData, ticker);
 
-  // 2. Call Gemini API
+  // 2. Call LLM (via /api/llm proxy)
   const rawOutput = await generateContent(prompt);
 
   // 3. Parse JSON

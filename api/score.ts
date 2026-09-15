@@ -1,19 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { parseBody } from './_lib/auth.js';
-
-// --- Gemini ---
-function getGeminiModel() {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error('GEMINI_API_KEY not configured');
-  }
-  const genAI = new GoogleGenerativeAI(apiKey);
-  return genAI.getGenerativeModel({
-    model: 'gemini-3.5-flash-lite',
-    generationConfig: { responseMimeType: 'application/json' },
-  });
-}
+import { generateJson, isLlmConfigured } from './_lib/llm.js';
 
 // --- Scoring Prompt ---
 function buildScoringPrompt(
@@ -103,7 +90,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    const model = getGeminiModel();
+    if (!isLlmConfigured()) {
+      return res.status(500).json({ error: 'LLM not configured (SUMOPOD_API_KEY missing)' });
+    }
+
     const prompt = buildScoringPrompt(
       title,
       content,
@@ -112,18 +102,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       reason || 'Tidak ada alasan'
     );
 
-    const result = await model.generateContent(prompt);
-    const rawOutput = result.response.text();
-
-    // Clean markdown if present
-    let jsonStr = rawOutput.trim();
-    if (jsonStr.startsWith('```json')) {
-      jsonStr = jsonStr.replace(/^```json\s*\n?/, '').replace(/\n?```\s*$/, '');
-    } else if (jsonStr.startsWith('```')) {
-      jsonStr = jsonStr.replace(/^```\s*\n?/, '').replace(/\n?```\s*$/, '');
-    }
-
-    const parsed = JSON.parse(jsonStr);
+    const parsed = await generateJson(prompt, { temperature: 0.2 });
 
     return res.status(200).json({
       score: parsed.score ?? 0,

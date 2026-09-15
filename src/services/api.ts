@@ -1,6 +1,7 @@
 /**
  * Client-side API wrapper
- * Browser TIDAK BOLEH call Sectors.app/Gemini langsung (CORS block)
+ * Browser TIDAK BOLEH call Sectors.app / LLM provider langsung (CORS block
+ * + API key tidak boleh ter-expose ke client bundle)
  * Semua request di-proxy melalui Vercel serverless functions (/api/*)
  */
 
@@ -58,6 +59,18 @@ export interface ClassificationResult {
 
 export async function classifyContent(title: string, content: string): Promise<ClassificationResult> {
   return apiCall<ClassificationResult>('/classify', { title, content });
+}
+
+// ─── LLM (Sumopod — OpenAI compatible) ───────────────────────────────────────
+
+export interface LlmGenerateResult {
+  model: string;
+  text?: string;
+  data?: any;
+}
+
+export async function llmGenerate(prompt: string, json = false): Promise<LlmGenerateResult> {
+  return apiCall<LlmGenerateResult>('/llm', { prompt, json });
 }
 
 // ─── Enrich ──────────────────────────────────────────────────────────────────

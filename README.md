@@ -4,7 +4,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5.3-blue)](https://typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-5.4.0-purple)](https://vitejs.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4.10-cyan)](https://tailwindcss.com/)
-[![Gemini AI](https://img.shields.io/badge/Gemini-3.5-orange)](https://ai.google.dev/)
+[![LLM: Sumopod](https://img.shields.io/badge/LLM-Sumopod%20(OpenAI%20compatible)-orange)](https://ai.sumopod.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-Database-green)](https://supabase.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
@@ -86,14 +86,14 @@ Dengan demikian, SahamFYP tidak hanya memenuhi kebutuhan konten yang dibutuhkan 
 - **Referensi**: https://sectors.app/
 - **Cara kerja**: API sectors.app menyediakan endpoint untuk retrieve data fundamental per ticker (misal: `fetch-company-report`, `fetch-foreign-flow`, `fetch-market-overview`, `fetch-suspensions`), yang kemudian digunakan untuk enrich konten dan memberikan fakta terverifikasi terkait saham yang trending.
 
-### 3. Gemini (Google Generative AI)
+### 3. LLM — Sumopod (OpenAI compatible)
 
 - **Fungsi**:
   - **Klasifikasi berita** → kategori & ticker yang relevan
   - **Enrichment ringkasan** → ekstrak topik, insight, dan rekomendasi ticker
   - **Generate konten** → naskah slide, caption, hashtag, konten IG/TikTok
-- **Referensi**: https://ai.google.dev/ | https://github.com/google/generative-ai-docs
-- **Cara kerja**: Menggunakan `@google/generative-ai` SDK untuk generate content. Model yang digunakan: `gemini-3.5-flash-lite` (sesuai ketersediaan).
+- **Referensi**: https://ai.sumopod.com/ | https://sumopod.com/
+- **Cara kerja**: Endpoint OpenAI-compatible `POST {SUMOPOD_BASE_URL}/chat/completions` (default `https://ai.sumopod.com/v1/chat/completions`) dengan header `Authorization: Bearer <SUMOPOD_API_KEY>`. Model default `gemini/gemini-3.1-flash-lite` (ganti via `SUMOPOD_MODEL`). Wrapper server: `api/_lib/llm.ts`; wrapper client (proxy `/api/llm`): `src/services/llm.ts` — API key tidak pernah ter-expose ke bundle browser.
 
 ### 4. Cloudinary
 
@@ -113,7 +113,7 @@ SahamFYP menggunakan **6 kategori utama konten** yang masing-masing memiliki str
 - **Fungsi**: Mengklasifikasikan berita RSS/URL ke dalam 6 kategori utama dengan menentukan kategori terbaik dan ticker yang relevan (jika ada)
 - **Kategori**: `SINGLE_STOCK`, `MACRO_ECONOMY`, `SECTOR_ANALYSIS`, `CORPORATE_ACTION`, `IPO_RIGHTS_ISSUE`, `SUSPENSION_DELISTING`
 - **Output**: JSON berisi `{category, ticker?, confidence}`
-- **Model**: Gemini `gemini-3.5-flash-lite`
+- **Model**: Sumopod `gemini/gemini-3.1-flash-lite` (OpenAI compatible, bisa diganti via `SUMOPOD_MODEL`)
 
 #### b. Struktur Konten per Kategori
 
@@ -250,7 +250,7 @@ Selengkapnya baca di: [`docs/Struktur_Konten_6_Kategori_SahamFYP.md`](docs/Struk
 - **npm**: 9+
 - **Git**: untuk clone repo
 - **API Dependencies**:
-  - Gemini API key (Google AI Studio): https://aistudio.google.com/
+  - Sumopod API key (OpenAI-compatible LLM): https://ai.sumopod.com/
   - sectors.app API key: https://sectors.app/
   - Repliz account & API key: https://repliz.com/
   - Supabase project & credentials: https://supabase.com/
@@ -292,8 +292,11 @@ npm run build
 Buat file `.env.local` dengan variabel berikut:
 
 ```bash
-# Gemini API
-GEMINI_API_KEY=your_gemini_api_key_here
+# LLM (OpenAI-compatible: Sumopod)
+SUMOPOD_API_KEY=your_sumopod_api_key_here
+# Opsional (ada default di api/_lib/llm.ts)
+SUMOPOD_BASE_URL=https://ai.sumopod.com/v1
+SUMOPOD_MODEL=gemini/gemini-3.1-flash-lite
 
 # sectors.app
 SECTORS_API_KEY=your_sectors_api_key_here
@@ -318,7 +321,7 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 
 # n8n
 # Dipakai untuk autentikasi webhook calls dari n8n ke endpoint:
-# /api/enrich, /api/generate, /api/posts, /api/publish
+# /api/enrich, /api/generate, /api/posts, /api/publish, /api/llm
 N8N_API_KEY=your_n8n_api_key_optional
 
 # Telegram Bot (opsional)
@@ -461,7 +464,9 @@ sahamFYP/
 {
   "status": "ok",
   "env": {
-    "gemini": true,
+    "llm": true,
+    "llmModel": "gemini/gemini-3.1-flash-lite",
+    "llmBaseUrl": "https://ai.sumopod.com/v1",
     "sectors": true,
     "supabase": true,
     "repliz": true
@@ -490,6 +495,25 @@ sahamFYP/
 }
 ```
 - **Kategori yang didukung**: `SINGLE_STOCK`, `MACRO_ECONOMY`, `SECTOR_ANALYSIS`, `CORPORATE_ACTION`, `IPO_RIGHTS_ISSUE`, `SUSPENSION_DELISTING`
+
+### LLM Prompt (proxy)
+
+**POST** `/api/llm`
+
+- **Auth**: `X-API-Key` (= `N8N_API_KEY`)
+- **Fungsi**: proxy prompt bebas dari browser ke LLM (Sumopod, OpenAI compatible) supaya API key provider tidak ter-expose ke client
+- **Request body**:
+```json
+{
+  "prompt": "Buat caption Instagram ...",
+  "json": false,
+  "temperature": 0.7,
+  "maxTokens": 4096
+}
+```
+- **Response** (text mode): `{ "model": "gemini/gemini-3.1-flash-lite", "text": "..." }`
+- **Response** (json mode, `"json": true`): `{ "model": "gemini/gemini-3.1-flash-lite", "data": { ... } }`
+
 ### Enrich Berita
 
 **POST** `/api/enrich`
@@ -648,7 +672,7 @@ sahamFYP/
 
 ```
 Scrape Berita → Classify → Enrich → Generate → Publish
-     (CNBC)        (Gemini)  (Sectors.app)  (Gemini)   (Repliz)
+     (CNBC)        (LLM)     (Sectors.app)  (LLM)      (Repliz)
 ```
 
 1. **Scrape Berita** (`POST /api/scrape`) — Input: URL berita dari CNBC Indonesia → Output: teks berita
@@ -736,10 +760,10 @@ Untuk pengguna yang ingin post manual:
    - Jika pakai Cloudinary, pastikan gambar sudah di-upload & URL sudah benar
    - Hindari placeholder URL (misal `placehold.co`) yang mungkin tidak didukung
 
-5. **Gemini API error / rate limit**
-   - Cek quota & billing di Google AI Studio
-   - Pastikan API key aktif & tidak kadaluarsa
-   - Jika error model not found, pastikan model yang dipakai tersedia di region & tier yang dipakai
+5. **LLM API error / rate limit (Sumopod)**
+   - Cek quota & billing di dashboard Sumopod (https://ai.sumopod.com)
+   - Pastikan `SUMOPOD_API_KEY` aktif & tidak kadaluarsa
+   - Jika error model not found, pastikan `SUMOPOD_MODEL` tersedia di gateway yang dipakai
 
 6. **npm ERESOLVE saat install / build**
    - Pastikan versi vite yang dipakai sesuai (`^5.4.0`)
@@ -759,7 +783,7 @@ Untuk pengguna yang ingin post manual:
 3. **Verifikasi scheduleAt timezone**: Kalau pakai form wizard/manual post, pastikan waktu dalam WIB. Jika pakai format tanpa timezone, sistem akan asumsikan WIB (ditambahkan `+07:00`)
 4. **Monitoring via Telegram**: Aktifkan notifikasi Telegram (jika dipakai) untuk monitoring status publish
 5. **Backup environment variables**: Jangan simpan API key di repo. Gunakan `.env.local` yang tidak di-commit ke git
-6. **Update dependency secara berkala**: Vite, Gemini SDK, dan dependency lain mungkin ada update yang memperbaiki bug atau menambah fitur
+6. **Update dependency secara berkala**: Vite, SDK Supabase, dan dependency lain mungkin ada update yang memperbaiki bug atau menambah fitur
 
 ---
 
@@ -836,7 +860,7 @@ Proyek ini dikembangkan untuk keperluan edukasi dan riset.
 
 ## 🙏 Acknowledgement
 
-- **Google AI Studio** — Gemini API untuk classification, enrichment, dan content generation
+- **Sumopod** — LLM API (OpenAI-compatible) untuk classification, enrichment, dan content generation
 - **Repliz** — Platform scheduling & publishing ke Instagram/TikTok
 - **sector.app** — Data fundamental saham
 - **Cloudinary** — CDN & penyimpanan gambar

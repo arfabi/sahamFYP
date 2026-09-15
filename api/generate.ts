@@ -1,20 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import * as cheerio from 'cheerio';
 import { validateApiKey, parseBody } from './_lib/auth.js';
+import { chatComplete, generateJson } from './_lib/llm.js';
 
-// --- Gemini (self-contained) ---
-function getGeminiModel() {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error('GEMINI_API_KEY not configured');
-  }
-  const genAI = new GoogleGenerativeAI(apiKey);
-  return genAI.getGenerativeModel({
-    model: 'gemini-3.5-flash-lite',
-    generationConfig: { responseMimeType: 'application/json' },
-  });
-}
+// --- LLM (Sumopod, OpenAI-compatible) ---
 
 async function classifyContent(title: string, content: string) {
   const prompt = `
@@ -38,24 +27,13 @@ DATA BERITA YANG HARUS DIKLASIFIKASIKAN:
 - Isi: ${content}
 `;
 
-  const model = getGeminiModel();
-  const result = await model.generateContent(prompt);
-  const rawOutput = result.response.text();
-
-  let jsonStr = rawOutput.trim();
-  if (jsonStr.startsWith('```json')) {
-    jsonStr = jsonStr.replace(/^```json\s*\n?/, '').replace(/\n?```\s*$/, '');
-  } else if (jsonStr.startsWith('```')) {
-    jsonStr = jsonStr.replace(/^```\s*\n?/, '').replace(/\n?```\s*$/, '');
-  }
-
-  return JSON.parse(jsonStr);
+  return generateJson(prompt, { temperature: 0.2 });
 }
 
 async function generateContentRaw(prompt: string): Promise<string> {
-  const model = getGeminiModel();
-  const result = await model.generateContent(prompt);
-  return result.response.text();
+  // json mode supaya model dipaksa output JSON valid (fallback otomatis kalau
+  // model/gateway tidak mendukung response_format — lihat api/_lib/llm.ts)
+  return chatComplete(prompt, { json: true });
 }
 
 // --- Sectors.app client (self-contained) ---
