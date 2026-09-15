@@ -259,11 +259,17 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         log_id: logId,
         news_index: i + 1,
         title: n.title || null,
+        body: (n as any).body || null,
         tags: n.tags || [],
         symbols: n.symbols || [],
         sector: n.sector || null,
+        sub_sectors: (n as any).sub_sector || [],
+        dimensions: (n as any).dimension || null,
         source_url: n.source || null,
+        thumbnail_url: (n as any).thumbnail || null,
+        timestamp: n.timestamp || null,
         published_at: n.timestamp || null,
+        raw: n,
         is_selected: false
       }));
 
