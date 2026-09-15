@@ -104,9 +104,9 @@ export default function Channels({ onNavigate }: { onNavigate?: (page: string) =
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">🔗 Channels &amp; Connections</h1>
+                <h1 className="text-2xl font-bold text-slate-800">🔗 Accounts</h1>
         <p className="text-sm text-slate-500 mt-1">
-          Kelola semua akun publishing: IG / TikTok / Telegram / Threads / Facebook / Twitter. Klik kartu untuk mengonfigurasi.
+                    Kelola semua akun publishing di sini: IG, TikTok, Telegram, Threads, Facebook, Twitter.
         </p>
       </div>
 

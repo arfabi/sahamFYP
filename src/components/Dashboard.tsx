@@ -1,14 +1,12 @@
-// ============================================================
-// Dashboard Layout - Main dashboard with sidebar navigation
+﻿// ============================================================
+// Dashboard Layout - Grouped navigation (content pipeline)
+// SOURCES -> ANALYSIS -> CREATE -> PUBLISHING (+ Settings utility)
 // ============================================================
 
 import React, { useState } from 'react';
 import Overview from './Overview';
 import Settings from './Settings';
 import ContentGenerator from './ContentGenerator';
-import MediaLibrary from './MediaLibrary';
-import Analytics from './Analytics';
-import TemplatesPage from './TemplatesPage';
 import ManualEditor from './ManualEditor';
 import NewsMonitoring from './NewsMonitoring';
 import DailyMarketBrief from './DailyMarketBrief';
@@ -25,19 +23,15 @@ export type DashboardPage =
   | 'stock-watchlist'
   | 'generator'
   | 'manual'
-  | 'templates'
-  | 'scheduled' // rendered by <Posts/> wrapper (tab: Scheduled)
-  | 'published' // rendered by <Posts/> wrapper (tab: Published)
-  | 'media'
-  | 'channels'
-  | 'analytics'
+  | 'accounts'
+  | 'posts'
   | 'settings';
 
 interface NavItem {
   id: DashboardPage;
   label: string;
   icon: string;
-  /** 'beta' shows a badge; 'soon' items are non-interactive in the sidebar */
+  /** 'soon' = non-interactive; 'beta' = shows a badge */
   badge?: 'soon' | 'beta';
 }
 
@@ -46,17 +40,8 @@ interface NavGroup {
   items: NavItem[];
 }
 
-/**
- * Grouped navigation mirroring the content pipeline:
- *   SOURCES -> ANALYSIS -> CREATE -> DISTRIBUTE -> CHANNELS
- * `Settings` is a utility page — rendered outside groups, pinned at the
- * bottom of the sidebar (see UTILITY_PAGES).
- */
 const NAV_GROUPS: NavGroup[] = [
-  {
-    label: 'SOURCES',
-    items: [{ id: 'news-monitoring', label: 'News Monitoring', icon: '📡' }],
-  },
+  { label: 'SOURCES', items: [{ id: 'news-monitoring', label: 'News Monitoring', icon: '📡' }] },
   {
     label: 'ANALYSIS',
     items: [
@@ -69,21 +54,13 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { id: 'generator', label: 'Content Generator', icon: '📝' },
       { id: 'manual', label: 'Manual Editor', icon: '✏️' },
-      { id: 'templates', label: 'Templates', icon: '📋' },
     ],
   },
   {
-    label: 'DISTRIBUTE',
+    label: 'PUBLISHING',
     items: [
-      { id: 'scheduled', label: 'Posts', icon: '🗂️' },
-      { id: 'media', label: 'Media Library', icon: '🖼️' },
-    ],
-  },
-  {
-    label: 'CHANNELS',
-    items: [
-      { id: 'channels', label: 'Channels & Connections', icon: '🔗' },
-      { id: 'analytics', label: 'Analytics', icon: '📈' },
+      { id: 'accounts', label: 'Accounts', icon: '🔗' },
+      { id: 'posts', label: 'Posts', icon: '🗂️' },
     ],
   },
 ];
@@ -92,7 +69,6 @@ const UTILITY_PAGES: NavItem[] = [
   { id: 'settings' as DashboardPage, label: 'Settings', icon: '⚙️' },
 ];
 
-/** Flat lookup for the topbar breadcrumb (scans groups then utility pages). */
 function findNavItem(id?: string): NavItem | undefined {
   if (!id) return undefined;
   for (const g of NAV_GROUPS) {
@@ -108,7 +84,7 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ user, onLogout }: DashboardProps) {
-    const [activePage, setActivePage] = useState<DashboardPage>('overview');
+  const [activePage, setActivePage] = useState<DashboardPage>('overview');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const toggleGroup = (label: string) =>
@@ -122,24 +98,16 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         return <NewsMonitoring />;
       case 'daily-market-brief':
         return <DailyMarketBrief />;
+      case 'stock-watchlist':
+        return <StockWatchlist />;
       case 'generator':
         return <ContentGenerator />;
       case 'manual':
         return <ManualEditor />;
-            case 'scheduled':
-        return <Posts defaultTab="scheduled" />;
-      case 'published':
-        return <Posts defaultTab="published" />;
-      case 'stock-watchlist':
-        return <StockWatchlist />;
-      case 'channels':
+      case 'accounts':
         return <Channels onNavigate={(p) => setActivePage(p as DashboardPage)} />;
-      case 'media':
-        return <MediaLibrary />;
-      case 'analytics':
-        return <Analytics />;
-      case 'templates':
-        return <TemplatesPage />;
+      case 'posts':
+        return <Posts onNavigate={(p) => setActivePage(p as DashboardPage)} />;
       case 'settings':
         return <Settings />;
       default:
@@ -158,9 +126,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         {/* Logo */}
         <div className="p-4 border-b border-slate-700">
           <div className="flex items-center justify-between">
-            {!sidebarCollapsed && (
-              <h1 className="text-lg font-bold">📰 SahamFYP</h1>
-            )}
+            {!sidebarCollapsed && <h1 className="text-lg font-bold">📰 SahamFYP</h1>}
             <button
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
               className="p-1.5 rounded-lg hover:bg-slate-700 transition"
@@ -170,7 +136,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
           </div>
         </div>
 
-                {/* Navigation — grouped, collapsible per section */}
+        {/* Navigation — grouped, collapsible per section */}
         <nav className="flex-1 overflow-y-auto space-y-6 p-3">
           {NAV_GROUPS.map((group) => {
             const isExpanded = openGroups[group.label] ?? true;
@@ -240,9 +206,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                 }`}
               >
                 <span className="text-lg">{item.icon}</span>
-                {!sidebarCollapsed && (
-                  <span className="text-sm font-medium">{item.label}</span>
-                )}
+                {!sidebarCollapsed && <span className="text-sm font-medium">{item.label}</span>}
               </button>
             ))}
           </div>
@@ -254,7 +218,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         {/* Topbar - persistent di semua modul/menu */}
         <header className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-10">
           <div className="flex items-center justify-between px-5 py-3">
-                        <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
               <span className="text-base">{findNavItem(activePage)?.icon || '📄'}</span>
               <span>{findNavItem(activePage)?.label || 'Pages'}</span>
             </div>
@@ -279,9 +243,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
           </div>
         </header>
 
-        <div className="p-6">
-          {renderPage()}
-        </div>
+        <div className="p-6">{renderPage()}</div>
       </main>
     </div>
   );
