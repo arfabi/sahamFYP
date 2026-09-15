@@ -13,3 +13,6 @@ dist/
 .vercel_token
 .vercel
 .env*
+
+# Local-only Postman collection (generated/exported, do not track)
+/docs/postman-sahamfyp.postman_collection.json

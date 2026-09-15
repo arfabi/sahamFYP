@@ -136,9 +136,10 @@ export default function Overview({ onNavigate }: OverviewProps) {
 
       <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
         <h2 className="text-lg font-semibold text-slate-800 mb-4">⚡ Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
           <ActionCard icon="📝" title="Generate Konten" desc="Buat carousel dari berita" onClick={() => onNavigate('generator')} />
-          <ActionCard icon="📅" title="Lihat Scheduled" desc="Cek post yang dijadwalkan" onClick={() => {}} disabled />
+          <ActionCard icon="📅" title="Posts" desc="Cek post yang dijadwalkan &amp; terpublikasi" onClick={() => onNavigate('scheduled')} />
+          <ActionCard icon="🔗" title="Channels" desc="Kelola IG / TikTok / Telegram" onClick={() => onNavigate('channels')} />
           <ActionCard icon="⚙️" title="Settings" desc="Konfigurasi API keys" onClick={() => onNavigate('settings')} />
         </div>
       </div>
