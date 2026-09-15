@@ -638,11 +638,14 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
     const totalCredits = BASE_CREDITS + candidates.length * (REPORT_CREDITS_PER_TICKER + TECHNICAL_CREDITS_PER_TICKER);
 
-    // Update log with final credits
+    // Update log with final credits and naskah JSON
     if (logId) {
       await supabaseServer
         .from('sector_trigger_logs')
-        .update({ credits_used: totalCredits })
+        .update({
+          credits_used: totalCredits,
+          naskah_json: naskah || null
+        })
         .eq('id', logId);
     }
 
