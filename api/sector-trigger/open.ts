@@ -168,10 +168,17 @@ function computeTechnical(dailyRows: any[]): TechnicalResult {
 
   const windowRows = rows.slice(-252);
   const high52w = windowRows.length ? Math.max(...windowRows.map((r) => r.close as number)) : null;
+  const pctFromHigh52w = last !== null && high52w !== null && high52w > 0
+    ? ((last - high52w) / high52w) * 100
+    : null;
+
   const vols = rows.map((r) => r.volume).filter((v): v is number => v !== null);
   const lastVolume = vols.length ? vols[vols.length - 1] : null;
   const avgVol20 = vols.length >= 20
     ? vols.slice(-20).reduce((a, b) => a + b, 0) / 20
+    : null;
+  const volumeRatio = lastVolume !== null && avgVol20 !== null && avgVol20 > 0
+    ? (lastVolume / avgVol20).toFixed(1)
     : null;
   const volumeSignal: TechnicalResult['volumeSignal'] =
     lastVolume === null || avgVol20 === null || avgVol20 === 0
@@ -180,23 +187,35 @@ function computeTechnical(dailyRows: any[]): TechnicalResult {
       : lastVolume < avgVol20 * 0.7 ? 'sepi'
       : 'normal';
 
+  // Auto-generate Vibe Check & Trading Trigger if not present
+  const chg1dVal = chgPct(last, at(1));
+  const vibeCheck = crossSignal?.includes('Golden Cross') || crossSignal?.includes('Bullish')
+    ? '🔥 Sinyal Bullish! Momentum akumulasi kuat & di atas garis MA support.'
+    : crossSignal?.includes('Death Cross') || crossSignal?.includes('Bearish')
+    ? '⚠️ Hati-hati! Tren sedang tertekan di bawah MA20/MA50.'
+    : '🟡 Konsolidasi netral. Menunggu breakout batas MA20/MA50.';
+
+  const trigger = `Support terdekat MA20 di Rp ${ma20 ? Math.round(ma20) : '-'}, Resistance 52W High di Rp ${high52w ? Math.round(high52w) : '-'}.${volumeRatio ? ` Volume hari ini ${volumeRatio}x dari rata-rata 20 hari.` : ''}`;
+
   return {
     last,
-    ma20,
-    ma50,
-    ma200,
+    ma20: ma20 ? Number(ma20.toFixed(2)) : null,
+    ma50: ma50 ? Number(ma50.toFixed(2)) : null,
+    ma200: ma200 ? Number(ma200.toFixed(2)) : null,
     crossSignal,
-    chg1d: chgPct(last, at(1)),
-    chg5d: chgPct(last, at(5)),
-    chg20d: chgPct(last, at(20)),
+    chg1d: chg1dVal !== null ? Number(chg1dVal.toFixed(2)) : null,
+    chg5d: chgPct(last, at(5)) !== null ? Number(chgPct(last, at(5))!.toFixed(2)) : null,
+    chg20d: chgPct(last, at(20)) !== null ? Number(chgPct(last, at(20))!.toFixed(2)) : null,
     high52w,
-    pctFromHigh52w: chgPct(last, high52w),
+    pctFromHigh52w: pctFromHigh52w !== null ? Number(pctFromHigh52w.toFixed(2)) : null,
     lastVolume,
-    avgVol20,
+    avgVol20: avgVol20 ? Math.round(avgVol20) : null,
     volumeSignal,
     asOf: rows[rows.length - 1].date,
-    windowDays: windowRows.length,
-  };
+    windowDays: rows.length,
+    vibeCheck,
+    trigger,
+  } as any;
 }
 
 /**

@@ -639,7 +639,7 @@ function StockCandidateDetailModal({
               <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2.5">
                 <div className="bg-slate-800 p-2 rounded-lg text-center">
                   <span className="text-[10px] text-slate-400 block">Harga Terakhir</span>
-                  <span className="font-mono font-bold text-amber-400 text-xs">{fmtNum(displayPrice, 0)}</span>
+                  <span className="font-mono font-bold text-amber-400 text-xs">Rp {fmtNum(displayPrice, 0)}</span>
                 </div>
                 <div className="bg-slate-800 p-2 rounded-lg text-center">
                   <span className="text-[10px] text-slate-400 block">MA20 (Support)</span>
@@ -648,6 +648,10 @@ function StockCandidateDetailModal({
                 <div className="bg-slate-800 p-2 rounded-lg text-center">
                   <span className="text-[10px] text-slate-400 block">MA50 (Trend)</span>
                   <span className="font-mono font-bold text-cyan-400 text-xs">{fmtNum(tech.ma50, 0)}</span>
+                </div>
+                <div className="bg-slate-800 p-2 rounded-lg text-center">
+                  <span className="text-[10px] text-slate-400 block">MA200 (Long)</span>
+                  <span className="font-mono font-bold text-indigo-300 text-xs">{fmtNum(tech.ma200, 0)}</span>
                 </div>
                 <div className="bg-slate-800 p-2 rounded-lg text-center">
                   <span className="text-[10px] text-slate-400 block">Chg 1D</span>
@@ -667,9 +671,9 @@ function StockCandidateDetailModal({
                     {fmtPct(tech.chg20d)}
                   </span>
                 </div>
-                <div className="bg-slate-800 p-2 rounded-lg text-center col-span-2">
-                  <span className="text-[10px] text-slate-400 block">Volume Signal</span>
-                  <span className="font-mono font-bold text-purple-400 text-xs">{tech.volumeSignal || 'normal'}</span>
+                <div className="bg-slate-800 p-2 rounded-lg text-center">
+                  <span className="text-[10px] text-slate-400 block">High 52W</span>
+                  <span className="font-mono font-bold text-amber-300 text-xs">{fmtNum(tech.high52w, 0)}</span>
                 </div>
               </div>
 
