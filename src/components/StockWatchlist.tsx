@@ -607,12 +607,16 @@ function StockCandidateDetailModal({
             </div>
 
             {/* Kamus Fundamental Gen Z Guide Box */}
-            <div className="mt-3 p-3.5 bg-amber-50/50 border border-amber-200 rounded-xl text-xs space-y-1 text-slate-700">
-              <p className="font-bold text-amber-900 text-xs flex items-center gap-1">💡 Kamus Fundamental Gen Z:</p>
-              <p>• <strong>PER (Price to Earnings Ratio)</strong>: Banding harga vs laba per saham. <span className="text-emerald-700 font-semibold">Lebih KECIL dari sektor = LEBIH MURAH</span> (balik modal lebih cepat).</p>
-              <p>• <strong>PBV (Price to Book Value)</strong>: Bayar berapa kali aset bersih perusahaan. <span className="text-emerald-700 font-semibold">Lebih KECIL dari sektor = LEBIH DISKON</span> (harga murah dibanding nilai modal murni).</p>
-              <p>• <strong>ROE (Return on Equity)</strong>: Efisiensi modal sendiri menghasilkan laba. <span className="text-emerald-700 font-semibold">Lebih BESAR dari sektor = LEBIH JAGO CUAN</span>.</p>
-              <p>• <strong>DER (Debt to Equity Ratio)</strong>: Banding utang vs modal sendiri. <span className="text-emerald-700 font-semibold">Lebih KECIL dari sektor = LEBIH AMAN</span> (beban utang/paylater terjaga).</p>
+            <div className="mt-3 p-3.5 bg-amber-50/60 border border-amber-200 rounded-xl text-xs space-y-1.5 text-slate-700">
+              <p className="font-bold text-amber-900 text-xs flex items-center gap-1">💡 Kamus Fundamental Gen Z & Analogi Real Life:</p>
+              <p>• <strong>PER (Price to Earnings Ratio)</strong>: Berapa tahun balik modal dari laba per saham. <span className="text-emerald-700 font-semibold">Lebih KECIL dari sektor = LEBIH MURAH</span>.<br/>
+              <span className="text-slate-500 italic pl-3 inline-block">💬 Analogi: Beli HP Rp15jt, tiap tahun untung Rp1jt → PER = 15x balik modal.</span></p>
+              <p>• <strong>PBV (Price to Book Value)</strong>: Bayar berapa kali lipat harga vs aset bersih modal. <span className="text-emerald-700 font-semibold">Lebih KECIL dari sektor = LEBIH DISKON</span>.<br/>
+              <span className="text-slate-500 italic pl-3 inline-block">💬 Analogi: Harga modal asli Rp1jt tapi bayar Rp3jt (PBV 3x) = bayar ekspektasi/brand.</span></p>
+              <p>• <strong>ROE (Return on Equity)</strong>: Efisiensi modal sendiri menghasilkan cuan/profit. <span className="text-emerald-700 font-semibold">Lebih BESAR dari sektor = LEBIH JAGO CUAN</span>.<br/>
+              <span className="text-slate-500 italic pl-3 inline-block">💬 Analogi: Modal Rp1jt untung Rp200rb (ROE 20%) vs modal Rp5jt cuma untung Rp200rb (ROE 4%).</span></p>
+              <p>• <strong>DER (Debt to Equity Ratio)</strong>: Bandingkan total beban utang vs modal bersih sendiri. <span className="text-emerald-700 font-semibold">Lebih KECIL dari sektor = LEBIH AMAN</span>.<br/>
+              <span className="text-slate-500 italic pl-3 inline-block">💬 Analogi: DER 1x = utang 100% dari modal. DER 3x = utang 3x lipat modal sendiri (risiko tinggi).</span></p>
             </div>
           </div>
 
@@ -656,30 +660,44 @@ function StockCandidateDetailModal({
                 </div>
               </div>
 
-              {/* vibeCheck & Trigger */}
-              {(tech.vibeCheck || tech.trigger) && (
-                <div className="pt-2 border-t border-slate-800 space-y-2">
+              {/* vibeCheck, Trigger, TLDR & Warning Analysis */}
+              {(tech.vibeCheck || tech.trigger || tech.tldr || tech.warning) && (
+                <div className="pt-2 border-t border-slate-800 space-y-2.5">
                   {tech.vibeCheck && (
-                    <div className="bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+                    <div className="bg-slate-800/90 p-3 rounded-xl border border-slate-700">
                       <span className="text-[11px] font-semibold text-slate-400 uppercase block mb-1">Vibe Check Gen Z</span>
                       <p className="text-sm font-semibold text-amber-300">{tech.vibeCheck}</p>
                     </div>
                   )}
                   {tech.trigger && (
-                    <div className="bg-slate-800/80 p-3 rounded-xl border border-slate-700">
-                      <span className="text-[11px] font-semibold text-slate-400 uppercase block mb-1">Trading Trigger & Key Support</span>
+                    <div className="bg-slate-800/90 p-3 rounded-xl border border-slate-700">
+                      <span className="text-[11px] font-semibold text-slate-400 uppercase block mb-1">Trading Trigger & Support/Resistance</span>
                       <p className="text-xs text-slate-200 leading-relaxed">{tech.trigger}</p>
+                    </div>
+                  )}
+                  {tech.tldr && (
+                    <div className="bg-slate-800/90 p-3 rounded-xl border border-slate-700">
+                      <span className="text-[11px] font-semibold text-slate-400 uppercase block mb-1">TL;DR Ringkasan AI</span>
+                      <p className="text-xs text-slate-200 leading-relaxed">{tech.tldr}</p>
+                    </div>
+                  )}
+                  {tech.warning && (
+                    <div className="bg-rose-950/40 p-3 rounded-xl border border-rose-800/60">
+                      <span className="text-[11px] font-semibold text-rose-400 uppercase block mb-1">⚠️ Awas / Risk Warning</span>
+                      <p className="text-xs text-rose-200 leading-relaxed">{tech.warning}</p>
                     </div>
                   )}
                 </div>
               )}
 
               {/* Kamus Teknikal Gen Z Guide Box */}
-              <div className="p-3 bg-slate-800/90 border border-slate-700 rounded-xl text-xs space-y-1 text-slate-300">
-                <p className="font-bold text-amber-300 text-xs flex items-center gap-1">💡 Kamus Teknikal Gen Z:</p>
-                <p>• <strong>MA20 (Moving Average 20 Hari)</strong>: Garis bantal rata-rata harga 20 hari terakhir. <span className="text-emerald-400 font-semibold">Di atas MA20 = tren lagi aman/uptrend</span>; <span className="text-rose-400 font-semibold">Jebol MA20 = awas tekanan jual/profit taking</span>.</p>
-                <p>• <strong>Chg 1D / 5D / 20D</strong>: Persentase perubahan harga dalam 1 hari bursa, 1 minggu (5 hari), dan 1 bulan (20 hari bursa).</p>
-                <p>• <strong>Volume Signal</strong>: Rame = ada transaksi/akumulasi besar; Sepi = transaksi sepi, hati-hati likuiditas.</p>
+              <div className="p-3 bg-slate-800/90 border border-slate-700 rounded-xl text-xs space-y-1.5 text-slate-300">
+                <p className="font-bold text-amber-300 text-xs flex items-center gap-1">💡 Kamus Teknikal Gen Z & Analogi:</p>
+                <p>• <strong>MA20 (Moving Average 20 Hari)</strong>: Garis rata-rata harga 20 hari terakhir (bantal penopang tren).<br/>
+                <span className="text-slate-400 italic pl-3 inline-block">💬 Analogi: Batas aman 'napas' harga. Di atas MA20 = tren lagi aman/uptrend, kalau jebol = lampu kuning.</span></p>
+                <p>• <strong>Bullish vs Bearish</strong>:<br/>
+                <span className="text-slate-400 italic pl-3 inline-block">💬 Analogi: Bullish (banteng menyundul ke atas = tren naik), Bearish (beruang mencakar ke bawah = tren lesu/turun).</span></p>
+                <p>• <strong>Chg 1D / 5D / 20D & Volume</strong>: Persentase naik-turun harga 1 hari, 1 minggu, 1 bulan bursa. Volume "rame" = transaksi besar; "sepi" = transaksi sepi.</p>
               </div>
             </div>
           </div>
