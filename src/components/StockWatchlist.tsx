@@ -388,11 +388,22 @@ export default function StockWatchlist() {
                                 ? `${m.price_change > 0 ? '+' : ''}${fmtNum(m.price_change, 2)}%`
                                 : '-'}
                             </span>
-                            {m.point_change != null && (
-                              <span className="text-[10px] text-slate-400 font-mono block">
-                                ({m.point_change >= 0 ? '+' : ''}{m.point_change} pts)
-                              </span>
-                            )}
+                            {(() => {
+                              let pts = m.point_change;
+                              if (pts == null && m.price_change != null && m.last_price != null) {
+                                const pct = m.price_change / 100;
+                                if (1 + pct !== 0) {
+                                  const prev = m.last_price / (1 + pct);
+                                  pts = Math.round(m.last_price - prev);
+                                }
+                              }
+                              if (pts == null) return null;
+                              return (
+                                <span className="text-[10px] text-slate-400 font-mono block">
+                                  ({pts >= 0 ? '+' : ''}{pts} pts)
+                                </span>
+                              );
+                            })()}
                           </div>
                         </div>
                       ))}
