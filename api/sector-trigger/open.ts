@@ -343,9 +343,9 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Step 1: Fetch raw data (IHSG + news + filings + top movers)
     const [indexData, newsData, filingsData, topMovers] = await Promise.all([
-      fetchIndexDaily(ihsStart, today),
-      fetchNews({ start: yesterday, end: today, limit: 15, tags: NEWS_TAGS }),
-      fetchFilings({ start: yesterday, end: today }),
+      fetchIndexDaily(ihsStart), // Omit end date to avoid timezone future date error
+      fetchNews({ start: yesterday, limit: 15, tags: NEWS_TAGS }),
+      fetchFilings({ start: yesterday }),
       fetchTopMovers({
         classifications: ['top_gainers', 'top_losers'],
         periods: ['1d'],
@@ -545,7 +545,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       selectedTickers.map(async (ticker: string) => {
         const [report, dailyRaw] = await Promise.all([
           fetchCompanyReport(ticker, ['valuation', 'financials', 'peers']),
-          fetchDaily(ticker, techStart, today).catch((e: any) => {
+          fetchDaily(ticker, techStart).catch((e: any) => {
             console.warn(`[SectorTrigger Open] fetchDaily gagal untuk ${ticker}:`, e?.message || e);
             return [];
           }),
