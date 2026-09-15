@@ -451,12 +451,15 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       const losers = topMovers?.top_losers?.['1d'] || [];
 
       gainers.forEach((g: any) => {
-        const pct = num(g.price_change); // Sectors returns decimal, e.g. 0.05 = +5%
-        const last = num(g.last_close_price);
+        const pct = num(g.price_change); // Sectors returns decimal, e.g. 0.2483 = +24.83%
+        // Sectors API top-movers may return last_close_price as previous close or current close depending on market session
+        const last = num(g.close_price) ?? num(g.last_close_price) ?? num(g.price) ?? num(g.last);
         let pointChange: number | null = null;
-        if (pct !== null && last !== null && 1 + pct !== 0) {
-          const prev = last / (1 + pct);
-          pointChange = Math.round(last - prev);
+        if (pct !== null && last !== null) {
+          // If last_close_price from Sectors API was actually previous close (e.g. 372) and change is +24.83%:
+          // Current price = prev * (1 + pct) = 372 * 1.2483 = 464 (or if last is current price 480, prev = 480 / 1.2483 = 384)
+          // We calculate point change = Math.round(last * pct)
+          pointChange = Math.round(last * pct);
         }
         moversInserts.push({
           log_id: logId,
@@ -471,11 +474,10 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
       losers.forEach((l: any) => {
         const pct = num(l.price_change);
-        const last = num(l.last_close_price);
+        const last = num(l.close_price) ?? num(l.last_close_price) ?? num(l.price) ?? num(l.last);
         let pointChange: number | null = null;
-        if (pct !== null && last !== null && 1 + pct !== 0) {
-          const prev = last / (1 + pct);
-          pointChange = Math.round(last - prev);
+        if (pct !== null && last !== null) {
+          pointChange = Math.round(last * pct);
         }
         moversInserts.push({
           log_id: logId,
