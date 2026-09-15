@@ -58,6 +58,8 @@ interface TriggerMover {
   symbol: string;
   company_name: string | null;
   price_change: number | null;
+  last_price?: number | null;
+  point_change?: number | null;
 }
 
 interface TriggerSkipped {
@@ -372,19 +374,26 @@ export default function StockWatchlist() {
                               {m.company_name}
                             </span>
                           </div>
-                          <span
-                            className={`font-mono text-xs font-bold ${
-                              m.price_change == null
-                                ? 'text-slate-400'
-                                : m.price_change >= 0
-                                ? 'text-emerald-600'
-                                : 'text-rose-600'
-                            }`}
-                          >
-                            {m.price_change != null
-                              ? `${m.price_change > 0 ? '+' : ''}${fmtNum(m.price_change, 2)}%`
-                              : '-'}
-                          </span>
+                          <div className="text-right">
+                            <span
+                              className={`font-mono text-xs font-bold block ${
+                                m.price_change == null
+                                  ? 'text-slate-400'
+                                  : m.price_change >= 0
+                                  ? 'text-emerald-600'
+                                  : 'text-rose-600'
+                              }`}
+                            >
+                              {m.price_change != null
+                                ? `${m.price_change > 0 ? '+' : ''}${fmtNum(m.price_change, 2)}%`
+                                : '-'}
+                            </span>
+                            {m.point_change != null && (
+                              <span className="text-[10px] text-slate-400 font-mono block">
+                                ({m.point_change >= 0 ? '+' : ''}{m.point_change} pts)
+                              </span>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>

@@ -432,24 +432,40 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       const losers = topMovers?.top_losers?.['1d'] || [];
 
       gainers.forEach((g: any) => {
-        const pct = num(g.price_change);
+        const pct = num(g.price_change); // Sectors returns decimal, e.g. 0.05 = +5%
+        const last = num(g.last_close_price);
+        let pointChange: number | null = null;
+        if (pct !== null && last !== null && 1 + pct !== 0) {
+          const prev = last / (1 + pct);
+          pointChange = Math.round(last - prev);
+        }
         moversInserts.push({
           log_id: logId,
           classification: 'top_gainers',
           symbol: g.symbol,
           company_name: g.name,
-          price_change: pct !== null ? pct * 100 : null // store as percent (Sectors returns decimal: 0.05 = +5%)
+          price_change: pct !== null ? pct * 100 : null,
+          last_price: last,
+          point_change: pointChange,
         });
       });
 
       losers.forEach((l: any) => {
         const pct = num(l.price_change);
+        const last = num(l.last_close_price);
+        let pointChange: number | null = null;
+        if (pct !== null && last !== null && 1 + pct !== 0) {
+          const prev = last / (1 + pct);
+          pointChange = Math.round(last - prev);
+        }
         moversInserts.push({
           log_id: logId,
           classification: 'top_losers',
           symbol: l.symbol,
           company_name: l.name,
-          price_change: pct !== null ? pct * 100 : null
+          price_change: pct !== null ? pct * 100 : null,
+          last_price: last,
+          point_change: pointChange,
         });
       });
 
@@ -460,6 +476,12 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
         if (moversError) {
           console.error('[SectorTrigger Open] Movers insert error:', moversError);
+          // Fallback if last_price or point_change columns don't exist yet in Supabase schema
+          if (moversError.message?.includes('last_price') || moversError.message?.includes('point_change') || moversError.code === 'PGRST204') {
+            console.warn('[SectorTrigger Open] Retrying movers insert without extra point columns...');
+            const fallbackMovers = moversInserts.map(({ last_price, point_change, ...rest }) => rest);
+            await supabaseServer.from('sector_trigger_movers').insert(fallbackMovers);
+          }
         }
       }
     }
