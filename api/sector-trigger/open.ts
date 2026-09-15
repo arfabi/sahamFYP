@@ -527,6 +527,19 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
       if (candidatesError) {
         console.error('[SectorTrigger Open] Candidates insert error:', candidatesError);
+        // Fallback retry without technical_json if column is missing in DB schema
+        if (candidatesError.message?.includes('technical_json') || candidatesError.code === 'PGRST204') {
+          console.warn('[SectorTrigger Open] Retrying insert without technical_json column...');
+          const fallbackInserts = candidatesInserts.map(({ technical_json, ...rest }: any) => rest);
+          const { error: retryErr } = await supabaseServer
+            .from('sector_trigger_candidates')
+            .insert(fallbackInserts);
+          if (retryErr) {
+            console.error('[SectorTrigger Open] Fallback insert error:', retryErr);
+          } else {
+            console.log('[SectorTrigger Open] Fallback insert succeeded (without technical_json)');
+          }
+        }
       }
 
       // Update news is_selected flag
