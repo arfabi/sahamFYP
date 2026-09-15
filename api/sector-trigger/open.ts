@@ -477,10 +477,15 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         if (moversError) {
           console.error('[SectorTrigger Open] Movers insert error:', moversError);
           // Fallback if last_price or point_change columns don't exist yet in Supabase schema
-          if (moversError.message?.includes('last_price') || moversError.message?.includes('point_change') || moversError.code === 'PGRST204') {
-            console.warn('[SectorTrigger Open] Retrying movers insert without extra point columns...');
-            const fallbackMovers = moversInserts.map(({ last_price, point_change, ...rest }) => rest);
-            await supabaseServer.from('sector_trigger_movers').insert(fallbackMovers);
+          console.warn('[SectorTrigger Open] Retrying movers insert without extra point columns...');
+          const fallbackMovers = moversInserts.map(({ last_price, point_change, ...rest }: any) => rest);
+          const { error: retryErr } = await supabaseServer
+            .from('sector_trigger_movers')
+            .insert(fallbackMovers);
+          if (retryErr) {
+            console.error('[SectorTrigger Open] Fallback movers insert failed:', retryErr);
+          } else {
+            console.log('[SectorTrigger Open] Fallback movers insert succeeded!');
           }
         }
       }
@@ -608,18 +613,34 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
       if (candidatesError) {
         console.error('[SectorTrigger Open] Candidates insert error:', candidatesError);
-        // Fallback retry without technical_json if column is missing in DB schema
-        if (candidatesError.message?.includes('technical_json') || candidatesError.code === 'PGRST204') {
-          console.warn('[SectorTrigger Open] Retrying insert without technical_json column...');
-          const fallbackInserts = candidatesInserts.map(({ technical_json, ...rest }: any) => rest);
-          const { error: retryErr } = await supabaseServer
-            .from('sector_trigger_candidates')
-            .insert(fallbackInserts);
-          if (retryErr) {
-            console.error('[SectorTrigger Open] Fallback insert error:', retryErr);
-          } else {
-            console.log('[SectorTrigger Open] Fallback insert succeeded (without technical_json)');
-          }
+        // Fallback retry with basic fields only if columns fail or schema differs
+        console.warn('[SectorTrigger Open] Retrying insert with sanitized candidate fields...');
+        const fallbackInserts = candidatesInserts.map((item: any) => ({
+          log_id: item.log_id,
+          ticker: item.ticker,
+          company_name: item.company_name,
+          sector: item.sector,
+          news_title: item.news_title,
+          news_tags: item.news_tags,
+          news_body: item.news_body,
+          price: item.price,
+          market_cap: item.market_cap,
+          pe_ratio: item.pe_ratio,
+          pb_ratio: item.pb_ratio,
+          roe: item.roe,
+          der: item.der,
+          pe_signal: item.pe_signal,
+          pbv_signal: item.pbv_signal,
+          roe_signal: item.roe_signal,
+          der_signal: item.der_signal,
+        }));
+        const { error: retryErr } = await supabaseServer
+          .from('sector_trigger_candidates')
+          .insert(fallbackInserts);
+        if (retryErr) {
+          console.error('[SectorTrigger Open] Fallback insert also failed:', retryErr);
+        } else {
+          console.log('[SectorTrigger Open] Fallback insert succeeded!');
         }
       }
 
