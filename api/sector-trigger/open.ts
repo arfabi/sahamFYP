@@ -7,25 +7,67 @@ import { supabaseServer } from '../_lib/supabase.js';
 
 // Fixed kamus from docs/format-brief-revisi-14-sept-2026.md
 const FIXED_KAMUS = [
+  // === FUNDAMENTAL TERMS ===
   {
     term: 'PER',
-    definition: 'Price to Earnings Ratio \u2014 Berapa tahun balik modal kalau laba perusahaan segini terus.',
-    analogi: 'Beli HP Rp15jt, tiap tahun lo "untung" Rp1jt dari pemakaian/produktivitas \u2192 PER = 15x, alias 15 tahun modal balik. Makin kecil = makin cepet "balik modal".'
+    category: 'fundamental',
+    definition: 'Price to Earnings Ratio — Berapa tahun balik modal kalau laba perusahaan segini terus.',
+    analogi: 'Beli HP Rp15jt, tiap tahun lo "untung" Rp1jt → PER = 15x, alias 15 tahun modal balik. Makin kecil = makin cepet "balik modal".'
   },
   {
     term: 'PBV',
-    definition: 'Price to Book Value \u2014 Lo bayar berapa kali lipat dari aset bersih perusahaan.',
-    analogi: 'Beli barang preloved. Kalau harga aslinya Rp1jt tapi lo bayar Rp3jt (PBV 3x), berarti lo bayar mahal buat "brand" atau ekspektasi, bukan buat barangnya doang.'
+    category: 'fundamental',
+    definition: 'Price to Book Value — Lo bayar berapa kali lipat dari aset bersih perusahaan.',
+    analogi: 'Beli barang preloved. Harga asli Rp1jt tapi lo bayar Rp3jt (PBV 3x) = lo bayar mahal buat "brand"-nya doang. PBV < 1 = beli aset di bawah nilai buku = diskon!'
   },
   {
     term: 'ROE',
-    definition: 'Return on Equity \u2014 Seberapa efisien modal sendiri perusahaan menghasilkan cuan.',
-    analogi: '2 temen sama-sama modal patungan bisnis jastip. Yang modal Rp1jt untung Rp200rb (ROE 20%) lebih jago ngolah modal daripada yang modal Rp5jt untung Rp200rb (ROE 4%).'
+    category: 'fundamental',
+    definition: 'Return on Equity — Seberapa efisien modal sendiri perusahaan menghasilkan cuan.',
+    analogi: '2 temen patungan jastip. Modal Rp1jt untung Rp200rb (ROE 20%) vs modal Rp5jt untung Rp200rb (ROE 4%). Yang ROE tinggi = jago ngolah modal!'
   },
   {
     term: 'DER',
-    definition: 'Debt to Equity Ratio \u2014 Utang perusahaan dibanding modal sendiri.',
-    analogi: 'Kayak paylater. DER 1x = utang lo sama gede sama modal sendiri. DER 3x = utang lo 3x lipat modal sendiri \u2014 makin gede, makin gampang "kepontal" kalau ada masalah.'
+    category: 'fundamental',
+    definition: 'Debt to Equity Ratio — Utang perusahaan dibanding modal sendiri.',
+    analogi: 'Kayak paylater. DER 1x = utang = modal sendiri. DER 3x = utang 3x lipat modal — makin gede, makin gampang "kepontal" kalau kondisi bisnis memburuk.'
+  },
+  {
+    term: 'Market Cap',
+    category: 'fundamental',
+    definition: 'Market Capitalization — Total nilai pasar seluruh saham yang beredar.',
+    analogi: 'Kalau lo mau "beli" seluruh perusahaan sekarang di harga pasar, berapa duit yang lo butuhin? Itu Market Cap. BBCA ~Rp900T = butuh Rp900 Triliun buat borong semua sahamnya.'
+  },
+  // === TEKNIKAL TERMS ===
+  {
+    term: 'MA20 & MA50',
+    category: 'teknikal',
+    definition: 'Moving Average 20 & 50 hari — Rata-rata harga penutupan saham selama 20 atau 50 hari perdagangan terakhir.',
+    analogi: 'MA20 = mood pasar bulan ini. MA50 = mood 2.5 bulan terakhir. Harga di atas keduanya = saham lagi on top. Di bawah keduanya = bad vibes.'
+  },
+  {
+    term: 'Golden & Death Cross',
+    category: 'teknikal',
+    definition: 'Sinyal pembalikan tren dari perpotongan MA20 dan MA50.',
+    analogi: 'Golden Cross 🚀 = MA20 motong ke ATAS MA50 (sinyal bullish — momentum naik). Death Cross ☠️ = MA20 motong ke BAWAH MA50 (sinyal bearish — waspada downtrend).'
+  },
+  {
+    term: 'Support & Resistance',
+    category: 'teknikal',
+    definition: 'Level harga di mana saham cenderung berhenti turun (support) atau berhenti naik (resistance).',
+    analogi: 'Support = lantai harga, susah tembus ke bawah. Resistance = plafon harga, susah tembus ke atas. Kalau salah satunya jebol dengan volume besar, harga bisa lari jauh!'
+  },
+  {
+    term: 'Volume Trading',
+    category: 'teknikal',
+    definition: 'Jumlah lembar saham yang diperdagangkan dalam satu sesi/hari.',
+    analogi: 'Volume tinggi = warung mie ayam super rame. Harga naik + volume rame = kenaikan valid. Harga naik + volume sepi = bisa jadi prank! Selalu cek volume sebelum masuk.'
+  },
+  {
+    term: 'Foreign Flow',
+    category: 'teknikal',
+    definition: 'Arah arus uang dari investor asing — apakah mereka net buy (beli lebih banyak) atau net sell (jual lebih banyak) hari ini.',
+    analogi: 'Investor asing kayak influencer besar masuk pasar. Net buy = mereka borong = bisa jadi sinyal positif. Net sell = mereka kabur = worth it buat waspada, tapi jangan langsung panik!'
   }
 ];
 
@@ -826,7 +868,8 @@ async function generateSlidesWithLlm(
   candidates: any[],
   newsResults: any[],
   selection: { tickers: string[]; reasoning: string; skipped: Array<{ ticker: string; reason: string }> },
-  topMovers: any
+  topMovers: any,
+  foreignFlow?: { netValue: number | null; direction: string; label?: string } | null
 ): Promise<any> {
   const candidatesData = candidates.map((c: any) => {
     const d = digestCompanyReport(c.report);
@@ -904,6 +947,16 @@ async function generateSlidesWithLlm(
     return { symbol: l.symbol, name: l.name || l.company_name || l.symbol, price: last, changePct: pct !== null ? Number((pct * 100).toFixed(2)) : null };
   });
 
+  const fmtForeignFlow = (): string => {
+    if (!foreignFlow || foreignFlow.netValue === null) return 'Data asing tidak tersedia';
+    const absVal = Math.abs(foreignFlow.netValue);
+    const inTrillions = absVal >= 1e12 ? `Rp ${(absVal / 1e12).toFixed(2)}T` : `Rp ${(absVal / 1e9).toFixed(0)}M`;
+    return foreignFlow.direction === 'buy'
+      ? `🟢 Net Buy ${inTrillions} (Asing Masuk)`
+      : `🔴 Net Sell ${inTrillions} (Asing Keluar)`;
+  };
+  const foreignFlowStr = fmtForeignFlow();
+
   const prompt = `Kamu adalah Content Creator & Analyst ahli untuk @sahamfyp — akun edukasi saham Gen Z dengan 100K+ followers.
 
 Tugasmu: Buat konten carousel Instagram "Market Open" yang engaging, informatif, dan mudah dipahami Gen Z yang BELUM TENTU paham semua istilah saham.
@@ -913,6 +966,7 @@ ATURAN UTAMA: Gunakan analogi sehari-hari, bahasa santai, penjelasan tidak mengg
 - Tanggal hari ini: ${today} (${todayIndonesian})
 - Data harga (hari terakhir IDX buka): ${dataDate} (${dataDateIndonesian})
 - IHSG: ${ihs?.price ?? 'N/A'} (${fmtIhsChange(ihs?.change)})
+- Foreign Flow: ${foreignFlowStr}
 
 ## TOP GAINERS (1D):
 ${gainers.map((g: any) => `- ${fmtMover(g)}`).join('\n') || 'Tidak ada data'}
@@ -951,16 +1005,17 @@ ${JSON.stringify(candidatesData, null, 2)}
       "handle": "@sahamfyp",
       "date": "${today}",
       "dateIndonesia": "${todayIndonesian}",
-      "title": "TL;DR Market Hari Ini",
+      "title": "TL;DR — Ringkasan Hari Ini",
       "tldrCards": [
-        { "icon": "TrendingUp", "text": "IHSG ${ihs?.price ?? 'N/A'} (${fmtIhsChange(ihs?.change)}) — [kondisi singkat 5 kata]" },
-        { "icon": "Flame", "text": "Gainer: [TICKER] ([Nama]) +XX.XX%" },
-        { "icon": "TrendingDown", "text": "Loser: [TICKER] ([Nama]) -XX.XX%" },
-        { "icon": "Newspaper", "text": "[Headline singkat berita saham #1, maks 8 kata]" },
-        { "icon": "Newspaper", "text": "[Headline singkat berita saham #2, maks 8 kata]" },
-        { "icon": "Newspaper", "text": "[Headline singkat berita saham #3, maks 8 kata]" },
-        { "icon": "Newspaper", "text": "[Headline singkat berita saham #4, maks 8 kata]" },
-        { "icon": "Eye", "text": "Watchlist: ${candidatesData.map((c: any) => c.symbol).join(', ')}" }
+        { "section": "kondisiMarket", "icon": "TrendingUp", "text": "IHSG ${ihs?.price ?? 'N/A'} (${fmtIhsChange(ihs?.change)}) — [kondisi pasar singkat 5 kata]" },
+        { "section": "kondisiMarket", "icon": "Flame", "text": "Gainer: [TICKER TOP GAINER] ([Nama]) +XX.XX%" },
+        { "section": "kondisiMarket", "icon": "TrendingDown", "text": "Loser: [TICKER TOP LOSER] ([Nama]) -XX.XX%" },
+        { "section": "kondisiMarket", "icon": "Scale", "text": "Asing: ${foreignFlowStr}" },
+        { "section": "fillings", "icon": "Newspaper", "text": "[Ringkasan filing/keterbukaan korporasi terpenting hari ini, maks 10 kata]" },
+        { "section": "fillings", "icon": "Newspaper", "text": "[Filing penting #2 jika ada, atau skip jika tidak relevan]" },
+        { "section": "katalis", "icon": "Flame", "text": "[Headline katalis/berita saham #1 paling impactful, maks 10 kata]" },
+        { "section": "katalis", "icon": "Newspaper", "text": "[Headline katalis/berita #2, maks 10 kata]" },
+        { "section": "watchlist", "icon": "Eye", "text": "Watchlist: ${candidatesData.map((c: any) => c.symbol).join(', ')}" }
       ]
     },
     {
@@ -973,7 +1028,8 @@ ${JSON.stringify(candidatesData, null, 2)}
       "title": "Kondisi Market Kemarin",
       "ihsg": { "price": ${ihs?.price ?? null}, "changePct": ${ihs?.change ?? null} },
       "topGainers": ${JSON.stringify(gainersData)},
-      "topLosers": ${JSON.stringify(losersData)}
+      "topLosers": ${JSON.stringify(losersData)},
+      "foreignFlow": { "direction": "${foreignFlow?.direction ?? 'N/A'}", "netValue": ${foreignFlow?.netValue ?? null}, "label": "${foreignFlowStr}" }
     },
     {{STOCK_SLIDES}},
     {
@@ -983,6 +1039,10 @@ ${JSON.stringify(candidatesData, null, 2)}
       "dateIndonesia": "${todayIndonesian}",
       "title": "Kesimpulan Watchlist Hari Ini",
       "subtitle": "Framework: Matrix Fundamental × Teknikal",
+      "q1Label": "Cocok untuk: Investasi jangka panjang & Swing Trading",
+      "q2Label": "Cocok untuk: Value Investing — sabar nunggu teknikal pulih",
+      "q3Label": "Cocok untuk: Trading momentum jangka pendek SAJA",
+      "q4Label": "Hindari dulu — tunggu sinyal pemulihan",
       "stocks": [
         { "ticker": "[TICKER1]", "quadrant": "q1" },
         { "ticker": "[TICKER2]", "quadrant": "q2" }
@@ -1065,10 +1125,10 @@ ${JSON.stringify(candidatesData, null, 2)}
      "warning": "1 kalimat risiko kritis (string kosong jika tidak ada)"
    }
 3. Kuadran Matrix untuk setiap saham di slide matrix:
-   - q1 (🟢) = Fund Bagus + Tech Bagus = kandidat kuat semua horizon
-   - q2 (🟡) = Fund Bagus + Tech Jelek = long term/value, jangan day trade dulu
-   - q3 (🟠) = Fund Jelek + Tech Bagus = spekulatif/momentum jangka pendek only
-   - q4 (🔴) = Fund Jelek + Tech Jelek = hindari / extra hati-hati
+   - q1 (🟢) = Fund Bagus + Tech Bagus → Cocok: Investasi jangka panjang & Swing Trading
+   - q2 (🟡) = Fund Bagus + Tech Jelek → Cocok: Value Investing, sabar nunggu teknikal pulih
+   - q3 (🟠) = Fund Jelek + Tech Bagus → Cocok: Trading momentum jangka pendek SAJA, siapkan exit plan
+   - q4 (🔴) = Fund Jelek + Tech Jelek → Hindari dulu, tunggu sinyal pemulihan
    Fund Bagus: minimal 2 dari 3 kondisi (PER < sektor, PBV < sektor, ROE > sektor)
    Tech Bagus: crossSignal mengandung 'Golden Cross' atau 'Bullish'
 4. Format sumberBerita: "[domain dari URL berita] (via Sector.app News)"

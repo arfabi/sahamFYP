@@ -26,7 +26,7 @@ export interface SlideObject {
   watchlistCount?: number;
 
   // tldr
-  tldrCards?: Array<{ icon?: string; text: string }>;
+  tldrCards?: Array<{ icon?: string; text: string; section?: string }>;
 
   // data
   metrics?: Array<{ icon?: string; label: string; value: string; caption?: string; tone?: string }>;
@@ -39,6 +39,7 @@ export interface SlideObject {
   ihsg?: { price: number; changePct: number };
   topGainers?: Array<{ symbol: string; name: string; price: number; changePct: number }>;
   topLosers?: Array<{ symbol: string; name: string; price: number; changePct: number }>;
+  foreignFlow?: { direction: string; netValue: number | null; label?: string };
 
   // stock
   ticker?: string;
@@ -83,6 +84,10 @@ export interface SlideObject {
 
   // matrix
   stocks?: Array<{ ticker: string; quadrant: 'q1' | 'q2' | 'q3' | 'q4' | string }>;
+  q1Label?: string;
+  q2Label?: string;
+  q3Label?: string;
+  q4Label?: string;
   note?: string;
 }
 
@@ -195,64 +200,46 @@ export function buildSlideHtml(s: SlideObject, index: number = 0, total: number 
 
     case 'tldr': {
       const cards = s.tldrCards || [];
-      
-      // Parse card items dynamically
-      const ihsgCard = cards.find(c => c.text.includes('IHSG')) || cards[0];
-      const gainerCard = cards.find(c => c.text.toLowerCase().includes('gainer')) || cards[1];
-      const loserCard = cards.find(c => c.text.toLowerCase().includes('loser')) || cards[2];
-      const watchlistCard = cards.find(c => c.text.toLowerCase().includes('watchlist')) || cards[cards.length - 1];
 
-      // News catalysts (items not ihsg, gainer, loser, watchlist)
-      const katalisItems = cards.filter(c => 
-        c !== ihsgCard && c !== gainerCard && c !== loserCard && c !== watchlistCard
-      );
+      // Group cards by section (supports both old and new format)
+      const marketCards = cards.filter(c => c.section === 'kondisiMarket' || (!c.section && (c.text.includes('IHSG') || c.text.toLowerCase().includes('gainer') || c.text.toLowerCase().includes('loser') || c.text.toLowerCase().includes('asing'))));
+      const fillingsCards = cards.filter(c => c.section === 'fillings');
+      const katalisCards = cards.filter(c => c.section === 'katalis' || (!c.section && !c.text.toLowerCase().includes('watchlist') && !c.text.includes('IHSG') && !c.text.toLowerCase().includes('gainer') && !c.text.toLowerCase().includes('loser') && !c.text.toLowerCase().includes('asing')));
+      const watchlistCard = cards.find(c => c.section === 'watchlist' || c.text.toLowerCase().includes('watchlist'));
 
       // Watchlist tickers chips
-      const watchlistText = watchlistCard ? watchlistCard.text.replace('Watchlist:', '').trim() : '';
-      const tickerChips = watchlistText.split(/[, ]+/).filter(t => t.includes('.JK') || t.length >= 3);
+      const watchlistText = watchlistCard ? watchlistCard.text.replace(/watchlist:/i, '').trim() : '';
+      const tickerChips = watchlistText.split(/[,\s]+/).filter(t => t.replace('.JK', '').length >= 2 && t.replace('.JK', '').length <= 6);
+
+      const renderSectionCard = (sectionTitle: string, icon: string, accentColor: string, bgColor: string, items: typeof cards) => `
+        <div class="card-box" style="padding:14px 20px; background:${bgColor}; border:1px solid ${accentColor};">
+          <div style="font-size:17px; font-weight:900; color:${accentColor}; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">${icon} ${sectionTitle}</div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            ${items.map(k => `<div style="font-size:18px; font-weight:600; color:#1E293B; display:flex; gap:8px; align-items:flex-start;"><span style="color:${accentColor}; font-weight:900; flex-shrink:0;">•</span><span>${k.text}</span></div>`).join('')}
+          </div>
+        </div>`;
 
       bodyContent = `
-        <div class="main-body" style="gap:14px;">
-          <h1 class="title">📌 ${s.title || 'TL;DR Market Hari Ini'}</h1>
+        <div class="main-body" style="gap:12px; padding-top:24px;">
+          <h1 class="title" style="font-size:40px;">📌 ${s.title || 'TL;DR — Ringkasan Hari Ini'}</h1>
           
-          <!-- 1. Card Besar IHSG -->
-          ${ihsgCard ? `
-            <div class="ihsg-banner" style="background:#14182B; color:#FFF; padding:18px 24px; border-radius:16px;">
-              <span style="font-size:24px; font-weight:800; color:#F2A93B;">📈 ${ihsgCard.text.split('—')[0] || ''}</span>
-              <span style="font-size:18px; opacity:0.9;">${ihsgCard.text.split('—')[1] || ''}</span>
-            </div>
-          ` : ''}
+          <!-- 1. Kondisi Market -->
+          ${marketCards.length > 0 ? renderSectionCard('Kondisi Market Kemarin', '📈', '#14182B', 'rgba(20,24,43,0.06)', marketCards) : ''}
 
-          <!-- 2. Grid Top Gainer & Top Loser -->
-          <div class="grid-2col">
-            <div class="card-box" style="padding:14px 18px; background:rgba(76,175,125,0.12); border:1px solid #4CAF7D;">
-              <div style="font-size:17px; font-weight:800; color:#2E7D32; margin-bottom:4px;">🚀 TOP GAINER</div>
-              <div style="font-size:18px; font-weight:700; color:#14182B;">${gainerCard ? gainerCard.text.replace('Gainer:', '').trim() : '-'}</div>
-            </div>
-            <div class="card-box" style="padding:14px 18px; background:rgba(228,87,46,0.12); border:1px solid #E4572E;">
-              <div style="font-size:17px; font-weight:800; color:#C2410C; margin-bottom:4px;">🩸 TOP LOSER</div>
-              <div style="font-size:18px; font-weight:700; color:#14182B;">${loserCard ? loserCard.text.replace('Loser:', '').trim() : '-'}</div>
-            </div>
-          </div>
+          <!-- 2. Fillings -->
+          ${fillingsCards.length > 0 ? renderSectionCard('Fillings & Keterbukaan', '📋', '#2563EB', 'rgba(37,99,235,0.07)', fillingsCards) : ''}
 
-          <!-- 3. Card Katalis Terkuat Hari Ini -->
-          <div class="card-box" style="padding:16px 20px;">
-            <div style="font-size:20px; font-weight:800; color:#14182B; margin-bottom:10px;">🔥 Katalis Terkuat Hari Ini:</div>
-            <div style="display:flex; flex-direction:column; gap:8px;">
-              ${katalisItems.map(k => `
-                <div style="display:flex; align-items:flex-start; gap:10px; font-size:18px; font-weight:600; color:#334155;">
-                  <span style="color:#F2A93B; font-weight:800;">•</span>
-                  <span>${k.text}</span>
-                </div>
-              `).join('')}
-            </div>
-          </div>
+          <!-- 3. Katalis Hari Ini -->
+          ${katalisCards.length > 0 ? renderSectionCard('Katalis Hari Ini', '🔥', '#D97706', 'rgba(217,119,6,0.08)', katalisCards) : ''}
 
-          <!-- 4. Card Watchlist Kode Saham -->
+          <!-- 4. Watchlist -->
           <div class="card-box" style="padding:14px 20px; background:#14182B; color:#FFF;">
-            <div style="font-size:18px; font-weight:800; color:#F2A93B; margin-bottom:8px;">🎯 Watchlist Hari Ini:</div>
+            <div style="font-size:17px; font-weight:900; color:#F2A93B; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">🎯 Watchlist Saham Hari Ini</div>
             <div class="ticker-chip-list">
-              ${tickerChips.map(t => `<span class="ticker-chip" style="background:#F2A93B; color:#14182B;">${t.replace('.JK','')}</span>`).join('')}
+              ${tickerChips.length > 0
+                ? tickerChips.map(t => `<span class="ticker-chip" style="background:#F2A93B; color:#14182B; font-size:22px; padding:8px 20px;">${t.replace('.JK','')}</span>`).join('')
+                : `<span style="font-size:18px; color:#94A3B8;">${watchlistText || 'Pantau update berikutnya'}</span>`
+              }
             </div>
           </div>
         </div>
@@ -261,44 +248,68 @@ export function buildSlideHtml(s: SlideObject, index: number = 0, total: number 
     }
 
     case 'market': {
-      const ihsgPrice = s.ihsg?.price ? s.ihsg.price.toLocaleString('id-ID') : '-';
-      const ihsgChg = s.ihsg?.changePct ? `${s.ihsg.changePct >= 0 ? '+' : ''}${s.ihsg.changePct.toFixed(2)}%` : '';
-      
-      const gainers = (s.topGainers || []).slice(0, 4).map(g => `
-        <div class="table-row">
-          <span><b>${g.symbol.replace('.JK','')}</b> ${g.name.slice(0, 18)}</span>
-          <span style="color:#2E7D32;">+${g.changePct.toFixed(1)}%</span>
-        </div>
-      `).join('');
-
-      const losers = (s.topLosers || []).slice(0, 4).map(l => `
-        <div class="table-row">
-          <span><b>${l.symbol.replace('.JK','')}</b> ${l.name.slice(0, 18)}</span>
-          <span style="color:#C2410C;">${l.changePct.toFixed(1)}%</span>
-        </div>
-      `).join('');
-      const gainers = (s.topGainers || []).slice(0, 5).map(g => {
+      const ihsgPrice = s.ihsg?.price ? (s.ihsg.price as number).toLocaleString('id-ID') : '-';
+      const ihsgChg = s.ihsg?.changePct ? `${(s.ihsg.changePct as number) >= 0 ? '+' : ''}${(s.ihsg.changePct as number).toFixed(2)}%` : '';
+      const ff = s.foreignFlow;
+      const ffLabel = ff?.label || (ff?.direction === 'buy' ? '🟢 Asing Net Buy' : ff?.direction === 'sell' ? '🔴 Asing Net Sell' : null);
+      const ffColor = ff?.direction === 'buy' ? '#2E7D32' : ff?.direction === 'sell' ? '#C2410C' : '#64748B';
+      const ffBg = ff?.direction === 'buy' ? 'rgba(76,175,125,0.12)' : ff?.direction === 'sell' ? 'rgba(228,87,46,0.12)' : 'rgba(20,24,43,0.06)';
+      const gainers = (s.topGainers || []).slice(0, 5).map((g: any) => {
         const sym = (g.symbol || g.ticker || '').replace('.JK','');
         const name = (g.name || g.companyName || sym).slice(0, 19);
-        return `<div class="table-row" style="padding:10px 14px; font-size:19px;"><span><b>${sym}</b> <span style="font-size:16px; color:#64748B;">(${name})</span></span><span style="color:#2E7D32; font-weight:800;">+${(g.changePct || 0).toFixed(2)}%</span></div>`;
-            <div class="grid-header" style="color:#2E7D32; font-size:22px; margin-bottom:10px;">🚀 TOP GAINERS</div>
-            <div class="table-list" style="gap:8px;">${gainers}</div>
-          </div>
-          <div class="card-box" style="padding:18px 20px;">
-            <div class="grid-header" style="color:#C2410C; font-size:22px; margin-bottom:10px;">🩸 TOP LOSERS</div>
-            <div class="table-list" style="gap:8px;">${losers}</div>
-          </div>
-        </div>
+        const chg = (g.changePct || 0);
+        return `<div class="table-row" style="padding:10px 14px; font-size:19px;"><span><b>${sym}</b> <span style="font-size:16px; color:#64748B;">(${name})</span></span><span style="color:#2E7D32; font-weight:800;">+${chg.toFixed(2)}%</span></div>`;
+      }).join('');
 
-        <!-- Insight Penggerak Market (Mengisi Ruang Bawah) -->
-        <div class="narasi-box" style="padding:18px 22px; font-size:19px; line-height:1.45;">
-          💡 <b>Katalis Utama Penggerak Market:</b><br/>
-          • Top Gainers didominasi saham kabel & energi yang terdorong sentimen ekspansi & M&A.<br/>
-          • Top Losers tertekan aksi profit-taking serta isu sentimen GCG/hukum emiten properti.
-        </div>
-      </div>`;
+      const losers = (s.topLosers || []).slice(0, 5).map((l: any) => {
+        const sym = (l.symbol || l.ticker || '').replace('.JK','');
+        const name = (l.name || l.companyName || sym).slice(0, 19);
+        const chg = (l.changePct || 0);
+        return `<div class="table-row" style="padding:10px 14px; font-size:19px;"><span><b>${sym}</b> <span style="font-size:16px; color:#64748B;">(${name})</span></span><span style="color:#C2410C; font-weight:800;">${chg.toFixed(2)}%</span></div>`;
+      }).join('');
+
+      const ihsgColor = (s.ihsg?.changePct as number) >= 0 ? '#4CAF7D' : '#E4572E';
+      const ihsgArrow = (s.ihsg?.changePct as number) >= 0 ? '▲' : '▼';
+
+      bodyContent = `
+        <div class="main-body" style="gap:14px; justify-content:flex-start; padding-top:28px; padding-bottom:16px;">
+          <h1 class="title" style="font-size:40px;">📊 ${s.title || 'Kondisi Market Kemarin'}</h1>
+
+          <!-- IHSG Banner -->
+          <div class="ihsg-banner" style="background:#14182B; color:#FFF; border-radius:18px; padding:20px 28px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-size:22px; font-weight:800; color:#94A3B8; margin-bottom:2px;">IHSG</div>
+              <div style="font-size:38px; font-weight:900; color:#F2A93B;">${ihsgPrice}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:28px; font-weight:900; color:${ihsgColor};">${ihsgArrow} ${ihsgChg}</div>
+              <div style="font-size:16px; color:#94A3B8; margin-top:4px;">${s.dataDateIndonesia || ''}</div>
+            </div>
+          </div>
+
+          <!-- Foreign Flow Banner -->
+          ${ffLabel ? `
+            <div style="background:${ffBg}; border:1.5px solid ${ffColor}; border-radius:14px; padding:14px 20px; display:flex; align-items:center; justify-content:space-between;">
+              <div style="font-size:18px; font-weight:800; color:#64748B;">🌍 Foreign Flow</div>
+              <div style="font-size:20px; font-weight:900; color:${ffColor};">${ffLabel}</div>
+            </div>
+          ` : ''}
+
+          <!-- Top Gainers & Losers Grid -->
+          <div class="grid-2col">
+            <div class="card-box" style="padding:18px 20px;">
+              <div class="grid-header" style="color:#2E7D32; font-size:20px; margin-bottom:10px;">🚀 TOP GAINERS</div>
+              <div class="table-list" style="gap:6px;">${gainers}</div>
+            </div>
+            <div class="card-box" style="padding:18px 20px;">
+              <div class="grid-header" style="color:#C2410C; font-size:20px; margin-bottom:10px;">🩸 TOP LOSERS</div>
+              <div class="table-list" style="gap:6px;">${losers}</div>
+            </div>
+          </div>
+        </div>`;
       break;
     }
+
 
     case 'stock': {
       const ticker = s.ticker || 'EMITEN.JK';
@@ -320,7 +331,8 @@ export function buildSlideHtml(s: SlideObject, index: number = 0, total: number 
         tech.crossSignal?.includes('Golden Cross') ? 'MA20 memotong ke atas MA50, sinyal tren naik kuat.' :
         tech.crossSignal?.includes('Death Cross') ? 'MA20 memotong ke bawah MA50, sinyal tren turun.' :
         tech.crossSignal?.includes('Bullish') ? 'Harga bergerak di atas MA20 & MA50 (tren naik).' :
-      const signalVibe = tech.narasiVibe || 'Belum ada arah yang jelas, pantau pergerakan harga dan volume.';
+        'Belum ada arah yang jelas, pantau pergerakan harga dan volume.'
+      );
 
       bodyContent = `
         <div class="main-body" style="gap: 24px; justify-content: flex-start; padding-top: 36px; padding-bottom: 20px;">
@@ -439,19 +451,23 @@ export function buildSlideHtml(s: SlideObject, index: number = 0, total: number 
 
           <div class="matrix-grid">
             <div class="matrix-cell q1">
-              <div class="q-title">🟢 Q1: Fundamental & Teknikal Bagus</div>
+              <div class="q-title">🟢 Q1: Fund ✅ + Tech ✅</div>
+              ${s.q1Label ? `<div style="font-size:15px; color:#2E7D32; font-weight:600; margin-bottom:10px; font-style:italic;">${s.q1Label}</div>` : `<div style="font-size:15px; color:#2E7D32; font-weight:600; margin-bottom:10px; font-style:italic;">Cocok: Investasi & Swing Trading</div>`}
               ${renderChips(getQuadrantTickers('q1'))}
             </div>
             <div class="matrix-cell q2">
-              <div class="q-title">🟡 Q2: Fundamental Bagus & Teknikal Lemah</div>
+              <div class="q-title">🟡 Q2: Fund ✅ + Tech ⚠️</div>
+              ${s.q2Label ? `<div style="font-size:15px; color:#D97706; font-weight:600; margin-bottom:10px; font-style:italic;">${s.q2Label}</div>` : `<div style="font-size:15px; color:#D97706; font-weight:600; margin-bottom:10px; font-style:italic;">Cocok: Value Investing, tunggu teknikal</div>`}
               ${renderChips(getQuadrantTickers('q2'))}
             </div>
             <div class="matrix-cell q3">
-              <div class="q-title">🟠 Q3: Fundamental Lemah & Teknikal Bagus</div>
+              <div class="q-title">🟠 Q3: Fund ⚠️ + Tech ✅</div>
+              ${s.q3Label ? `<div style="font-size:15px; color:#B45309; font-weight:600; margin-bottom:10px; font-style:italic;">${s.q3Label}</div>` : `<div style="font-size:15px; color:#B45309; font-weight:600; margin-bottom:10px; font-style:italic;">Trading momentum jangka pendek SAJA</div>`}
               ${renderChips(getQuadrantTickers('q3'))}
             </div>
             <div class="matrix-cell q4">
-              <div class="q-title">🔴 Q4: Fundamental & Teknikal Lemah</div>
+              <div class="q-title">🔴 Q4: Fund ⚠️ + Tech ⚠️</div>
+              ${s.q4Label ? `<div style="font-size:15px; color:#C2410C; font-weight:600; margin-bottom:10px; font-style:italic;">${s.q4Label}</div>` : `<div style="font-size:15px; color:#C2410C; font-weight:600; margin-bottom:10px; font-style:italic;">Hindari dulu, tunggu pemulihan</div>`}
               ${renderChips(getQuadrantTickers('q4'))}
             </div>
           </div>
@@ -464,30 +480,43 @@ export function buildSlideHtml(s: SlideObject, index: number = 0, total: number 
 
     case 'kamus': {
       const kamusItems = (s as any).items || [
-        { term: 'PER & PBV', definition: 'Metrik murah/mahalnya harga saham dibanding laba & aset bersih.', analogi: 'PER = berapa thn balik modal. PBV = berapa kali lipat bayar dari harga asli. Makin kecil = makin diskon!' },
-        { term: 'ROE & DER', definition: 'Efisiensi cetak cuan vs risiko beban utang perusahaan.', analogi: 'ROE tinggi = jago muter modal. DER < 1x = aman dari utang. DER > 2x = awas beban paylater!' },
-        { term: 'MA20, MA50 & MA100', definition: 'Moving Average — Rata-rata harga saham selama 20, 50, & 100 hari pasar.', analogi: 'MA20 = tren sebulan, MA50 = tren 2.5 bulan, MA100 = tren 5 bulan. Dipakai buat patokan bantal (support) atau atap (resistance).' },
-        { term: 'Golden & Death Cross', definition: 'Sinyal pembalikan tren (Bullish vs Bearish).', analogi: 'Golden Cross (🚀) = garis tren pendek motong ke atas garis panjang (sinyal naik). Death Cross (💀) = motong ke bawah (sinyal turun).' }
+        { term: 'PER', category: 'fundamental', definition: 'Berapa tahun balik modal dari laba perusahaan.', analogi: 'Beli HP Rp15jt, untung Rp1jt/thn → PER 15x. Makin kecil = makin cepet balik modal!' },
+        { term: 'PBV', category: 'fundamental', definition: 'Bayar berapa kali lipat dari aset bersih perusahaan.', analogi: 'PBV < 1 = beli aset di bawah nilai buku = diskon! PBV tinggi = lo bayar premium buat brand/ekspektasi.' },
+        { term: 'ROE & DER', category: 'fundamental', definition: 'Efisiensi modal (ROE) vs beban utang (DER).', analogi: 'ROE tinggi = jago putar modal. DER < 1x = aman dari utang. DER > 3x = hati-hati paylater membengkak!' },
+        { term: 'MA20 & MA50', category: 'teknikal', definition: 'Rata-rata harga 20 & 50 hari — patokan support/resistance.', analogi: 'MA20 = mood pasar bulan ini. MA50 = mood 2.5 bulan terakhir. Harga di atas keduanya = on top vibes!' },
+        { term: 'Golden & Death Cross', category: 'teknikal', definition: 'Sinyal pembalikan tren dari perpotongan MA20 vs MA50.', analogi: 'Golden Cross 🚀 = MA20 naik ke atas MA50 (bullish!). Death Cross ☠️ = MA20 turun ke bawah MA50 (waspada!).' },
+        { term: 'Foreign Flow', category: 'teknikal', definition: 'Arus dana investor asing — net buy (masuk) atau net sell (keluar).', analogi: 'Asing net buy = influencer besar borong = sentimen positif. Net sell = mereka kabur = layak waspada, tapi jangan buru panik!' },
       ];
 
+      // Split into fundamental and teknikal
+      const fundItems = kamusItems.filter((k: any) => k.category === 'fundamental' || !k.category);
+      const techItems = kamusItems.filter((k: any) => k.category === 'teknikal');
+
+      const renderKamusItem = (k: any, borderColor: string) => `
+        <div class="card-box" style="padding:14px 18px; border-left:4px solid ${borderColor};">
+          <div style="font-size:19px; font-weight:900; color:#14182B; margin-bottom:3px;">${k.term}</div>
+          <div style="font-size:15px; color:#64748B; font-weight:600; margin-bottom:6px;">${k.definition}</div>
+          <div style="font-size:16px; color:#334155; font-style:italic; line-height:1.4;">💡 ${k.analogi}</div>
+        </div>`;
+
       bodyContent = `
-        <div class="main-body" style="gap:16px; justify-content: flex-start; padding-top: 36px; padding-bottom: 20px;">
+        <div class="main-body" style="gap:12px; justify-content: flex-start; padding-top: 28px; padding-bottom: 16px;">
           <div>
-            <h1 class="title">📖 ${s.title || 'Kamus Ala Gen Z'}</h1>
-            <div class="subtitle">${s.subtitle || 'Biar lo ngerti istilah Fundamental & Teknikal di slide sebelumnya 👆'}</div>
+            <h1 class="title" style="font-size:40px;">📖 ${s.title || 'Kamus Ala Gen Z'}</h1>
+            <div class="subtitle" style="font-size:20px;">${s.subtitle || 'Biar lo ngerti semua istilah di slide sebelumnya 👆'}</div>
           </div>
 
-          <div style="display:flex; flex-direction:column; gap:12px; margin-top:8px;">
-            ${kamusItems.map((k: any) => `
-              <div class="card-box" style="padding:16px 20px; border-left:4px solid #F2A93B;">
-                <div style="font-size:20px; font-weight:900; color:#14182B; margin-bottom:4px;">
-                  ${k.term} <span style="font-size:16px; font-weight:600; color:#64748B;">— ${k.definition}</span>
-                </div>
-                <div style="font-size:17px; color:#334155; font-style:italic; line-height:1.4;">
-                  💡 <b>Analogi:</b> ${k.analogi}
-                </div>
-              </div>
-            `).join('')}
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:4px;">
+            <!-- Fundamental Column -->
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <div style="font-size:15px; font-weight:900; color:#2563EB; text-transform:uppercase; letter-spacing:0.6px; padding:4px 0;">📊 Fundamental</div>
+              ${fundItems.map((k: any) => renderKamusItem(k, '#2563EB')).join('')}
+            </div>
+            <!-- Teknikal Column -->
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <div style="font-size:15px; font-weight:900; color:#F2A93B; text-transform:uppercase; letter-spacing:0.6px; padding:4px 0;">📈 Teknikal</div>
+              ${techItems.map((k: any) => renderKamusItem(k, '#F2A93B')).join('')}
+            </div>
           </div>
         </div>
       `;
