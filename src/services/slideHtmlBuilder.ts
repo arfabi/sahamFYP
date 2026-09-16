@@ -281,26 +281,6 @@ export function buildSlideHtml(s: SlideObject, index: number = 0, total: number 
         const sym = (g.symbol || g.ticker || '').replace('.JK','');
         const name = (g.name || g.companyName || sym).slice(0, 19);
         return `<div class="table-row" style="padding:10px 14px; font-size:19px;"><span><b>${sym}</b> <span style="font-size:16px; color:#64748B;">(${name})</span></span><span style="color:#2E7D32; font-weight:800;">+${(g.changePct || 0).toFixed(2)}%</span></div>`;
-      }).join('');
-
-      const losers = (s.topLosers || []).slice(0, 5).map(l => {
-        const sym = (l.symbol || l.ticker || '').replace('.JK','');
-        const name = (l.name || l.companyName || sym).slice(0, 19);
-        return `<div class="table-row" style="padding:10px 14px; font-size:19px;"><span><b>${sym}</b> <span style="font-size:16px; color:#64748B;">(${name})</span></span><span style="color:#C2410C; font-weight:800;">${(l.changePct || 0).toFixed(2)}%</span></div>`;
-      }).join('');
-
-      bodyContent = `<div class="main-body" style="gap:16px;">
-        <h1 class="title">📊 ${s.title || 'Kondisi Market Kemarin'}</h1>
-        
-        <!-- IHSG Banner -->
-        <div class="ihsg-banner" style="padding:22px 28px;">
-          <span style="font-size:26px; font-weight:800;">📉 IHSG KEMARIN</span>
-          <span class="ihsg-val" style="font-size:36px;">${ihsgPrice} (${ihsgChg})</span>
-        </div>
-
-        <!-- Grid Movers -->
-        <div class="grid-2col" style="gap:16px;">
-          <div class="card-box" style="padding:18px 20px;">
             <div class="grid-header" style="color:#2E7D32; font-size:22px; margin-bottom:10px;">🚀 TOP GAINERS</div>
             <div class="table-list" style="gap:8px;">${gainers}</div>
           </div>
@@ -451,7 +431,7 @@ export function buildSlideHtml(s: SlideObject, index: number = 0, total: number 
       };
 
       bodyContent = `
-        <div class="main-body">
+        <div class="main-body" style="gap: 20px; justify-content: flex-start; padding-top: 36px; padding-bottom: 20px;">
           <div>
             <h1 class="title">🧩 ${s.title || 'Kesimpulan Watchlist Hari Ini'}</h1>
             <div class="subtitle">${s.subtitle || 'Framework: Matrix Fundamental × Teknikal'}</div>
@@ -491,19 +471,19 @@ export function buildSlideHtml(s: SlideObject, index: number = 0, total: number 
       ];
 
       bodyContent = `
-        <div class="main-body" style="gap:12px;">
+        <div class="main-body" style="gap:16px; justify-content: flex-start; padding-top: 36px; padding-bottom: 20px;">
           <div>
             <h1 class="title">📖 ${s.title || 'Kamus Ala Gen Z'}</h1>
             <div class="subtitle">${s.subtitle || 'Biar lo ngerti istilah Fundamental & Teknikal di slide sebelumnya 👆'}</div>
           </div>
 
-          <div style="display:flex; flex-direction:column; gap:10px; margin-top:4px;">
+          <div style="display:flex; flex-direction:column; gap:12px; margin-top:8px;">
             ${kamusItems.map((k: any) => `
-              <div class="card-box" style="padding:14px 18px; border-left:4px solid #F2A93B;">
-                <div style="font-size:20px; font-weight:900; color:#14182B; margin-bottom:2px;">
+              <div class="card-box" style="padding:16px 20px; border-left:4px solid #F2A93B;">
+                <div style="font-size:20px; font-weight:900; color:#14182B; margin-bottom:4px;">
                   ${k.term} <span style="font-size:16px; font-weight:600; color:#64748B;">— ${k.definition}</span>
                 </div>
-                <div style="font-size:17px; color:#334155; font-style:italic; margin-top:2px; line-height:1.35;">
+                <div style="font-size:17px; color:#334155; font-style:italic; line-height:1.4;">
                   💡 <b>Analogi:</b> ${k.analogi}
                 </div>
               </div>
@@ -516,7 +496,7 @@ export function buildSlideHtml(s: SlideObject, index: number = 0, total: number 
 
     case 'cta': {
       bodyContent = `
-        <div class="main-body" style="justify- content: center; align-items: center; text-align: center; gap: 24px;">
+        <div class="main-body" style="justify-content: center; align-items: center; text-align: center; gap: 24px; padding-top: 36px; padding-bottom: 20px;">
           <div style="color:#F2A93B">${iconSvg('MessageCircle')}</div>
           <h1 class="title" style="font-size: 56px;">${s.title || 'Gimana Menurutmu?'}</h1>
           <p class="subtitle" style="font-size: 28px; max-width: 800px; color:#334155;">${s.description || 'Drop pendapatmu di kolom komentar! 👇'}</p>
@@ -531,7 +511,7 @@ export function buildSlideHtml(s: SlideObject, index: number = 0, total: number 
 
     default: {
       bodyContent = `
-        <div class="main-body">
+        <div class="main-body" style="padding-top: 36px; padding-bottom: 20px;">
           <h1 class="title">${s.title || ''}</h1>
           <p class="subtitle">${s.description || ''}</p>
         </div>
