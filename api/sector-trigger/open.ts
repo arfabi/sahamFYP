@@ -1069,7 +1069,7 @@ ${JSON.stringify(candidatesData, null, 2)}
 
 
   try {
-    return await generateJson(prompt);
+    return await generateJson(prompt, { maxTokens: 8192 });
   } catch (error) {
     console.error('[GenerateSlides] Failed to generate/parse LLM response:', error);
     throw error;

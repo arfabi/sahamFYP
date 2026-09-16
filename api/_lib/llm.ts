@@ -179,6 +179,54 @@ export function extractJson(raw: string): any {
     }
   }
 
+  // Coba perbaiki truncated JSON jika terpotong di tengah jalan (auto-close brackets/quotes)
+  let partial = text.startsWith('{') ? text : (text.match(/\{[\s\S]*/)?.[0] || text);
+  if (partial.startsWith('{')) {
+    // Strip unfinished trailing tokens/keys
+    partial = partial.replace(/,\s*"[^"]*"?\s*:\s*([^"\{\[\s,]+)?$/, '');
+    partial = partial.replace(/,\s*$/, '');
+    
+    // Count unclosed quotes and brackets
+    let openBraces = 0;
+    let openBrackets = 0;
+    let inString = false;
+    let escaped = false;
+
+    for (let i = 0; i < partial.length; i++) {
+      const char = partial[i];
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (char === '\\') {
+        escaped = true;
+        continue;
+      }
+      if (char === '"') {
+        inString = !inString;
+        continue;
+      }
+      if (!inString) {
+        if (char === '{') openBraces++;
+        if (char === '}') openBraces--;
+        if (char === '[') openBrackets++;
+        if (char === ']') openBrackets--;
+      }
+    }
+
+    if (inString) partial += '"';
+    while (openBrackets > 0) { partial += ']'; openBrackets--; }
+    while (openBraces > 0) { partial += '}'; openBraces--; }
+
+    try {
+      const parsed = JSON.parse(partial);
+      console.warn('[LLM] Output JSON terpotong tetapi berhasil di-repair secara otomatis.');
+      return parsed;
+    } catch {
+      // lanjut ke error
+    }
+  }
+
   console.error('[LLM] Failed to parse JSON response (first 1000 chars):', text.slice(0, 1000));
   throw new Error('Failed to parse LLM JSON response');
 }
