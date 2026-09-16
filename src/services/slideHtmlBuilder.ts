@@ -388,10 +388,19 @@ export function buildSlideHtml(s: SlideObject, index: number = 0, total: number 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 2px solid #F1F5F9; padding-bottom: 8px;">
                   <span style="font-size: 22px; font-weight: 900; color: #14182B;">📊 Fundamental</span>
                 </div>
-                <div style="font-size: 18px; color: #14182B; display: flex; flex-direction: column; gap: 8px; font-weight: 600;">
-                  <div><b>PER:</b> ${fund.per || '-'}<span style="color:#64748B; font-weight:500;">${perVs}</span></div>
-                  <div><b>PBV:</b> ${fund.pbv || '-'}<span style="color:#64748B; font-weight:500;">${pbvVs}</span></div>
-                  <div><b>ROE:</b> ${fund.roe || '-'}<span style="color:#64748B; font-weight:500;">${roeVs}</span></div>
+                <div style="font-size: 17px; color: #14182B; display: flex; flex-direction: column; gap: 10px; font-weight: 600;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span><b>PER:</b> ${fund.per || '-'}<span style="color:#64748B; font-weight:500;">${perVs}</span></span>
+                    ${fund.perSignal ? `<span style="font-size:14px; font-weight:700; color:#1e293b;">${fund.perSignal}</span>` : ''}
+                  </div>
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span><b>PBV:</b> ${fund.pbv || '-'}<span style="color:#64748B; font-weight:500;">${pbvVs}</span></span>
+                    ${fund.pbvSignal ? `<span style="font-size:14px; font-weight:700; color:#1e293b;">${fund.pbvSignal}</span>` : ''}
+                  </div>
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span><b>ROE:</b> ${fund.roe || '-'}<span style="color:#64748B; font-weight:500;">${roeVs}</span></span>
+                    ${fund.roeSignal ? `<span style="font-size:14px; font-weight:700; color:#1e293b;">${fund.roeSignal}</span>` : ''}
+                  </div>
                 </div>
               </div>
               ${fund.narasiFundamental ? `
