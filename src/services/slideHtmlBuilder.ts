@@ -340,29 +340,25 @@ export function buildSlideHtml(s: SlideObject, index: number = 0, total: number 
         tech.crossSignal?.includes('Golden Cross') ? 'MA20 memotong ke atas MA50, sinyal tren naik kuat.' :
         tech.crossSignal?.includes('Death Cross') ? 'MA20 memotong ke bawah MA50, sinyal tren turun.' :
         tech.crossSignal?.includes('Bullish') ? 'Harga bergerak di atas MA20 & MA50 (tren naik).' :
-        tech.crossSignal?.includes('Bearish') ? 'Harga bergerak di bawah MA20 & MA50 (tren turun).' :
-        'Harga bergerak mendatar dalam rentang sempit, mencari arah selanjutnya.'
-      );
-
-      // Clean news source text formatting
-      let cleanSource = s.sumberBerita || 'emitennews.com (via sectors.app News)';
-      cleanSource = cleanSource.replace(/^via\s+/i, '').replace(/Sector\.app/g, 'sectors.app');
       const signalVibe = tech.narasiVibe || 'Belum ada arah yang jelas, pantau pergerakan harga dan volume.';
 
       bodyContent = `
-        <div class="main-body" style="gap: 20px; justify-content: space-between;">
-          <!-- Top Ticker Header -->
+        <div class="main-body" style="gap: 22px; justify-content: flex-start; padding-top: 10px; padding-bottom: 10px;">
+          <!-- Top Ticker Header with Close Price -->
           <div>
-            <div class="ticker-header" style="align-items: center;">
-              <span class="ticker-badge" style="font-size: 56px; padding: 6px 26px; border-radius: 16px;">${cleanTicker}</span>
-              <span class="sector-badge" style="font-size: 20px; padding: 8px 22px; border-radius: 24px;">Sektor ${sectorName}</span>
+            <div class="ticker-header" style="align-items: center; display: flex; justify-content: space-between;">
+              <span class="ticker-badge" style="font-size: 52px; padding: 6px 26px; border-radius: 16px;">${cleanTicker}</span>
+              ${formattedPrice ? `<span style="font-size: 44px; font-weight: 900; color: #D97706;">${formattedPrice}</span>` : ''}
             </div>
-            <div style="font-size: 28px; font-weight: 800; color: #14182B; margin-top: 12px; letter-spacing: -0.3px;">
-              ${s.companyName || ''}
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+              <div style="font-size: 26px; font-weight: 800; color: #14182B; letter-spacing: -0.3px;">
+                ${s.companyName || ''}
+              </div>
+              <span class="sector-badge" style="font-size: 18px; padding: 6px 18px; border-radius: 20px;">Sektor ${sectorName}</span>
             </div>
             ${s.tags && s.tags.length > 0 ? `
-              <div class="tag-list" style="margin-top: 10px; gap: 10px;">
-                ${s.tags.map((tg: string) => `<span class="tag-item" style="font-size: 17px; padding: 6px 16px;">#${tg}</span>`).join('')}
+              <div class="tag-list" style="margin-top: 10px;">
+                ${s.tags.map((tg: string) => `<span class="tag-item" style="font-size: 16px; padding: 4px 14px;">#${tg}</span>`).join('')}
               </div>
             ` : ''}
           </div>
@@ -383,57 +379,60 @@ export function buildSlideHtml(s: SlideObject, index: number = 0, total: number 
           <!-- Fundamental & Teknikal Grid -->
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px;">
             <!-- Fundamental Card -->
-            <div class="card-box" style="padding: 22px 24px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div class="card-box" style="padding: 24px 26px; display: flex; flex-direction: column; justify-content: space-between; min-height: 240px;">
               <div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 2px solid #F1F5F9; padding-bottom: 8px;">
-                  <span style="font-size: 22px; font-weight: 900; color: #14182B;">📊 Fundamental</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 2px solid #F1F5F9; padding-bottom: 8px;">
+                  <span style="font-size: 24px; font-weight: 900; color: #14182B;">📊 Fundamental</span>
                 </div>
-                <div style="font-size: 17px; color: #14182B; display: flex; flex-direction: column; gap: 10px; font-weight: 600;">
+                <div style="font-size: 18px; color: #14182B; display: flex; flex-direction: column; gap: 12px; font-weight: 600;">
                   <div style="display:flex; justify-content:space-between; align-items:center;">
                     <span><b>PER:</b> ${fund.per || '-'}<span style="color:#64748B; font-weight:500;">${perVs}</span></span>
-                    ${fund.perSignal ? `<span style="font-size:14px; font-weight:700; color:#1e293b;">${fund.perSignal}</span>` : ''}
+                    ${fund.perSignal ? `<span style="font-size:15px; font-weight:700; color:#1e293b;">${fund.perSignal}</span>` : ''}
                   </div>
                   <div style="display:flex; justify-content:space-between; align-items:center;">
                     <span><b>PBV:</b> ${fund.pbv || '-'}<span style="color:#64748B; font-weight:500;">${pbvVs}</span></span>
-                    ${fund.pbvSignal ? `<span style="font-size:14px; font-weight:700; color:#1e293b;">${fund.pbvSignal}</span>` : ''}
+                    ${fund.pbvSignal ? `<span style="font-size:15px; font-weight:700; color:#1e293b;">${fund.pbvSignal}</span>` : ''}
                   </div>
                   <div style="display:flex; justify-content:space-between; align-items:center;">
                     <span><b>ROE:</b> ${fund.roe || '-'}<span style="color:#64748B; font-weight:500;">${roeVs}</span></span>
-                    ${fund.roeSignal ? `<span style="font-size:14px; font-weight:700; color:#1e293b;">${fund.roeSignal}</span>` : ''}
+                    ${fund.roeSignal ? `<span style="font-size:15px; font-weight:700; color:#1e293b;">${fund.roeSignal}</span>` : ''}
                   </div>
                 </div>
               </div>
               ${fund.narasiFundamental ? `
-                <div style="font-size: 16px; color: #475569; font-style: italic; margin-top: 12px; border-top: 1px dashed #E2E8F0; padding-top: 8px; line-height: 1.45;">
+                <div style="font-size: 17px; color: #475569; font-style: italic; margin-top: 14px; border-top: 1px dashed #E2E8F0; padding-top: 10px; line-height: 1.45;">
                   💡 ${fund.narasiFundamental}
                 </div>
               ` : ''}
             </div>
 
             <!-- Teknikal Card -->
-            <div class="card-box" style="padding: 22px 24px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div class="card-box" style="padding: 24px 26px; display: flex; flex-direction: column; justify-content: space-between; min-height: 240px;">
               <div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 2px solid #F1F5F9; padding-bottom: 8px;">
-                  <span style="font-size: 22px; font-weight: 900; color: #14182B;">📈 Teknikal</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 2px solid #F1F5F9; padding-bottom: 8px;">
+                  <span style="font-size: 24px; font-weight: 900; color: #14182B;">📈 Teknikal</span>
                 </div>
-                <div style="font-size: 18px; color: #14182B; display: flex; flex-direction: column; gap: 8px; font-weight: 600;">
-                  <div><b>Sinyal:</b> <span style="color:#F2A93B;">${tech.crossSignal || 'Konsolidasi 🟡'}</span></div>
+                <div style="font-size: 18px; color: #14182B; display: flex; flex-direction: column; gap: 12px; font-weight: 600;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span><b>Sinyal:</b></span>
+                    <span style="color:#F2A93B; font-size:17px; font-weight:800;">${tech.crossSignal || 'Konsolidasi 🟡'}</span>
+                  </div>
                   <div><b>MA20:</b> Rp ${tech.ma20 ? tech.ma20.toLocaleString('id-ID') : '-'}</div>
                   <div><b>MA50:</b> Rp ${tech.ma50 ? tech.ma50.toLocaleString('id-ID') : '-'}</div>
                 </div>
               </div>
-              <div style="font-size: 16px; color: #475569; font-style: italic; margin-top: 12px; border-top: 1px dashed #E2E8F0; padding-top: 8px; line-height: 1.45;">
+              <div style="font-size: 17px; color: #475569; font-style: italic; margin-top: 14px; border-top: 1px dashed #E2E8F0; padding-top: 10px; line-height: 1.45;">
                 💡 ${signalVibe}
               </div>
             </div>
           </div>
 
           <!-- Key Takeaway Banner -->
-          <div class="card-box" style="padding: 22px 28px; background: #14182B; color: #FFFFFF; border-radius: 20px;">
-            <div style="font-size: 20px; font-weight: 900; color: #F2A93B; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+          <div class="card-box" style="padding: 24px 28px; background: #14182B; color: #FFFFFF; border-radius: 20px;">
+            <div style="font-size: 22px; font-weight: 900; color: #F2A93B; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
               💡 Key Takeaway:
             </div>
-            <div style="font-size: 18px; color: #F8FAFC; line-height: 1.45; font-weight: 500;">
+            <div style="font-size: 19px; color: #F8FAFC; line-height: 1.45; font-weight: 500;">
               ${tldr.swing || tldr.investasi || tldr.dayTrading || tech.trigger || 'Pantau pergerakan volume dan support MA20 untuk menentukan titik entry.'}
             </div>
           </div>
