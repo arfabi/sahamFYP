@@ -908,6 +908,10 @@ ${JSON.stringify(FIXED_KAMUS, null, 2)}
   "badgeBgColor": "#14182B",
   "badgeTextColor": "#FFFFFF",
   "date": "${today}",
+  "caption": {
+    "instagram": "Caption Instagram menarik buatan Gemini (lengkap dengan emojies, ringkasan saham, hashtag)",
+    "tiktok": "Caption TikTok singkat & catchy"
+  },
   "slides": [
     {
       "template": "cover",
