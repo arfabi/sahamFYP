@@ -56,6 +56,28 @@ function avgOf(rows: any[], fn: (r: any) => number | null): number {
   return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
 }
 
+/** Format tanggal ke bahasa Indonesia: "Rabu, 16 September 2026" */
+function formatDateIndonesian(dateStr: string): string {
+  const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+  const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+  try {
+    const d = new Date(dateStr + 'T00:00:00+07:00');
+    return `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  } catch {
+    return dateStr;
+  }
+}
+
+/** Ekstrak domain dari URL berita: "https://market.bisnis.com/..." → "market.bisnis.com" */
+function extractDomain(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return 'sector.app';
+  }
+}
+
 /**
  * Extract peer company rows from Sectors v2 company report `peers` section.
  * v2 structure: peers = [ { peers_data: { companies: [...], group_name } } ]
@@ -586,6 +608,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
           symbol: ticker,
           newsTitle: relatedNews[0]?.title || 'N/A',
           newsBody: relatedNews[0]?.body || '',
+          newsSource: (relatedNews[0] as any)?.source || '',
           tags: relatedNews[0]?.tags || [],
           sector: relatedNews[0]?.sector || null,
           report,
@@ -813,6 +836,8 @@ async function generateSlidesWithLlm(
       symbol: c.symbol,
       companyName: d.companyName || c.symbol,
       newsTitle: c.newsTitle,
+      newsBody: c.newsBody,
+      sumberBeritaDomain: extractDomain((c as any).newsSource || ''),
       tags: c.tags,
       sector: c.sector || d.sector,
       harga: d.price !== null ? d.price : 'N/A',
@@ -864,13 +889,29 @@ async function generateSlidesWithLlm(
   const fmtIhsChange = (c: number | null | undefined): string =>
     c === null || c === undefined ? 'N/A' : `${c >= 0 ? '+' : ''}${c.toFixed(2)}%`;
 
+  const todayIndonesian = formatDateIndonesian(today);
+  const dataDateIndonesian = formatDateIndonesian(dataDate);
+
+  // Pre-format top movers untuk slide market
+  const gainersData = gainers.slice(0, 5).map((g: any) => {
+    const pct = num(g.price_change);
+    const last = num(g.close_price) ?? num(g.last_close_price) ?? num(g.price) ?? num(g.last);
+    return { symbol: g.symbol, name: g.name || g.company_name || g.symbol, price: last, changePct: pct !== null ? Number((pct * 100).toFixed(2)) : null };
+  });
+  const losersData = losers.slice(0, 5).map((l: any) => {
+    const pct = num(l.price_change);
+    const last = num(l.close_price) ?? num(l.last_close_price) ?? num(l.price) ?? num(l.last);
+    return { symbol: l.symbol, name: l.name || l.company_name || l.symbol, price: last, changePct: pct !== null ? Number((pct * 100).toFixed(2)) : null };
+  });
+
   const prompt = `Kamu adalah Content Creator & Analyst ahli untuk @sahamfyp — akun edukasi saham Gen Z dengan 100K+ followers.
 
-Tugasmu: Buat konten carousel Instagram "Market Open" yang engaging, informatif, presisi, dan edukatif.
+Tugasmu: Buat konten carousel Instagram "Market Open" yang engaging, informatif, dan mudah dipahami Gen Z yang BELUM TENTU paham semua istilah saham.
+ATURAN UTAMA: Gunakan analogi sehari-hari, bahasa santai, penjelasan tidak menggurui. Pembaca adalah anak muda yang baru belajar investasi.
 
 ## DATA MARKET:
-- Tanggal: ${today}
-- Data harga: ${dataDate} (hari terakhir IDX buka)
+- Tanggal hari ini: ${today} (${todayIndonesian})
+- Data harga (hari terakhir IDX buka): ${dataDate} (${dataDateIndonesian})
 - IHSG: ${ihs?.price ?? 'N/A'} (${fmtIhsChange(ihs?.change)})
 
 ## TOP GAINERS (1D):
@@ -885,136 +926,147 @@ ${JSON.stringify(candidatesData, null, 2)}
 ## PROSES SELEKSI:
 - Total berita dianalisis: ${newsResults.length}
 - Alasan seleksi: ${selection.reasoning}
-- Saham di-skip: ${JSON.stringify(selection.skipped)}
-
-## KAMUS FIX (dari docs, jangan ubah):
-${JSON.stringify(FIXED_KAMUS, null, 2)}
-
-## MATRIX MATRIX ANALISIS 2x2 (FUNDAMENTAL x TEKNIKAL):
-- 🟢 **Fund Bagus x Tech Bagus** ➔ Kuadran Hijau: "Kandidat Kuat Semua Horizon (Swing / Day Trade / Value Holding)".
-- 🟡 **Fund Bagus x Tech Jelek** ➔ Kuadran Kuning: "Kandidat Long-term / Value. JANGAN Day Trade dulu (Falling Knife), tunggu reversal!".
-- 🟠 **Fund Jelek x Tech Bagus** ➔ Kuadran Orange: "Spekulatif Jangka Pendek / Momentum-driven. JANGAN HOLD JANGKA PANJANG!".
-- 🔴 **Fund Jelek x Tech Jelek** ➔ Kuadran Merah: "HINDARI / RISK WARNING. Risiko struktural/ekuitas negatif/delisting/gocap".
-
-## ATURAN EVALUASI VIBE CHECK & TRIGGER:
-1. Manfaatkan field crossSignal (misal Golden Cross 🚀 atau Death Cross ☠️) dan MA50 untuk narasi vibeCheck & trigger.
-2. PER & PBV Negatif BUKAN DISKON, tapi RED FLAG (Rugi / Defisit Modal).
-3. Evaluasi warning: Jika berita bullish tapi fundamental sangat jelek atau modal minus, WAJIB beri peringatan di field warning.
 
 ## FORMAT OUTPUT (JSON VALID - TANPA MARKDOWN):
 {
   "handle": "@sahamfyp",
   "badgeText": "OPEN",
-  "badgeBgColor": "#14182B",
-  "badgeTextColor": "#FFFFFF",
   "date": "${today}",
+  "dateIndonesia": "${todayIndonesian}",
   "caption": {
-    "instagram": "Caption Instagram menarik buatan Gemini (lengkap dengan emojies, ringkasan saham, hashtag)",
-    "tiktok": "Caption TikTok singkat & catchy"
+    "instagram": "Caption Instagram menarik (emoji + ringkasan katalis + CTA + hashtag)",
+    "tiktok": "Caption TikTok singkat & catchy, maks 3 kalimat"
   },
   "slides": [
     {
       "template": "cover",
-      "title": "Selamat Pagi! Market Brief ${today}",
-      "description": "Yang perlu lo tau sebelum bel bursa bunyi",
-      "visualIcon": "TrendingUp",
-      "accent": "#F2A93B"
+      "handle": "@sahamfyp",
+      "date": "${today}",
+      "dateIndonesia": "${todayIndonesian}",
+      "newsCount": ${newsResults.length},
+      "watchlistCount": ${candidatesData.length}
     },
     {
       "template": "tldr",
-      "title": "TL;DR Market",
+      "handle": "@sahamfyp",
+      "date": "${today}",
+      "dateIndonesia": "${todayIndonesian}",
+      "title": "TL;DR Market Hari Ini",
       "tldrCards": [
-        { "icon": "TrendingUp", "text": "IHSG: ${ihs?.price || 'N/A'} (${ihs?.change || 'N/A'}%)" },
-        { "icon": "Newspaper", "text": "${candidatesData.length} saham dengan katalis kuat" }
-      ],
-      "accent": "#F2A93B"
+        { "icon": "TrendingUp", "text": "IHSG ${ihs?.price ?? 'N/A'} (${fmtIhsChange(ihs?.change)}) — [kondisi singkat 5 kata]" },
+        { "icon": "Flame", "text": "Gainer: [TICKER] ([Nama]) +XX.XX%" },
+        { "icon": "TrendingDown", "text": "Loser: [TICKER] ([Nama]) -XX.XX%" },
+        { "icon": "Newspaper", "text": "[Headline singkat berita saham #1, maks 8 kata]" },
+        { "icon": "Newspaper", "text": "[Headline singkat berita saham #2, maks 8 kata]" },
+        { "icon": "Newspaper", "text": "[Headline singkat berita saham #3, maks 8 kata]" },
+        { "icon": "Newspaper", "text": "[Headline singkat berita saham #4, maks 8 kata]" },
+        { "icon": "Eye", "text": "Watchlist: ${candidatesData.map((c: any) => c.symbol).join(', ')}" }
+      ]
     },
     {
-      "template": "kronologi",
-      "title": "Proses Seleksi",
-      "description": "Dari ${newsResults.length} berita, dipilih ${candidatesData.length} saham dengan katalis paling kuat. ${selection.reasoning}",
-      "visualIcon": "Filter",
-      "accent": "#F2A93B"
+      "template": "market",
+      "handle": "@sahamfyp",
+      "date": "${today}",
+      "dateIndonesia": "${todayIndonesian}",
+      "dataDate": "${dataDate}",
+      "dataDateIndonesia": "${dataDateIndonesian}",
+      "title": "Kondisi Market Kemarin",
+      "ihsg": { "price": ${ihs?.price ?? null}, "changePct": ${ihs?.change ?? null} },
+      "topGainers": ${JSON.stringify(gainersData)},
+      "topLosers": ${JSON.stringify(losersData)}
     },
     {{STOCK_SLIDES}},
     {
-      "template": "kamus",
-      "title": "Kamus Ala Gen Z",
-      "intro": "Biar lo ngerti istilah di slide sebelumnya",
-      "terms": [
-        { "term": "PER", "definition": "Price to Earnings Ratio — Berapa tahun balik modal kalau laba perusahaan segini terus.", "analogi": "Beli HP Rp15jt, tiap tahun lo \"untung\" Rp1jt → PER = 15x." },
-        { "term": "PBV", "definition": "Price to Book Value — Bayar berapa kali lipat dari aset bersih.", "analogi": "Harga asli Rp1jt bayar Rp3jt (PBV 3x) = bayar mahal buat ekspektasi/brand." },
-        { "term": "ROE", "definition": "Return on Equity — Efisiensi modal sendiri menghasilkan cuan.", "analogi": "Modal Rp1jt untung Rp200rb (ROE 20%) vs modal Rp5jt untung Rp200rb (ROE 4%)." },
-        { "term": "DER", "definition": "Debt to Equity Ratio — Utang dibanding modal sendiri.", "analogi": "DER 1x = utang 100% modal. DER 3x = utang 3x lipat modal." },
-        { "term": "MA20 & MA50", "definition": "Moving Average — Garis rata-rata harga 20 hari & 50 hari terakhir (bantal penopang tren).", "analogi": "Batas aman 'napas' harga. Kalau potong ke atas = Golden Cross 🚀 (terbang), kalau potong ke bawah = Death Cross ☠️." },
-        { "term": "Bullish / Bearish", "definition": "Bullish = tren naik (bergairah), Bearish = tren turun (lesu).", "analogi": "Bullish = banteng menyundul ke atas; Bearish = beruang mencakar ke bawah." }
-      ],
-      "note": "Nggak ada angka 'pasti bagus' — semua musti dibandingin sama rata-rata sektornya.",
-      "accent": "#F2A93B"
-    },
-    {
-      "template": "standar",
+      "template": "matrix",
+      "handle": "@sahamfyp",
+      "date": "${today}",
+      "dateIndonesia": "${todayIndonesian}",
       "title": "Kesimpulan",
-      "description": "${candidatesData.length} saham ini kepilih dari ${newsResults.length} berita — murni karena katalis korporasi, bukan karena udah naik/turun harga.",
-      "visualIcon": "Scale",
-      "accent": "#F2A93B"
+      "subtitle": "Framework: Matrix Fundamental × Teknikal",
+      "stocks": [
+        { "ticker": "[TICKER1]", "quadrant": "q1" },
+        { "ticker": "[TICKER2]", "quadrant": "q2" }
+      ],
+      "note": "Ini framework analisis, bukan saran beli/jual. DYOR & konsultasi financial advisor!"
     },
     {
       "template": "cta",
+      "handle": "@sahamfyp",
+      "date": "${today}",
+      "dateIndonesia": "${todayIndonesian}",
       "title": "Gimana Menurutmu?",
-      "description": "Dari ${candidatesData.length} katalis hari ini, mana yang paling bikin lo penasaran? Drop di komen!",
-      "disclaimer": "DYOR — Konten ini edukasi, bukan ajakan jual/beli. Bedakan 'ramai karena berita' sama 'naik karena kinerja'.",
-      "visualIcon": "MessageCircle",
-      "accent": "#F2A93B"
+      "description": "Dari ${candidatesData.length} katalis hari ini, mana yang paling bikin lo penasaran? Drop di komen! 👇",
+      "disclaimer": "DYOR — Konten ini murni edukasi, bukan ajakan jual/beli saham.",
+      "visualIcon": "MessageCircle"
     }
   ]
 }
 
-## ATURAN Tambahan:
-1. {{STOCK_SLIDES}} harus di-replace dengan array slides (1 per kandidat)
-2. Tiap stock slide WAJIB mempunyai format (termasuk objek technical):
+## ATURAN TAMBAHAN:
+1. {{STOCK_SLIDES}} wajib di-replace dengan array slide saham (1 slide JSON per kandidat, urutan sesuai watchlist)
+2. Format tiap stock slide PERSIS sebagai berikut:
    {
      "template": "stock",
-     "ticker": "SYMBOL",
-     "companyName": "Nama Perusahaan",
-     "tags": ["tag1", "tag2"],
-     "newsTitle": "Judul berita",
-     "apa": "1 kalimat singkat: apa yang terjadi",
-     "kenapa": "1 kalimat singkat: kenapa penting",
+     "handle": "@sahamfyp",
+     "date": "${today}",
+     "dateIndonesia": "${todayIndonesian}",
+     "ticker": "SYMBOL.JK",
+     "companyName": "PT Nama Tbk",
+     "sector": "Nama Sektor",
+     "tags": ["tag"],
+     "newsTitle": "Judul berita asli",
+     "newsDescription": "Ceritakan isi berita dalam 2-3 kalimat Bahasa Indonesia santai, kayak ngobrol sama temen",
+     "apa": "1 kalimat: fakta apa yang terjadi (tanpa jargon)",
+     "kenapa": "1 kalimat: kenapa ini penting untuk investor",
+     "dampak": "1 kalimat: dampak konkret event ini untuk bisnis/investor ke depan (positif atau negatif)",
+     "sumberBerita": "[domain] (via Sector.app News)",
+     "hargaTerakhir": 13750,
      "fundamentals": {
-       "per": "nilai",
-       "perSector": "rata-rata",
-       "perSignal": "✅ lebih murah / ⚠️ lebih mahal / ⚠️ Rugi bersih",
-       "pbv": "nilai",
-       "pbvSector": "rata-rata",
-       "pbvSignal": "✅ lebih diskon / ⚠️ mahal / 🔴 RED FLAG (Ekuitas Negatif)",
-       "roe": "nilai",
-       "roeSector": "rata-rata",
-       "roeSignal": "✅ lebih efisien / ⚠️ di bawah / ⚠️ tidak reliable",
-       "der": "nilai",
-       "derSector": "rata-rata",
-       "derSignal": "✅ utang terjaga / ⚠️ beban utang tinggi / 🔴 RED FLAG"
+       "sector": "Nama Sektor",
+       "per": "7.71x", "perSector": "9.80x",
+       "perSignal": "✅ Lebih murah dari rata-rata sektor / ⚠️ Lebih mahal / ⚠️ Rugi bersih",
+       "pbv": "0.46x", "pbvSector": "0.80x",
+       "pbvSignal": "✅ Lebih diskon / ⚠️ Mahal/Premium / 🔴 RED FLAG (Ekuitas Negatif)",
+       "roe": "5.01%", "roeSector": "13.40%",
+       "roeSignal": "✅ Di atas sektor (efisien) / ⚠️ Di bawah sektor",
+       "der": "4.86x", "derSector": "5.65x",
+       "derSignal": "✅ Utang wajar / ⚠️ Beban utang tinggi / 🔴 RED FLAG",
+       "narasiFundamental": "Narasi 2 kalimat Gen Z-friendly: jelaskan fundamental vs sektor pakai analogi/perbandingan konkret. Contoh: 'BNII ini kayak beli barang branded dengan harga diskon \u2014 PER 7.71x lebih murah dari rata-rata bank (9.80x). Tapi efisiensinya (ROE 5.01%) masih di bawah rata-rata peer, artinya modalnya belum diputar seoptimal bank lain.'"
      },
      "technical": {
        "last": 13750,
        "ma20": 11120,
        "ma50": 10500,
-       "crossSignal": "Golden Cross 🚀 (Sinyal Bullish Kuat)",
-       "chg1d": "+5.0%",
-       "chg5d": "-8.8%",
-       "chg20d": "+96.4%",
+       "narasiMa20": "1 kalimat penjelasan awam MA20 dengan angka Rp konkret. Contoh: 'MA 20 Rp 11.120 = rata-rata harga 20 hari terakhir \u2014 ini batas support pendek.'",
+       "narasiMa50": "1 kalimat penjelasan awam MA50 dengan angka Rp konkret. Contoh: 'MA 50 Rp 10.500 = rata-rata 50 hari, bantal lebih kuat \u2014 kalau jebol ini, tren bisa berbalik.'",
+       "crossSignal": "Isi sesuai data: Golden Cross \ud83d\ude80 / Death Cross \u2620\ufe0f / Bullish Trend \ud83d\udfe2 / Bearish Trend \ud83d\udd34 / Konsolidasi \ud83d\udfe1",
+       "narasiVibe": "1-2 kalimat: jelaskan arti sinyal ini dalam bahasa awam + analogi. Contoh Konsolidasi: 'Konsolidasi = harga lagi jalan di tempat kayak motor nunggu lampu hijau. Belum ada arah yang jelas, bisa naik atau turun tergantung siapa yang gerak duluan.'",
+       "narasiHargaAksi": "2-3 kalimat: posisi harga vs MA20/MA50, kapan ideal beli, kapan wait & see, kapan waspada. Pakai angka Rp konkret.",
+       "chg1d": "+5.0%", "chg5d": "-8.8%", "chg20d": "+96.4%",
        "pctFromHigh52w": "-8.8%",
-       "volumeSignal": "normal",
-       "vibeCheck": "🟢 Bullish / 🟡 Cooling down / 🔴 Bearish",
-       "trigger": "Penjelasan singkat batas aman/support/resistance & MA50/Golden Cross ala Gen Z"
+       "volumeSignal": "rame/sepi/normal",
+       "vibeCheck": "1 kalimat vibe check catchy + emoji",
+       "trigger": "1 kalimat: key support & resistance level"
      },
-     "tldr": "1 kalimat kesimpulan (bullish/bearish/netral + alasan kuadran)",
-     "warning": "Catatan risiko/peringatan jika fundamental atau teknikal menunjukkan ancaman"
+     "tldrSaham": {
+       "dayTrading": "1 kalimat rekomendasi untuk day trader, dengan angka entry ideal jika memungkinkan",
+       "swing": "1 kalimat untuk swing trader (2-4 minggu)",
+       "investasi": "1 kalimat untuk investor jangka panjang (6+ bulan)"
+     },
+     "warning": "1 kalimat risiko kritis (string kosong jika tidak ada)"
    }
-3. Manfaatkan data TOP GAINERS/LOSERS & teknikal untuk narasi vibeCheck & trigger.
-4. Bahasa: Indonesia informal, Gen Z friendly, scannable
-5. JANGAN prediksi arah harga — deskriptif saja
-6. Output HANYA JSON valid, tanpa markdown`;
+3. Kuadran Matrix untuk setiap saham di slide matrix:
+   - q1 (🟢) = Fund Bagus + Tech Bagus = kandidat kuat semua horizon
+   - q2 (🟡) = Fund Bagus + Tech Jelek = long term/value, jangan day trade dulu
+   - q3 (🟠) = Fund Jelek + Tech Bagus = spekulatif/momentum jangka pendek only
+   - q4 (🔴) = Fund Jelek + Tech Jelek = hindari / extra hati-hati
+   Fund Bagus: minimal 2 dari 3 kondisi (PER < sektor, PBV < sektor, ROE > sektor)
+   Tech Bagus: crossSignal mengandung 'Golden Cross' atau 'Bullish'
+4. Format sumberBerita: "[domain dari URL berita] (via Sector.app News)"
+5. Bahasa: Indonesia informal Gen Z, analogikan semua istilah teknis, TIDAK menggurui
+6. JANGAN prediksi arah harga \u2014 deskriptif & analitik saja
+7. Output HANYA JSON valid, tanpa markdown, tanpa komentar`;
+
 
   try {
     return await generateJson(prompt);
