@@ -981,13 +981,22 @@ ${JSON.stringify(candidatesData, null, 2)}
       "handle": "@sahamfyp",
       "date": "${today}",
       "dateIndonesia": "${todayIndonesian}",
-      "title": "Kesimpulan",
+      "title": "Kesimpulan Watchlist Hari Ini",
       "subtitle": "Framework: Matrix Fundamental × Teknikal",
       "stocks": [
         { "ticker": "[TICKER1]", "quadrant": "q1" },
         { "ticker": "[TICKER2]", "quadrant": "q2" }
       ],
       "note": "Ini framework analisis, bukan saran beli/jual. DYOR & konsultasi financial advisor!"
+    },
+    {
+      "template": "kamus",
+      "handle": "@sahamfyp",
+      "date": "${today}",
+      "dateIndonesia": "${todayIndonesian}",
+      "title": "Kamus Ala Gen Z",
+      "subtitle": "Biar lo ngerti istilah di slide sebelumnya 👆",
+      "items": ${JSON.stringify(FIXED_KAMUS)}
     },
     {
       "template": "cta",
