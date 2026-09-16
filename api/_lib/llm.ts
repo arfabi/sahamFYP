@@ -149,35 +149,37 @@ export async function chatComplete(prompt: string, options: ChatOptions = {}): P
 
 /** Buang markdown code fence & ambil objek JSON pertama dari response LLM */
 export function extractJson(raw: string): any {
-  const text = (raw || '').trim();
+  let text = (raw || '').trim();
+
+  // Strip code block fences
+  text = text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
 
   try {
     return JSON.parse(text);
   } catch {
-    // lanjut ke pembersihan markdown code block
+    // lanjut ke pembersihan
   }
 
-  let cleaned = text;
-  if (cleaned.startsWith('```json')) {
-    cleaned = cleaned.replace(/^```json\s*\n?/, '').replace(/\n?```\s*$/, '');
-  } else if (cleaned.startsWith('```')) {
-    cleaned = cleaned.replace(/^```\s*\n?/, '').replace(/\n?```\s*$/, '');
-  }
-
-  try {
-    return JSON.parse(cleaned);
-  } catch {
-    const match = cleaned.match(/\{[\s\S]*\}/);
-    if (match) {
+  // Coba ekstrak substring {...} jika ada text ekstra di luar JSON
+  const match = text.match(/\{[\s\S]*\}/);
+  if (match) {
+    const candidate = match[0];
+    try {
+      return JSON.parse(candidate);
+    } catch {
+      // Coba bersihkan trailing commas & unescaped control chars (e.g. raw newlines dalam string)
       try {
-        return JSON.parse(match[0]);
+        const sanitized = candidate
+          .replace(/,\s*([\}\]])/g, '$1') // remove trailing commas
+          .replace(/[\u0000-\u001F\u007F-\u009F]/g, (c) => (c === '\n' || c === '\r' || c === '\t' ? c : ''));
+        return JSON.parse(sanitized);
       } catch {
-        // jatuh ke error di bawah
+        // jatuh ke error
       }
     }
   }
 
-  console.error('[LLM] Failed to parse JSON response:', text.slice(0, 500));
+  console.error('[LLM] Failed to parse JSON response (first 1000 chars):', text.slice(0, 1000));
   throw new Error('Failed to parse LLM JSON response');
 }
 

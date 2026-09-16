@@ -458,7 +458,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
       const { error: newsError } = await supabaseServer
         .from('sector_trigger_news')
-        .insert(newsInserts);
+        .upsert(newsInserts, { onConflict: 'source_url', ignoreDuplicates: true });
 
       if (newsError) {
         console.error('[SectorTrigger Open] News insert error:', newsError);
