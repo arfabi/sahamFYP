@@ -343,7 +343,7 @@ export function buildSlideHtml(s: SlideObject, index: number = 0, total: number 
       const signalVibe = tech.narasiVibe || 'Belum ada arah yang jelas, pantau pergerakan harga dan volume.';
 
       bodyContent = `
-        <div class="main-body" style="gap: 22px; justify-content: flex-start; padding-top: 10px; padding-bottom: 10px;">
+        <div class="main-body" style="gap: 24px; justify-content: flex-start; padding-top: 36px; padding-bottom: 20px;">
           <!-- Top Ticker Header with Close Price -->
           <div>
             <div class="ticker-header" style="align-items: center; display: flex; justify-content: space-between;">
