@@ -114,23 +114,33 @@ export function buildBaseStyles(): string {
       background: #F8F6F0; color: #14182B; overflow: hidden;
     }
     .slide {
-    
-    .bottom-footer { display: flex; justify-content: space-between; align-items: center; width: 100%; border-top: 2px solid rgba(20,24,43,0.1); padding-top: 16px; }
+      width: 1080px; height: 1350px;
+      display: flex; flex-direction: column;
+      padding: 40px 52px 36px 52px;
+    }
+
+    /* Top Header */
+    .top-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 2px solid rgba(20,24,43,0.1); margin-bottom: 4px; flex-shrink: 0; }
+    .handle-tag { display: flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 800; color: #14182B; }
+    .badge-pill { background: #14182B; color: #FFF; font-size: 16px; font-weight: 800; padding: 4px 16px; border-radius: 20px; letter-spacing: 1px; }
+    .brand-title { font-size: 20px; font-weight: 700; color: #64748B; letter-spacing: 0.5px; }
+
+    .bottom-footer { display: flex; justify-content: space-between; align-items: center; width: 100%; border-top: 2px solid rgba(20,24,43,0.1); padding-top: 16px; flex-shrink: 0; margin-top: 4px; }
     .date-tag { font-size: 20px; font-weight: 600; color: #64748B; display: flex; align-items: center; gap: 8px; }
     .page-badge { background: #14182B; color: #FFF; font-weight: 800; font-size: 20px; padding: 6px 18px; border-radius: 20px; }
 
-    .main-body { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; padding: 20px 0; gap: 16px; overflow: hidden; }
+    .main-body { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; padding: 18px 0 12px 0; gap: 14px; overflow: hidden; min-height: 0; }
 
     .title { font-size: 46px; font-weight: 900; line-height: 1.2; color: #14182B; }
-    .subtitle { font-size: 24px; font-weight: 600; color: #64748B; margin-top: -8px; }
+    .subtitle { font-size: 24px; font-weight: 600; color: #64748B; margin-top: -4px; }
     
     .card-box { background: rgba(20,24,43,0.05); border-radius: 18px; padding: 20px 24px; border: 1px solid rgba(20,24,43,0.08); }
 
     /* Stock Slide Layout */
-    .stock-title-row { display: flex; justify-content: space-between; align-items: baseline; }
-    .ticker-symbol { font-size: 52px; font-weight: 900; color: #14182B; }
-    .company-name { font-size: 22px; color: #64748B; font-weight: 600; }
-    .stock-price { font-size: 42px; font-weight: 900; color: #F2A93B; }
+    .ticker-badge { background: #14182B; color: #F2A93B; font-weight: 900; display: inline-block; }
+    .sector-badge { background: rgba(20,24,43,0.08); color: #475569; font-weight: 700; }
+    .tag-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag-item { background: rgba(242,169,59,0.15); color: #B45309; font-weight: 700; border-radius: 8px; }
 
     .news-title-text { font-size: 24px; font-weight: 800; margin-bottom: 8px; color: #14182B; display: flex; align-items: center; gap: 8px; }
     .news-desc-text { font-size: 20px; line-height: 1.45; color: #334155; }
@@ -148,17 +158,17 @@ export function buildBaseStyles(): string {
     .strat-row { font-size: 19px; display: flex; gap: 8px; }
     .strat-row b { color: #F2A93B; min-width: 140px; }
 
-    .warning-box { background: rgba(228,87,46,0.15); border: 2px stroke #E4572E; color: #9A2C12; border-radius: 14px; padding: 14px 20px; font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .warning-box { background: rgba(228,87,46,0.15); border: 2px solid #E4572E; color: #9A2C12; border-radius: 14px; padding: 14px 20px; font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
 
     /* Matrix Slide Layout */
-    .matrix-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 16px; flex: 1; }
-    .matrix-cell { border-radius: 18px; padding: 20px; display: flex; flex-direction: column; justify-content: flex-start; }
+    .matrix-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 14px; flex: 1; min-height: 0; }
+    .matrix-cell { border-radius: 18px; padding: 18px 20px; display: flex; flex-direction: column; justify-content: flex-start; }
     .matrix-cell.q1 { background: rgba(76,175,125,0.12); border: 2px solid #4CAF7D; }
     .matrix-cell.q2 { background: rgba(242,169,59,0.12); border: 2px solid #F2A93B; }
     .matrix-cell.q3 { background: rgba(245,158,11,0.12); border: 2px solid #F59E0B; }
     .matrix-cell.q4 { background: rgba(228,87,46,0.12); border: 2px solid #E4572E; }
 
-    .q-title { font-size: 22px; font-weight: 800; margin-bottom: 12px; }
+    .q-title { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
     .q1 .q-title { color: #2E7D32; }
     .q2 .q-title { color: #D97706; }
     .q3 .q-title { color: #B45309; }
@@ -170,10 +180,8 @@ export function buildBaseStyles(): string {
 
     /* Market Slide Layout */
     .ihsg-banner { background: #14182B; color: #FFF; border-radius: 18px; padding: 20px 28px; display: flex; justify-content: space-between; align-items: center; }
-    .ihsg-title { font-size: 28px; font-weight: 800; }
-    .ihsg-val { font-size: 34px; font-weight: 900; color: #F2A93B; }
-    .table-list { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
-    .table-row { display: flex; justify-content: space-between; font-size: 19px; padding: 8px 12px; background: rgba(20,24,43,0.05); border-radius: 10px; font-weight: 600; }
+    .table-list { display: flex; flex-direction: column; gap: 6px; }
+    .table-row { display: flex; justify-content: space-between; font-size: 18px; padding: 8px 12px; background: rgba(20,24,43,0.05); border-radius: 10px; font-weight: 600; }
   </style>`;
 }
 

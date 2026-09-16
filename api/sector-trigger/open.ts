@@ -784,6 +784,18 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         .eq('id', logId);
     }
 
+    // ✅ PAGINATION FIX: Inject slideIndex + totalSlides into every slide
+    // so n8n "Run Once for Each Item" can use $json.slideIndex / $json.totalSlides
+    // without needing $input.all() (which is not supported in that mode).
+    if (naskah?.slides && Array.isArray(naskah.slides)) {
+      const total = naskah.slides.length;
+      naskah.slides = naskah.slides.map((slide: any, idx: number) => ({
+        ...slide,
+        slideIndex: idx,       // 0-based index
+        totalSlides: total,    // total count
+      }));
+    }
+
     return res.status(200).json({
       success: true,
       session: 'open',
