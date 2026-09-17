@@ -19,7 +19,8 @@ export default function NewsMonitoring() {
   const [tagFilter, setTagFilter] = React.useState(null);
   const [sectorFilter, setSectorFilter] = React.useState(null);
   const [symbolSearch, setSymbolSearch] = React.useState('');
-  const [dateFilter, setDateFilter] = React.useState(getTodayStr());
+  const [startDate, setStartDate] = React.useState(getTodayStr());
+  const [endDate, setEndDate] = React.useState(getTodayStr());
   const [availableTags, setAvailableTags] = React.useState([]);
   const [availableSectors, setAvailableSectors] = React.useState([]);
 
@@ -30,8 +31,12 @@ export default function NewsMonitoring() {
       let query = supabase.from('sector_trigger_news').select('*');
       if (sectorFilter) query = query.eq('sector', sectorFilter);
       if (tagFilter) query = query.contains('tags', [tagFilter]);
-      if (dateFilter) {
-        query = query.gte('published_at', `${dateFilter}T00:00:00`).lte('published_at', `${dateFilter}T23:59:59`);
+      if (startDate && endDate) {
+        query = query.gte('published_at', `${startDate}T00:00:00`).lte('published_at', `${endDate}T23:59:59`);
+      } else if (startDate) {
+        query = query.gte('published_at', `${startDate}T00:00:00`).lte('published_at', `${startDate}T23:59:59`);
+      } else if (endDate) {
+        query = query.lte('published_at', `${endDate}T23:59:59`);
       }
       query = query.order('published_at', { ascending: false }).limit(200);
       const { data, error } = await query;
@@ -46,7 +51,7 @@ export default function NewsMonitoring() {
     }
     run();
     return () => { cancelled = true; };
-  }, [sectorFilter, tagFilter, dateFilter]);
+  }, [sectorFilter, tagFilter, startDate, endDate]);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -111,11 +116,20 @@ export default function NewsMonitoring() {
       <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div className="flex flex-wrap gap-4 items-end">
           <div>
-            <label className="block text-xs font-medium text-slate-600 mb-1">Filter Tanggal</label>
+            <label className="block text-xs font-medium text-slate-600 mb-1">Dari Tanggal</label>
             <input
               type="date"
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="px-3 py-2 border border-slate-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1">Sampai Tanggal</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
               className="px-3 py-2 border border-slate-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
             />
           </div>
@@ -151,9 +165,9 @@ export default function NewsMonitoring() {
               className="px-3 py-2 border border-slate-300 rounded-lg bg-white text-sm w-56 focus:ring-2 focus:ring-amber-500 focus:outline-none"
             />
           </div>
-          {(tagFilter || sectorFilter || symbolSearch || dateFilter !== getTodayStr()) && (
+          {(tagFilter || sectorFilter || symbolSearch || startDate !== getTodayStr() || endDate !== getTodayStr()) && (
             <button
-              onClick={() => { setTagFilter(null); setSectorFilter(null); setSymbolSearch(''); setDateFilter(getTodayStr()); }}
+              onClick={() => { setTagFilter(null); setSectorFilter(null); setSymbolSearch(''); setStartDate(getTodayStr()); setEndDate(getTodayStr()); }}
               className="px-3 py-2 text-xs font-semibold text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-lg transition"
             >
               Reset Filter
