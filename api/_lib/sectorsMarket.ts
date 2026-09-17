@@ -127,7 +127,7 @@ export async function fetchBrokersForeignFlowSummary(date: string): Promise<{
   if (!SECTORS_API_KEY) throw new Error('Sectors API key not configured');
 
   try {
-    const url = new URL(`${SECTORS_BASE_V1}/brokers/top/`);
+    const url = new URL(`${SECTORS_BASE}/brokers/top/`);
     url.searchParams.set('origin', 'foreign');
     url.searchParams.set('metric', 'net');
     url.searchParams.set('date', date);
