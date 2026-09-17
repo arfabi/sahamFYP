@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { validateApiKey } from '../_lib/auth.js';
 import { generateJson } from '../_lib/llm.js';
-import { fetchIndexDaily, fetchFilings, fetchNews, fetchTopMovers, fetchDaily, getYesterdayDate, getTodayDate } from '../_lib/sectorsMarket.js';
+import { fetchIndexDaily, fetchFilings, fetchNews, fetchTopMovers, fetchDaily, fetchBrokersForeignFlowSummary, getYesterdayDate, getTodayDate } from '../_lib/sectorsMarket.js';
 import { fetchCompanyReport } from '../_lib/sectors.js';
 import { supabaseServer } from '../_lib/supabase.js';
 
@@ -424,8 +424,8 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     const today = getTodayDate();
     const ihsStart = dateNDaysAgo(IHSG_WINDOW_DAYS);
 
-    // Step 1: Fetch raw data (IHSG + news + filings + top movers)
-    const [indexData, newsData, filingsData, topMovers] = await Promise.all([
+    // Step 1: Fetch raw data (IHSG + news + filings + top movers + foreign flow broker summary)
+    const [indexData, newsData, filingsData, topMovers, brokerFlowSummary] = await Promise.all([
       fetchIndexDaily(ihsStart), // Omit end date to avoid timezone future date error
       fetchNews({ start: yesterday, limit: 15, tags: NEWS_TAGS }),
       fetchFilings({ start: yesterday }),
@@ -434,6 +434,10 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         periods: ['1d'],
         nStock: 5,
         minMcapBillion: TOP_MOVERS_MIN_MCAP_BILLION,
+      }),
+      fetchBrokersForeignFlowSummary(yesterday).catch((e: any) => {
+        console.warn('[SectorTrigger Open] fetchBrokersForeignFlowSummary failed:', e?.message || e);
+        return null;
       }),
     ]);
 
@@ -785,14 +789,29 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // ✅ PAGINATION FIX: Inject slideIndex + totalSlides into every slide
-    // so n8n "Run Once for Each Item" can use $json.slideIndex / $json.totalSlides
-    // without needing $input.all() (which is not supported in that mode).
+    // ✅ FOREIGN FLOW FIX: Inject foreignFlowSummary ke setiap slide
+    // sehingga n8n tidak perlu node tambahan untuk broker flow data.
     if (naskah?.slides && Array.isArray(naskah.slides)) {
       const total = naskah.slides.length;
+
+      // Prepare foreignFlowSummary object untuk diinject ke slide
+      const foreignFlowSummary = brokerFlowSummary ? {
+        net_foreign_flow: brokerFlowSummary.formatted.net,
+        net_buy:          brokerFlowSummary.formatted.buy,
+        net_sell:         brokerFlowSummary.formatted.sell,
+        is_inflow:        brokerFlowSummary.isInflow,
+        raw: {
+          net_total: brokerFlowSummary.netTotal,
+          net_buy:   brokerFlowSummary.netBuy,
+          net_sell:  brokerFlowSummary.netSell,
+        }
+      } : null;
+
       naskah.slides = naskah.slides.map((slide: any, idx: number) => ({
         ...slide,
-        slideIndex: idx,       // 0-based index
-        totalSlides: total,    // total count
+        slideIndex:          idx,              // 0-based index
+        totalSlides:         total,            // total count
+        foreignFlowSummary:  foreignFlowSummary, // null jika API gagal
       }));
     }
 

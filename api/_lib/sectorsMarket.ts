@@ -3,6 +3,7 @@
 
 const SECTORS_API_KEY = process.env.SECTORS_API_KEY || '';
 const SECTORS_BASE = 'https://api.sectors.app/v2';
+const SECTORS_BASE_V1 = 'https://api.sectors.app/v1';
 
 async function fetchSectors(endpoint: string, params?: Record<string, any>) {
   if (!SECTORS_API_KEY) {
@@ -111,6 +112,63 @@ export async function fetchTopBrokers(opts?: {
   if (opts?.origin) p.origin = opts.origin;
   if (opts?.metric) p.metric = opts.metric;
   return fetchSectors('/top-brokers/', p);
+}
+
+// ─── Broker Foreign Flow Summary (v1) — 1 credit ─────────────────────────────
+// Ambil data foreign broker, lalu hitung net total, net buy, net sell
+// Return: { netTotal, netBuy, netSell, isInflow, formatted: { net, buy, sell } }
+export async function fetchBrokersForeignFlowSummary(date: string): Promise<{
+  netTotal: number;
+  netBuy: number;
+  netSell: number;
+  isInflow: boolean;
+  formatted: { net: string; buy: string; sell: string };
+} | null> {
+  if (!SECTORS_API_KEY) throw new Error('Sectors API key not configured');
+
+  try {
+    const url = new URL(`${SECTORS_BASE_V1}/brokers/top/`);
+    url.searchParams.set('origin', 'foreign');
+    url.searchParams.set('metric', 'net');
+    url.searchParams.set('date', date);
+
+    const response = await fetch(url.toString(), {
+      headers: { 'Authorization': SECTORS_API_KEY },
+    });
+
+    if (!response.ok) {
+      console.warn(`[fetchBrokersForeignFlowSummary] API ${response.status} for date ${date}`);
+      return null;
+    }
+
+    const data = await response.json();
+    const results: Array<{ net: number; gross: number; broker_code: string }> = data?.results || [];
+    if (!results.length) return null;
+
+    const netTotal = results.reduce((sum, b) => sum + (b.net || 0), 0);
+    const netBuy   = results.filter(b => b.net > 0).reduce((sum, b) => sum + b.net, 0);
+    const netSell  = results.filter(b => b.net < 0).reduce((sum, b) => sum + b.net, 0);
+
+    const fmt = (val: number): string => {
+      const abs = Math.abs(val);
+      const sign = val >= 0 ? '+' : '-';
+      if (abs >= 1e12) return `${sign}Rp ${(abs / 1e12).toFixed(2)}T`;
+      return `${sign}Rp ${(abs / 1e9).toFixed(2)}M`;
+    };
+
+    return {
+      netTotal, netBuy, netSell,
+      isInflow: netTotal > 0,
+      formatted: {
+        net:  fmt(netTotal),
+        buy:  fmt(netBuy),
+        sell: fmt(netSell),
+      },
+    };
+  } catch (e) {
+    console.warn('[fetchBrokersForeignFlowSummary] Failed:', e);
+    return null;
+  }
 }
 
 // ─── Broker Activity Top — 1 credit ──────────────────────────────────────────
