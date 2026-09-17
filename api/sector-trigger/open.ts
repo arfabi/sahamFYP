@@ -424,8 +424,8 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     const today = getTodayDate();
     const ihsStart = dateNDaysAgo(IHSG_WINDOW_DAYS);
 
-    // Step 1: Fetch raw data (IHSG + news + filings + top movers + foreign flow broker summary)
-    const [indexData, newsData, filingsData, topMovers, brokerFlowSummary] = await Promise.all([
+    // Step 1: Fetch raw data (IHSG + news + filings + top movers)
+    const [indexData, newsData, filingsData, topMovers] = await Promise.all([
       fetchIndexDaily(ihsStart), // Omit end date to avoid timezone future date error
       fetchNews({ start: yesterday, limit: 15, tags: NEWS_TAGS }),
       fetchFilings({ start: yesterday }),
@@ -434,10 +434,6 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         periods: ['1d'],
         nStock: 5,
         minMcapBillion: TOP_MOVERS_MIN_MCAP_BILLION,
-      }),
-      fetchBrokersForeignFlowSummary(yesterday).catch((e: any) => {
-        console.warn('[SectorTrigger Open] fetchBrokersForeignFlowSummary failed:', e?.message || e);
-        return null;
       }),
     ]);
 
@@ -460,6 +456,11 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         }
       : null;
     const dataDate = ihs?.date || yesterday;
+
+    const brokerFlowSummary = await fetchBrokersForeignFlowSummary(dataDate).catch((e: any) => {
+      console.warn('[SectorTrigger Open] fetchBrokersForeignFlowSummary failed:', e?.message || e);
+      return null;
+    });
 
     // Insert main log to database
     const { data: logData, error: logError } = await supabaseServer
