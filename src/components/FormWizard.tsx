@@ -13,7 +13,7 @@ import TemplateRenderer, { PALETTE, type TemplateId, type CardItem, type MetricC
 import { generateAllSlides, downloadAllImages } from '../services/imageGenerator';
 import { publishToInstagram, isReplizConfigured } from '../services/repliz';
 import { generateInstagramCaption } from '../services/llm';
-import { contentLogsApi, generatedPostsApi, postImagesApi } from '../services/supabase';
+import { supabase, contentLogsApi, generatedPostsApi, postImagesApi } from '../services/supabase';
 import type { CarouselData, SlideData } from '../types';
 
 // ================= ICONS =================
@@ -114,7 +114,7 @@ export default function FormWizard(props: FormWizardProps) {
     }
   }, [data, classification.ticker]);
 
-  const handlePublish = useCallback(async () => {
+  const handlePublish = useCallback(async (targetAccountIds: string[]) => {
     if (!caption.trim()) {
       setPublishResult({ success: false, message: 'Caption tidak boleh kosong' });
       return;
@@ -137,6 +137,7 @@ export default function FormWizard(props: FormWizardProps) {
       const result = await publishToInstagram({
         images: imageUrls,
         caption: caption,
+        targetAccountIds: targetAccountIds,
       });
       if (result.success) {
         // Save post to Supabase
@@ -223,7 +224,7 @@ export default function FormWizard(props: FormWizardProps) {
             onAutoCaption={handleAutoCaption}
             publishing={publishing}
             publishResult={publishResult}
-            onPublish={handlePublish}
+            onPublish={(targetAccountIds) => handlePublish(targetAccountIds)}
             replizConfigured={isReplizConfigured()}
           />
         )}
@@ -852,9 +853,18 @@ function Step4Preview({
   onAutoCaption: () => void;
   publishing: boolean;
   publishResult: { success: boolean; message: string } | null;
-  onPublish: () => void;
+  onPublish: (targetAccountIds: string[]) => void;
   replizConfigured: boolean;
 }) {
+  const [accounts, setAccounts] = React.useState<{ id: string; platform: string; provider: string; account_name: string }[]>([]);
+  const [selectedAccounts, setSelectedAccounts] = React.useState<string[]>([]);
+  
+  React.useEffect(() => {
+    supabase.from('social_accounts').select('*').eq('is_active', true).then(({ data }) => {
+      setAccounts(data || []);
+      setSelectedAccounts((data || []).map(a => a.id));
+    });
+  }, []);
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
@@ -917,20 +927,53 @@ function Step4Preview({
         </button>
       </div>
 
-      {/* Publish to Instagram */}
-      {replizConfigured && (
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-          <h3 className="text-lg font-bold text-slate-800 mb-4">📱 Publish ke Instagram</h3>
-          <p className="text-sm text-slate-600 mb-4">Tulis caption untuk post Instagram. Semua 8 slide akan dijadikan carousel.</p>
-          
+      {/* Publish to Social Media */}
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+        <h3 className="text-lg font-bold text-slate-800 mb-4">🔗 Publish ke Akun Sosial Media</h3>
+        
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-slate-700 mb-2">Pilih Akun Tujuan</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            {accounts.map(acc => (
+              <label key={acc.id} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition ${selectedAccounts.includes(acc.id) ? 'border-amber-500 bg-amber-50' : 'border-slate-200 hover:bg-slate-50'}`}>
+                <input 
+                  type="checkbox" 
+                  checked={selectedAccounts.includes(acc.id)}
+                  onChange={(e) => {
+                    if (e.target.checked) setSelectedAccounts([...selectedAccounts, acc.id]);
+                    else setSelectedAccounts(selectedAccounts.filter(id => id !== acc.id));
+                  }}
+                  className="w-4 h-4 text-amber-500 rounded focus:ring-amber-500"
+                />
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">
+                    {acc.platform === 'instagram' ? '📱' :
+                     acc.platform === 'telegram' ? '✈️' :
+                     acc.platform === 'tiktok' ? '🎵' :
+                     acc.platform === 'twitter' ? '𝕏' :
+                     acc.platform === 'facebook' ? '📘' :
+                     acc.platform === 'threads' ? '🧵' : '🔗'}
+                  </span>
+                  <div>
+                    <div className="text-sm font-semibold text-slate-800 capitalize">{acc.platform}</div>
+                    <div className="text-xs text-slate-500">{acc.account_name}</div>
+                  </div>
+                </div>
+              </label>
+            ))}
+            {accounts.length === 0 && <div className="text-sm text-slate-500 italic">Belum ada akun yang terdaftar atau aktif.</div>}
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-slate-700 mb-2">Caption Postingan</label>
           <textarea
             value={caption}
             onChange={(e) => onCaptionChange(e.target.value)}
-            placeholder="Tulis caption Instagram di sini...&#10;&#10;Contoh: 📈 Saham BBCA menunjukkan performa positif!&#10;&#10;#saham #investasi #BBCA"
+            placeholder="Tulis caption di sini...&#10;&#10;Contoh: 📈 Saham BBCA menunjukkan performa positif!"
             className="w-full px-4 py-3 border border-slate-300 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-amber-500"
             rows={5}
           />
-
           <div className="mt-2 flex items-center justify-between gap-2">
             <span className="text-xs text-slate-400">{caption.length}/2200 karakter</span>
             <button
@@ -939,44 +982,32 @@ function Step4Preview({
               className="px-3 py-1.5 text-xs bg-violet-500 hover:bg-violet-600 disabled:opacity-60 text-white font-semibold rounded-lg transition flex items-center gap-1.5"
             >
               {captionLoading ? (
-                <>
-                  <span className="animate-spin">⏳</span>
-                  Generating...
-                </>
+                <><span className="animate-spin">⏳</span>Generating...</>
               ) : (
-                <>
-                  ✨
-                  Auto Caption
-                </>
+                <>✨ Auto Caption</>
               )}
             </button>
           </div>
-          
-          {publishResult && (
-            <div className={`mt-3 px-4 py-2 rounded-lg text-sm ${publishResult.success ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-              {publishResult.message}
-            </div>
-          )}
-          
-          <button
-            onClick={onPublish}
-            disabled={publishing || !caption.trim()}
-            className="mt-4 w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 disabled:opacity-60 text-white font-semibold py-3 rounded-xl transition flex items-center justify-center gap-2"
-          >
-            {publishing ? (
-              <>
-                <LucideIcons.Loader2 size={18} className="animate-spin" />
-                Publishing...
-              </>
-            ) : (
-              <>
-                <LucideIcons.Send size={18} />
-                Publish ke Instagram
-              </>
-            )}
-          </button>
         </div>
-      )}
+        
+        {publishResult && (
+          <div className={`mt-3 px-4 py-2 rounded-lg text-sm ${publishResult.success ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+            {publishResult.message}
+          </div>
+        )}
+        
+        <button
+          onClick={() => onPublish(selectedAccounts)}
+          disabled={publishing || !caption.trim() || selectedAccounts.length === 0}
+          className="mt-4 w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 disabled:opacity-60 text-white font-semibold py-3 rounded-xl transition flex items-center justify-center gap-2"
+        >
+          {publishing ? (
+            <><LucideIcons.Loader2 size={18} className="animate-spin" /> Publishing...</>
+          ) : (
+            <><LucideIcons.Send size={18} /> Publish ke {selectedAccounts.length} Akun Terpilih</>
+          )}
+        </button>
+      </div>
     </div>
   );
 }

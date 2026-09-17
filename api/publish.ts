@@ -26,7 +26,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { postId, cloudinaryUrls, caption, scheduleAt } = parseBody(req);
+  const { postId, cloudinaryUrls, caption, scheduleAt, targetAccountIds } = parseBody(req);
 
   if (!cloudinaryUrls || cloudinaryUrls.length === 0) {
     return res.status(400).json({ error: 'cloudinaryUrls are required' });
@@ -37,10 +37,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     // 1. Fetch active accounts from Supabase
-    const { data: accounts, error: accountsError } = await supabaseServer
+    let query = supabaseServer
       .from('social_accounts')
       .select('*')
       .eq('is_active', true);
+      
+    if (Array.isArray(targetAccountIds) && targetAccountIds.length > 0) {
+      query = query.in('id', targetAccountIds);
+    }
+
+    const { data: accounts, error: accountsError } = await query;
 
     if (accountsError) throw new Error(`Database error: ${accountsError.message}`);
     if (!accounts || accounts.length === 0) {

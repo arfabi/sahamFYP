@@ -26,6 +26,7 @@ export interface PublishToInstagramParams {
   scheduleAt?: string;  // ISO date string, default: now
   isDraft?: boolean;
   uploadToCloud?: boolean;  // Upload to Cloudinary first for public URLs
+  targetAccountIds?: string[]; // IDs from social_accounts table
 }
 
 export interface PublishResult {
@@ -45,23 +46,15 @@ function getConfig(): ReplizConfig {
   };
 }
 
-// Check if Repliz is configured
+// Check if Repliz is configured (Now managed by Supabase & Backend Orchestrator)
 export function isReplizConfigured(): boolean {
-  const config = getConfig();
-  return !!(config.accessKey && config.secretKey && config.accountId);
+  return true;
 }
 
 // Publish carousel/album to Instagram via Repliz
 // Uses Vercel API proxy to avoid CORS issues
 export async function publishToInstagram(params: PublishToInstagramParams): Promise<PublishResult> {
   const config = getConfig();
-  
-  if (!config.accessKey || !config.secretKey) {
-    return { success: false, error: 'Repliz credentials not configured. Add VITE_REPLIZ_ACCESS_KEY and VITE_REPLIZ_SECRET_KEY to .env.local' };
-  }
-  if (!config.accountId) {
-    return { success: false, error: 'Repliz account ID not configured. Add VITE_REPLIZ_ACCOUNT_ID to .env.local' };
-  }
   if (!params.images || params.images.length === 0) {
     return { success: false, error: 'No images provided' };
   }
@@ -95,6 +88,7 @@ export async function publishToInstagram(params: PublishToInstagramParams): Prom
         caption: params.caption,
         platform: 'instagram',
         scheduleAt: params.scheduleAt || new Date().toISOString(),
+        targetAccountIds: params.targetAccountIds,
       }),
     });
 
