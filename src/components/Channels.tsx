@@ -11,6 +11,21 @@ interface SocialAccount {
   is_active: boolean;
 }
 
+function getProfileUrl(platform: string, name: string) {
+  const cleanName = name.replace('@', '');
+  if (!cleanName) return '#';
+  switch (platform) {
+    case 'instagram': return `https://instagram.com/${cleanName}`;
+    case 'twitter': return `https://x.com/${cleanName}`;
+    case 'tiktok': return `https://tiktok.com/@${cleanName}`;
+    case 'facebook': return `https://facebook.com/${cleanName}`;
+    case 'threads': return `https://threads.net/@${cleanName}`;
+    case 'telegram': return `https://t.me/${cleanName}`;
+    case 'linkedin': return `https://linkedin.com/company/${cleanName}`;
+    default: return '#';
+  }
+}
+
 export default function Channels({ onNavigate }: { onNavigate?: (page: string) => void }) {
   const [accounts, setAccounts] = useState<SocialAccount[]>([]);
   const [loading, setLoading] = useState(true);
@@ -142,7 +157,18 @@ export default function Channels({ onNavigate }: { onNavigate?: (page: string) =
               </div>
 
               <div className="mt-2 space-y-1">
-                <div className="text-sm font-medium text-slate-700">{acc.account_name}</div>
+                {getProfileUrl(acc.platform, acc.account_name) !== '#' ? (
+                  <a 
+                    href={getProfileUrl(acc.platform, acc.account_name)}
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-sm font-medium text-blue-600 hover:underline inline-flex items-center gap-1"
+                  >
+                    {acc.account_name} <Link2 size={12} />
+                  </a>
+                ) : (
+                  <div className="text-sm font-medium text-slate-700">{acc.account_name}</div>
+                )}
                 <div className="text-xs text-slate-400 font-mono break-all bg-slate-50 p-1.5 rounded border border-slate-100">
                   {acc.account_id}
                 </div>
