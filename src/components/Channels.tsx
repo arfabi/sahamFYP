@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Instagram, Send, Music, Twitter, Facebook, AtSign, Linkedin, Link2 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 
 interface SocialAccount {
@@ -115,14 +116,15 @@ export default function Channels({ onNavigate }: { onNavigate?: (page: string) =
             >
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-3">
-                  <div className="text-3xl">
-                    {acc.platform === 'instagram' ? '📱' :
-                     acc.platform === 'telegram' ? '✈️' :
-                     acc.platform === 'tiktok' ? '🎵' :
-                     acc.platform === 'twitter' ? '𝕏' :
-                     acc.platform === 'facebook' ? '📘' :
-                     acc.platform === 'threads' ? '🧵' :
-                     acc.platform === 'linkedin' ? '💼' : '🔗'}
+                  <div className="text-slate-700 flex items-center justify-center p-2 bg-slate-100 rounded-lg">
+                    {acc.platform === 'instagram' ? <Instagram size={24} className="text-pink-600" /> :
+                     acc.platform === 'telegram' ? <Send size={24} className="text-blue-500" /> :
+                     acc.platform === 'tiktok' ? <Music size={24} className="text-black" /> :
+                     acc.platform === 'twitter' ? <Twitter size={24} className="text-sky-500" /> :
+                     acc.platform === 'facebook' ? <Facebook size={24} className="text-blue-600" /> :
+                     acc.platform === 'threads' ? <AtSign size={24} className="text-black" /> :
+                     acc.platform === 'linkedin' ? <Linkedin size={24} className="text-blue-700" /> : 
+                     <Link2 size={24} className="text-slate-500" />}
                   </div>
                   <div>
                     <h3 className="font-bold text-slate-800 capitalize">{acc.platform}</h3>
