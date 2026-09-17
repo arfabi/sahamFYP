@@ -26,10 +26,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { postId, cloudinaryUrls, caption, scheduleAt, targetAccountIds } = parseBody(req);
+  const { postId, cloudinaryUrls, imageUrls, caption, scheduleAt, targetAccountIds } = parseBody(req);
+  
+  const finalImageUrls = imageUrls || cloudinaryUrls;
 
-  if (!cloudinaryUrls || cloudinaryUrls.length === 0) {
-    return res.status(400).json({ error: 'cloudinaryUrls are required' });
+  if (!finalImageUrls || finalImageUrls.length === 0) {
+    return res.status(400).json({ error: 'imageUrls are required' });
   }
   if (!caption) {
     return res.status(400).json({ error: 'caption is required' });
@@ -62,7 +64,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           // Send to Repliz API
           const basicAuth = Buffer.from(`${REPLIZ_ACCESS_KEY}:${REPLIZ_SECRET_KEY}`).toString('base64');
           
-          const medias = cloudinaryUrls.map((url: string) => ({
+          const medias = finalImageUrls.map((url: string) => ({
             type: 'image', url, thumbnail: url, alt: '', customThumbnail: false,
           }));
 
@@ -76,7 +78,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               title: caption.slice(0, 50),
               description: caption,
               topic: '',
-              type: cloudinaryUrls.length === 1 ? 'image' : 'album',
+              type: finalImageUrls.length === 1 ? 'image' : 'album',
               medias,
               meta: { title: '', description: '', url: '' },
               additionalInfo: {
