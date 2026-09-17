@@ -5,7 +5,6 @@
 
 import React, { useState } from 'react';
 import Overview from './Overview';
-import Settings from './Settings';
 import ContentGenerator from './ContentGenerator';
 import ManualEditor from './ManualEditor';
 import NewsMonitoring from './NewsMonitoring';
@@ -24,8 +23,7 @@ export type DashboardPage =
   | 'generator'
   | 'manual'
   | 'accounts'
-  | 'posts'
-  | 'settings';
+  | 'posts';
 
 interface NavItem {
   id: DashboardPage;
@@ -59,17 +57,13 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
-const UTILITY_PAGES: NavItem[] = [
-  { id: 'settings' as DashboardPage, label: 'Settings', icon: '⚙️' },
-];
-
 function findNavItem(id?: string): NavItem | undefined {
   if (!id) return undefined;
   for (const g of NAV_GROUPS) {
     const found = g.items.find((i) => i.id === id);
     if (found) return found;
   }
-  return UTILITY_PAGES.find((i) => i.id === id);
+  return undefined;
 }
 
 interface DashboardProps {
@@ -102,8 +96,6 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         return <Channels onNavigate={(p) => setActivePage(p as DashboardPage)} />;
       case 'posts':
         return <Posts onNavigate={(p) => setActivePage(p as DashboardPage)} />;
-      case 'settings':
-        return <Settings />;
       default:
         return <Overview onNavigate={(p) => setActivePage(p as DashboardPage)} />;
     }
@@ -154,23 +146,6 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
               </div>
             );
           })}
-          {/* Utility pages pinned at the bottom (Settings) */}
-          <div className="pt-2 border-t border-slate-800 space-y-1">
-            {UTILITY_PAGES.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setActivePage(item.id)}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded-xl font-medium transition text-left ${
-                  activePage === item.id
-                    ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
-                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                }`}
-              >
-                <span className="text-base">{item.icon}</span>
-                <span>{item.label}</span>
-              </button>
-            ))}
-          </div>
         </nav>
       </aside>
 
