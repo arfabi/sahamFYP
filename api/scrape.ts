@@ -39,6 +39,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.log(`[Scraper] Fetching: ${url}`);
     const startTime = Date.now();
 
+    // 1. Cek dari URL dulu. Jika jelas-jelas PDF, tidak perlu di-fetch (menghindari 403/timeout)
+    if (url.toLowerCase().endsWith('.pdf')) {
+      console.log(`[Scraper] PDF URL detected directly: ${url}`);
+      return res.status(200).json({
+        url,
+        title: fallbackTitle || 'PDF Document',
+        content: fallbackContent || 'Dokumen PDF dari sumber asli. Tidak dapat melakukan scraping teks secara otomatis.',
+        description: 'PDF Document',
+        author: '',
+        publishedDate: '',
+        image: '',
+        siteName: 'PDF Source',
+      });
+    }
+
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -48,8 +63,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       redirect: 'follow',
     });
 
+    // 2. Jangan langsung throw error jika 403/404, gunakan fallback agar n8n tidak berhenti (error 500)
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      console.warn(`[Scraper] HTTP ${response.status} for ${url}, using fallback.`);
+      return res.status(200).json({
+        url,
+        title: fallbackTitle || 'Scrape Failed',
+        content: fallbackContent || `Gagal mengambil teks berita dari sumber asli (HTTP ${response.status}).`,
+        description: `HTTP ${response.status}`,
+        author: '',
+        publishedDate: '',
+        image: '',
+        siteName: 'Scrape Failed',
+      });
     }
 
     const contentType = response.headers.get('content-type') || '';
