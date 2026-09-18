@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { parseBody } from './_lib/auth.js';
 import { generateJson, isLlmConfigured } from './_lib/llm.js';
+import { supabaseServer } from './_lib/supabase.js';
 
 // --- Scoring Prompt ---
 function buildScoringPrompt(
@@ -83,6 +84,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }>(req);
 
     const { title, content, category, ticker, reason } = body;
+
+    // --- CEK DUPLIKASI BERITA BERDASARKAN TICKER HARI INI ---
+    if (ticker && ticker !== 'null') {
+      try {
+        const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
+        
+        // Cari di database apakah hari ini sudah ada berita dengan ticker yang sama
+        const { data: existingPosts, error: checkError } = await supabaseServer
+          .from('automation_posts')
+          .select('id')
+          .eq('workflow_type', 'news_monitoring')
+          .gte('created_at', `${todayStr}T00:00:00+07:00`)
+          .ilike('caption', `%#${ticker.toLowerCase()}%`)
+          .limit(1);
+
+        if (!checkError && existingPosts && existingPosts.length > 0) {
+          console.log(`[Score] Ticker ${ticker} sudah dipublish hari ini. Melewati berita.`);
+          return res.status(200).json({
+            score: 0,
+            decision: 'PASS',
+            reason: `Berita dengan emiten ${ticker} sudah pernah digenerate hari ini. Menghindari spam/duplikasi post.`,
+            catalyst: null,
+            dataQuality: 'low',
+          });
+        }
+      } catch (e) {
+        console.error('[Score] Gagal mengecek duplikasi DB:', e);
+      }
+    }
+    // ---------------------------------------------------------
 
     if (!title || !content) {
       return res.status(400).json({
