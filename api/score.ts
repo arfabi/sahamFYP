@@ -85,6 +85,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { title, content, category, ticker, reason } = body;
 
+    // --- AUTO PASS UNTUK PDF ---
+    if (title?.includes('PDF Document') || content?.includes('Dokumen PDF')) {
+      console.log(`[Score] URL PDF terdeteksi. Melewati berita.`);
+      return res.status(200).json({
+        score: 0,
+        decision: 'PASS',
+        reason: 'Dokumen PDF dilewati untuk saat ini.',
+        catalyst: null,
+        dataQuality: 'low',
+      });
+    }
+    // ---------------------------
+
     // --- CEK DUPLIKASI BERITA BERDASARKAN TICKER HARI INI ---
     if (ticker && ticker !== 'null') {
       try {
@@ -99,11 +112,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           .ilike('caption', `%#${ticker.toLowerCase()}%`)
           .limit(1);
 
-        // 2. Cek di tabel news_scrape (jika berita dengan ticker ini sudah mendapat score GENERATE hari ini)
+        // 2. Cek di tabel sector_trigger_news (jika berita dengan ticker ini sudah mendapat score GENERATE hari ini)
         const { data: scrapedNews, error: err2 } = await supabaseServer
-          .from('news_scrape')
+          .from('sector_trigger_news')
           .select('id')
-          .eq('ticker', ticker)
+          .contains('symbols', [ticker])
           .eq('decision', 'GENERATE')
           .gte('created_at', `${todayStr}T00:00:00+07:00`)
           .limit(1);

@@ -36,8 +36,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method === 'GET') {
       const limit = parseInt(req.query.limit as string) || 50;
       const { data, error } = await supabaseServer
-        .from('news_scrape')
-        .select('*')
+        .from('sector_trigger_news')
+        .select('*, url:source_url, time_scrape:timestamp, content:body, image:thumbnail_url')
         .order('created_at', { ascending: false })
         .limit(limit);
 
@@ -56,9 +56,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           return res.status(400).json({ error: 'url is required' });
         }
         const { data, error } = await supabaseServer
-          .from('news_scrape')
-          .select('id, url, title, time_scrape')
-          .eq('url', body.url)
+          .from('sector_trigger_news')
+          .select('id, url:source_url, title, time_scrape:timestamp')
+          .eq('source_url', body.url)
           .single();
 
         if (error && error.code !== 'PGRST116') throw error;
@@ -77,18 +77,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         for (const field of fields) {
           const val = (body as any)[field];
           if (val !== undefined) {
+            let dbField = field;
+            if (field === 'content') dbField = 'body';
+            if (field === 'image') dbField = 'thumbnail_url';
+            if (field === 'ticker') dbField = 'symbols';
+
             if (field === 'score' && val !== null) {
-              updateData[field] = typeof val === 'string' ? parseInt(val, 10) || 0 : val;
+              updateData[dbField] = typeof val === 'string' ? parseInt(val, 10) || 0 : val;
+            } else if (field === 'ticker') {
+              updateData[dbField] = val ? [val] : [];
             } else {
-              updateData[field] = val;
+              updateData[dbField] = val;
             }
           }
         }
 
         const { data, error } = await supabaseServer
-          .from('news_scrape')
+          .from('sector_trigger_news')
           .update(updateData)
-          .eq('url', body.url)
+          .eq('source_url', body.url)
           .select()
           .single();
 
@@ -104,15 +111,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ error: 'url is required' });
       }
 
-      const record: NewsScrapeRecord = {
-        url: body.url,
-        time_scrape: body.time_scrape || new Date().toISOString(),
+      const record: any = {
+        source_url: body.url,
+        timestamp: body.time_scrape || new Date().toISOString(),
         title: body.title || null,
         category: body.category || null,
-        ticker: body.ticker || null,
-        content: body.content || null,
+        symbols: body.ticker ? [body.ticker] : null,
+        body: body.content || null,
         description: body.description || null,
-        image: body.image || null,
+        thumbnail_url: body.image || null,
         sitename: body.sitename || null,
         score: body.score ?? null,
         decision: body.decision || 'PASS',
@@ -120,7 +127,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       };
 
       const { data, error } = await supabaseServer
-        .from('news_scrape')
+        .from('sector_trigger_news')
         .insert([record])
         .select()
         .single();
@@ -128,9 +135,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (error) {
         if (error.code === '23505') {
           const { data: existing } = await supabaseServer
-            .from('news_scrape')
+            .from('sector_trigger_news')
             .select('*')
-            .eq('url', body.url)
+            .eq('source_url', body.url)
             .single();
           return res.status(200).json({ data: existing, exists: true });
         }
@@ -146,7 +153,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!id) {
         return res.status(400).json({ error: 'id query parameter is required' });
       }
-      const { error } = await supabaseServer.from('news_scrape').delete().eq('id', id);
+      const { error } = await supabaseServer.from('sector_trigger_news').delete().eq('id', id);
       if (error) throw error;
       return res.status(200).json({ success: true });
     }
