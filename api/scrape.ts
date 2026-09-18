@@ -22,7 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   console.log('[Scraper] body is Uint8Array:', req.body instanceof Uint8Array);
   console.log('[Scraper] body content:', JSON.stringify(req.body)?.substring(0, 200));
   
-  const { url } = parseBody(req);
+  const { url, fallbackTitle, fallbackContent } = parseBody(req) as any;
 
   if (!url || typeof url !== 'string') {
     return res.status(400).json({ error: 'URL is required', debug: { bodyType: typeof req.body, hasBody: !!req.body } });
@@ -50,6 +50,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/pdf') || url.toLowerCase().endsWith('.pdf')) {
+      console.log(`[Scraper] PDF detected for: ${url}`);
+      return res.status(200).json({
+        url,
+        title: fallbackTitle || 'PDF Document',
+        content: fallbackContent || 'Dokumen PDF dari sumber asli. Tidak dapat melakukan scraping teks secara otomatis.',
+        description: 'PDF Document',
+        author: '',
+        publishedDate: '',
+        image: '',
+        siteName: 'PDF Source',
+      });
     }
 
     const html = await response.text();

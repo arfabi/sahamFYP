@@ -22,7 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    let { limit = '5', start, end } = req.query;
+    let { limit = '20', start, end } = req.query;
 
     // Jika start atau end tidak diberikan, default ke kemarin dan hari ini (GMT+7 / Asia/Jakarta)
     if (!start || !end) {
@@ -30,7 +30,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const date = new Date();
         date.setDate(date.getDate() + offsetDays);
         // en-CA format menghasilkan string YYYY-MM-DD
-        return new Intl.DateTimeFormat('en-CA', { 
+        return new Intl.DateTimeFormat('en-CA', {
           timeZone: 'Asia/Jakarta',
           year: 'numeric',
           month: '2-digit',
@@ -67,7 +67,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Mapping 'source' menjadi 'link' agar n8n tidak perlu mengubah konfigurasi lagi
     const formattedResults = (data.results || []).map((item: any) => ({
       ...item,
-      link: item.source, 
+      link: item.source,
     }));
 
     return res.status(200).json({
