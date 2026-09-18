@@ -287,103 +287,260 @@ async function generateNaskah(params: {
 }) {
   const { category, ticker, title, content, image, siteName, enrichment } = params;
 
-  // Financial terms dictionary with Gen Z translations
-  const FINANCIAL_TERMS = {
-    PBV: { name: 'Price to Book Value', genZ: 'Banding Harga vs Nilai Buku' },
-    PER: { name: 'Price to Earnings Ratio', genZ: 'Banding Harga vs Laba' },
-    ROE: { name: 'Return on Equity', genZ: 'Efek Uang Kembali' },
-    EPS: { name: 'Earnings Per Share', genZ: 'Lep saham' },
-    ROA: { name: 'Return on Assets', genZ: 'Efek Aset' },
-    DER: { name: 'Debt to Equity Ratio', genZ: 'Banding Utang vs Modal' },
-    DY: { name: 'Dividend Yield', genZ: 'Hasil Dividen' },
-    NPL: { name: 'Non Performing Loan', genZ: 'Kredit Macet' },
-    NIM: { name: 'Net Interest Margin', genZ: 'Lep Bersih' },
-    BOPO: { name: 'Operating Expenses to Income', genZ: 'Banding Biaya vs Pendapatan' },
-    LDR: { name: 'Loan to Deposit Ratio', genZ: 'Banding Kredit vs Simpanan' },
-    CAR: { name: 'Capital Adequacy Ratio', genZ: 'Cukup Modal' },
-  };
-
-  const prompt = `
-Kamu adalah AI Content Generator untuk @sahamfyp Instagram carousel.
-Generate naskah 8 slide carousel dalam format JSON valid.
-
-KATEGORI: ${category}
-TICKER: ${ticker || 'N/A'}
-JUDUL: ${title}
-KONTEN: ${content}
-SUMBER: ${siteName}
-DATA_ENRICHMENT: ${JSON.stringify(enrichment.data || {})}
-
-KAMUS ISTILAH KEUANGAN (Gunakan format: SINGKATAN (Nama Lengkap)):
-- PBV (Price Book Value): Banding harga vs nilai buku perusahaan
-- PER (Price Earnings Ratio): Banding harga vs laba per saham  
-- ROE (Return on Equity): Efek uang kembali dari modal
-- EPS (Earnings Per Share): Lep saham (laba per lembar)
-- DER (Debt to Equity Ratio): Banding utang vs modal
-- NPL (Non Performing Loan): Kredit macet
-- NIM (Net Interest Margin): Lep bersih dari bunga
-- BOPO (Biaya Operasional vs Pendapatan): Efisiensi biaya bank
-- LDR (Loan to Deposit Ratio): Banding kredit vs simpanan
-- CAR (Capital Adequacy Ratio): Cukup modal bank
-
-KAMUS GEN Z UNTUK DATA SLIDE (WAJIB GUNAKAN ISTILAH INI):
-- pricey / overpriced: Harga mahal, kemahalan
-- gak kaleng-kaleng: Bagus sekali, luar biasa
-- digoreng: Harga dimainkan pihak tertentu
-- cuan: Untung, profit
-- solid: Kuat, kokoh fundamentalnya
-- FOMO / Kemakan Hype: Ikut-ikutan naik cuma karena hype
-- Red Flag: Tanda bahaya, ada masalah
-- Bagger / To the Moon: Potensi naik berlipat
-- Nyangkut / Nyangkuters: Beli di puncak lalu turun drastis
-- Serok bawah / Bottom Fishing: Beli saat discount gede
-- Core Holding: Saham buat jangka panjang
-- Bakar Uang: Perusahaan masih rugi demi ekspansi
-- Priced In: Kabar sudah tercermin di harga
-- Gorengan / Saham Lapis Tiga: Small-cap volatil, gampang diatur
-- Exit Strategy: Rencana jual saat target tercapai
-- Bongkar Muatan / Distribusi: Bandar jual ke ritel
-- Akum / Serok Halus: Institusi kumpulkan saham diam-diam
-- Value Trap: Kelihatan murah tapi bisnis stagnan
-- Lagi Sale / Diskon: Kinerja bagus tapi harga anjlok sentimen
-
-FORMAT DATA SLIDE:
-Gunakan format ini untuk setiap metrik:
-"PBV (Price Book Value)" sebagai label
-"0.86x" sebagai value  
-"Lagi sale banget buat big bank. Ibarat iPhone 10jt dijual dibawah pasar. Core holding cocok buat lo!" sebagai caption
-
-FORMAT OUTPUT (JSON valid, tanpa markdown):
-{
+  const OUTPUT_SCHEMA = `{
   "handle": "@sahamfyp",
   "badgeText": "${ticker || category}",
+  "badgeBgColor": "#14182B",
+  "badgeTextColor": "#FFFFFF",
+  "textColor": "#14182B",
+  "bgColor": "#F5F1E7",
   "slides": [
-    { "template": "cover", "title": "...", "description": "..." },
-    { "template": "tldr", "title": "...", "tldrCards": [{"icon": "TrendingUp", "text": "..."}] },
-    { "template": "kronologi", "title": "...", "description": "...", "source": "${siteName}" },
-    { "template": "data", "title": "...", "metrics": [{"icon": "TrendingUp", "label": "PBV (Price Book Value)", "value": "0.86x", "caption": "Lagi sale banget buat big bank. Core holding cocok!", "tone": "amber"}] },
-    { "template": "pros", "title": "...", "bullets": [{"icon": "CheckCircle2", "text": "..."}] },
-    { "template": "cons", "title": "...", "bullets": [{"icon": "AlertTriangle", "text": "..."}] },
-    { "template": "standar", "title": "...", "description": "..." },
-    { "template": "cta", "title": "...", "description": "...", "disclaimer": "DYOR" }
+    { "template": "cover", "title": "...", "description": "...", "visualIcon": "TrendingUp", "accent": "#F2A93B" },
+    { "template": "tldr", "title": "TL;DR", "tldrCards": [{ "icon": "...", "text": "..." }], "accent": "#F2A93B" },
+    { "template": "kronologi", "title": "Kronologi", "description": "... (maks 30 kata)", "source": "${siteName || 'Keterbukaan Informasi'}", "visualIcon": "Coins", "accent": "#F2A93B" },
+    { "template": "data", "title": "...", "metrics": [{ "icon": "...", "label": "...", "value": "...", "caption": "...", "tone": "amber|sage" }], "accent": "#F2A93B" },
+    { "template": "pros", "title": "...", "bullets": [{ "icon": "CheckCircle2", "text": "..." }], "accent": "#4CAF7D" },
+    { "template": "cons", "title": "...", "bullets": [{ "icon": "AlertTriangle", "text": "..." }], "accent": "#E4572E" },
+    { "template": "standar", "title": "Kesimpulan", "description": "...", "visualIcon": "Scale", "accent": "#F2A93B" },
+    { "template": "cta", "title": "Gas atau Skip?", "description": "...", "disclaimer": "Do Your Own Research (DYOR).", "visualIcon": "MessageCircle", "accent": "#F2A93B" }
   ],
   "caption": {
-    "instagram": "...",
-    "tiktok": "..."
+    "instagram": "Teks caption IG...",
+    "tiktok": "Teks caption TikTok..."
   }
-}
+}`;
 
-ATURAN:
-- Bahasa Indonesia kasual, vibe Gen Z
-- KRONOLOGI: description WAJIB MAKSIMAL 30 KATA — JANGAN LEBIH! Cek word count (split by spasi), potong jika lebih. Sumber di field "source", NUN di description.
-- DATA SLIDE: GUNAKAN ISTILAH GEN Z dari kamus di atas (pricey, FOMO, solid, lagi sale, core holding, dll)
-- Caption IG: hook + info + CTA + 3 hashtags (#saham #investasi #${ticker?.toLowerCase() || 'saham'})
-- Caption TikTok: hook agresif + #fyp #foryou #sahamindonesia
-- DYOR disclaimer selalu di slide terakhir
-- DARIKAN DATA NYATA dari DATA_ENRICHMENT, jangan mengarang
-- Untuk data slide, GUNAKAN FORMAT: "SINGKATAN (Nama Lengkap)" sebagai label
-- Caption data harus penjelasan Gen Z yang mudah dipakai istilah kamus
-`;
+  const COMMON_RULES = \`
+ATURAN WAJIB:
+1. Output HARUS JSON valid — tanpa markdown, tanpa teks di luar JSON.
+2. Semua field wajib diisi — jangan biarkan string kosong, gunakan "-" jika data tidak tersedia.
+3. JANGAN mengarang data. Jika data enrichment tidak ada, skip metrik tersebut atau tulis "Data tidak tersedia".
+4. Bahasa: Indonesia informal ala Instagram (gaya @sahamfyp) — "lo", "gue", analogi sehari-hari.
+5. Slide 5 & 6 wajib format: Point (bold) + Explanation (1-2 kalimat analogi).
+6. Slide 8 (CTA) wajib ada disclaimer DYOR.
+7. Total 8 slides persis — jangan lebih, jangan kurang.
+8. visualIcon harus salah satu dari: ArrowLeftRight, ArrowRight, AlertTriangle, BadgePercent, BarChart3, ChartNoAxesCombined, CheckCircle2, Coins, DollarSign, Eye, Flame, Gauge, Globe, Handshake, MessageCircle, Pickaxe, Rocket, Scale, Sparkles, ThumbsUp, TrendingUp, Wallet.
+9. tone metrics hanya "amber" atau "sage".
+10. accent: cover/tldr/kronologi/data/standar/cta = "#F2A93B", pros = "#4CAF7D", cons = "#E4572E".
+11. KRONOLOGI (slide 3): description WAJIB MAKSIMAL 30 KATA — JANGAN LEBIH! Cek sendiri word count (split teks by spasi) sebelum output, potong jika lebih. Sumber/gambar kredit set di field "source".
+12. Caption IG: hook menarik + isi konten ringkas + CTA (Call to Action) + 3 hashtags relevan.
+13. Caption TikTok: hook agresif/penasaran + CTA ringkas + #fyp #foryou #sahamindonesia.
+\`;
+
+  let prompt = '';
+  const dataStr = JSON.stringify(enrichment?.data || {}, null, 2);
+
+  switch (category) {
+    case 'SINGLE_STOCK':
+      prompt = \`Kamu adalah AI Content Writer untuk @sahamfyp — akun edukasi saham Indonesia.
+Tugasmu: tulis naskah carousel 8 slide untuk berita analisis emiten tunggal.
+
+BERITA:
+- Judul: \${title}
+- Isi: \${content}
+
+DATA ENRICHMENT (dari Sectors.app):
+\${dataStr}
+
+STRUKTUR 8 SLIDE:
+1. COVER — Headline menarik + sub judul (hook pertanyaan)
+2. TLDR — 3-4 poin ringkasan (angka kunci wajib ada)
+3. KRONOLOGI — Narasi konteks berita + sumber
+4. BEDAH_DATA — 4-6 metrik dari enrichment (PER, PBV, ROE, EPS, dll)
+5. PROS — 2-3 sisi positif (point + explanation)
+6. CONS — 2-3 sisi risiko (point + explanation)
+7. KESIMPULAN — Rangkuman netral, cocok buat tipe investor apa
+8. CTA_DYOR — Ajakan diskusi + disclaimer DYOR
+
+\${COMMON_RULES}
+
+FORMAT OUTPUT:
+\${OUTPUT_SCHEMA}\`;
+      break;
+    case 'MACRO_ECONOMY':
+      prompt = \`Kamu adalah AI Content Writer untuk @sahamfyp — akun edukasi saham Indonesia.
+Tugasmu: tulis naskah carousel 8 slide untuk berita makro ekonomi & tren pasar.
+
+BERITA:
+- Judul: \${title}
+- Isi: \${content}
+
+DATA ENRICHMENT (dari Sectors.app):
+\${dataStr}
+
+STRUKTUR 8 SLIDE:
+1. COVER — Headline menarik + sub judul (hook pertanyaan)
+2. TLDR — 3-4 poin ringkasan (angka kunci: IHSG, market cap, suku bunga)
+3. KRONOLOGI — Narasi konteks berita + sumber
+4. DAMPAK_PASAR — 4-6 metrik (IHSG, total market cap, top gainer/loser, most traded)
+5. DIUNTUNGKAN — 2-3 sektor/sisi yang diuntungkan (point + explanation)
+6. PERLU_DIWASPADAI — 2-3 risiko/tantangan (point + explanation)
+7. KESIMPULAN — Rangkuman netral
+8. CTA_DYOR — Ajakan diskusi + disclaimer DYOR
+
+\${COMMON_RULES}
+
+FORMAT OUTPUT:
+\${OUTPUT_SCHEMA}\`;
+      break;
+    case 'SECTOR_ANALYSIS':
+      prompt = \`Kamu adalah AI Content Writer untuk @sahamfyp — akun edukasi saham Indonesia.
+Tugasmu: tulis naskah carousel 8 slide untuk berita rotasi/sektor analisis.
+
+BERITA:
+- Judul: \${title}
+- Isi: \${content}
+
+DATA ENRICHMENT (dari Sectors.app):
+\${dataStr}
+
+STRUKTUR 8 SLIDE:
+1. COVER — Headline menarik + sub judul (hook pertanyaan)
+2. TLDR — 3-4 poin ringkasan (PE sektor, top gainer, YTD return)
+3. KRONOLOGI — Narasi konteks berita + sumber
+4. DATA_SEKTOR — 4-6 metrik (PE median, PBV, market cap sektor, top gainer, YTD)
+5. SAHAM_JAGOAN — 2-3 saham yang menonjol di sektor (point + explanation)
+6. PERLU_DIWASPADAI — 2-3 risiko sektor (point + explanation)
+7. KESIMPULAN — Rangkuman netral
+8. CTA_DYOR — Ajakan diskusi + disclaimer DYOR
+
+\${COMMON_RULES}
+
+FORMAT OUTPUT:
+\${OUTPUT_SCHEMA}\`;
+      break;
+    case 'CORPORATE_ACTION':
+      prompt = \`Kamu adalah AI Content Writer untuk @sahamfyp — akun edukasi saham Indonesia.
+Tugasmu: tulis naskah carousel 8 slide untuk berita aksi korporat (dividen, RUPS, buyback, stock split).
+
+BERITA:
+- Judul: \${title}
+- Isi: \${content}
+
+DATA ENRICHMENT (dari Sectors.app):
+\${dataStr}
+
+STRUKTUR 8 SLIDE:
+1. COVER — Headline menarik + sub judul (hook pertanyaan)
+2. TLDR — 3-4 poin ringkasan (jenis aksi, nilai, jadwal)
+3. KRONOLOGI — Narasi konteks berita + sumber
+4. DETAIL_AKSI — 4-6 metrik (jenis, nilai, yield, payout ratio, ex-date, buyback)
+5. UNTUNG_BUAT_INVESTOR — 2-3 keuntungan buat investor (point + explanation)
+6. PERLU_DIPERHATIKAN — 2-3 hal yang perlu diperhatikan (point + explanation)
+7. KESIMPULAN — Rangkuman netral
+8. CTA_DYOR — Ajakan diskusi + disclaimer DYOR
+
+\${COMMON_RULES}
+
+FORMAT OUTPUT:
+\${OUTPUT_SCHEMA}\`;
+      break;
+    case 'IPO_RIGHTS_ISSUE':
+      if (!ticker) {
+        prompt = \`Kamu adalah AI Content Writer untuk @sahamfyp — akun edukasi saham Indonesia.
+Tugasmu: tulis naskah carousel 8 slide untuk berita IPO baru (calon emiten belum listing).
+
+BERITA:
+- Judul: \${title}
+- Isi: \${content}
+
+CATATAN: Ini IPO BARU — belum ada data enrichment dari Sectors.app.
+Semua data diambil 100% dari isi berita. JANGAN panggil API, JANGAN mengarang data.
+
+STRUKTUR 8 SLIDE:
+1. COVER — Headline menarik + sub judul (hook pertanyaan)
+2. TLDR — 3-4 poin ringkasan (bisnis, afiliasi, target dana)
+3. PROFIL_PERUSAHAAN — Sekilas model bisnis, klien, posisi industri
+4. DETAIL_PENAWARAN — 4-6 metrik (harga IPO, jumlah saham, target dana, penggunaan dana, jadwal listing)
+5. KENAPA_MENARIK — 2-3 alasan menarik (point + explanation)
+6. RISIKO — 2-3 risiko IPO baru (point + explanation)
+7. KESIMPULAN — Rangkuman netral
+8. CTA_DYOR — Ajakan diskusi + disclaimer DYOR
+
+\${COMMON_RULES}
+
+FORMAT OUTPUT:
+\${OUTPUT_SCHEMA}\`;
+      } else {
+        prompt = \`Kamu adalah AI Content Writer untuk @sahamfyp — akun edukasi saham Indonesia.
+Tugasmu: tulis naskah carousel 8 slide untuk berita Right Issue / Stock Split.
+
+BERITA:
+- Judul: \${title}
+- Isi: \${content}
+
+DATA ENRICHMENT (dari Sectors.app):
+\${dataStr}
+
+STRUKTUR 8 SLIDE:
+1. COVER — Headline menarik + sub judul (hook pertanyaan)
+2. TLDR — 3-4 poin ringkasan (jenis, rasio, harga pelaksanaan, target dana)
+3. KRONOLOGI — Narasi konteks berita + sumber
+4. SKEMA_AKSI — 4-6 metrik (jenis, jumlah saham baru, harga, rasio, target dana, record date)
+5. UNTUNG_BUAT_INVESTOR — 2-3 keuntungan (point + explanation)
+6. PERLU_DIWASPADAI — 2-3 risiko/dilusi (point + explanation)
+7. KESIMPULAN — Rangkuman netral
+8. CTA_DYOR — Ajakan diskusi + disclaimer DYOR
+
+\${COMMON_RULES}
+
+FORMAT OUTPUT:
+\${OUTPUT_SCHEMA}\`;
+      }
+      break;
+    case 'SUSPENSION_DELISTING':
+      prompt = \`Kamu adalah AI Content Writer untuk @sahamfyp — akun edukasi saham Indonesia.
+Tugasmu: tulis naskah carousel 8 slide untuk berita suspensi/delisting saham.
+
+BERITA:
+- Judul: \${title}
+- Isi: \${content}
+
+DATA ENRICHMENT (dari Sectors.app):
+\${dataStr}
+
+STRUKTUR 8 SLIDE:
+1. COVER — Headline menarik + sub judul (hook pertanyaan)
+2. TLDR — 3-4 poin ringkasan (tanggal, alasan, jenis suspensi, harga terakhir)
+3. KRONOLOGI — Narasi konteks berita + sumber (link PDF resmi BEI jika ada)
+4. FAKTA_SUSPENSI — 4-6 metrik (tanggal, alasan, harga, 52w range, market cap, sektor)
+5. APA_ITU_SUSPENSI — 2-3 edukasi mekanisme suspensi (point + explanation)
+6. YANG_PERLU_DILAKUKAN — 2-3 langkah yang harus diambil investor (point + explanation)
+7. KESIMPULAN — Rangkuman netral
+8. CTA_DYOR — Ajakan diskusi + disclaimer DYOR
+
+\${COMMON_RULES}
+
+FORMAT OUTPUT:
+\${OUTPUT_SCHEMA}\`;
+      break;
+    default:
+      prompt = \`Kamu adalah AI Content Writer untuk @sahamfyp.
+Tugasmu: tulis naskah carousel 8 slide untuk berita saham.
+
+BERITA:
+- Judul: \${title}
+- Isi: \${content}
+
+DATA ENRICHMENT:
+\${dataStr}
+
+STRUKTUR 8 SLIDE:
+1. COVER — Headline menarik
+2. TLDR — 3-4 poin ringkasan
+3. KRONOLOGI — Narasi berita
+4. DATA — 4-6 metrik
+5. PROS — 2-3 hal positif
+6. CONS — 2-3 hal negatif
+7. KESIMPULAN — Rangkuman netral
+8. CTA_DYOR — Ajakan diskusi
+
+\${COMMON_RULES}
+
+FORMAT OUTPUT:
+\${OUTPUT_SCHEMA}\`;
+  }
+
 
   const rawOutput = await generateContentRaw(prompt);
 
