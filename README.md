@@ -1,10 +1,11 @@
-﻿ SahamFYP — AI-Powered Financial Content Engine
+﻿# SahamFYP — AI-Powered Financial Content Engine
 
 [![React](https://img.shields.io/badge/React-18.3.1-blue)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5.3-blue)](https://typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-5.4.0-purple)](https://vitejs.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4.10-cyan)](https://tailwindcss.com/)
 [![n8n](https://img.shields.io/badge/n8n-Workflow%20Automation-red)](https://n8n.io/)
+[![Sectors API](https://img.shields.io/badge/Sectors-REST%20API-1a73e8)](https://sectors.app/)
 [![Browserless](https://img.shields.io/badge/Browserless-HTML%20to%20Image-yellow)](https://www.browserless.io/)
 [![LLM: Sumopod](https://img.shields.io/badge/LLM-Sumopod%20(OpenAI%20compatible)-orange)](https://ai.sumopod.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-Database-green)](https://supabase.com/)
@@ -12,16 +13,29 @@
 
 ---
 
+## 🏆 Sectors Hackathon 2026
+
+| | |
+|---|---|
+| **Track** | Automation & Workflows |
+| **Problem statement** | Financial content creator, edukator finansial, dan sekuritas butuh cara memproduksi konten edukasi saham yang cepat, konsisten, dan **terverifikasi data fundamental** — bukan sekadar ikut tren — untuk menjangkau audiens Gen Z yang mendominasi jumlah investor pasar modal Indonesia namun rawan FOMO. |
+| **Who it's for** | Financial content creator / financial educator / sekuritas yang butuh content engine otomatis dan kaya data |
+| **Impact / downstream audience** | Gen Z investor — audiens yang membaca hasil konten di media sosial dan terbantu memahami saham lewat data, bukan hype |
+| **Live proof** | Akun **@sahamfyp** sudah berjalan otomatis di Instagram, Facebook, Threads, X, dan TikTok |
+
+> **Catatan penting soal core data source**: SahamFYP menggunakan **Sectors REST API** di hampir setiap tahap alur — deteksi ticker, enrichment fundamental & teknikal, ranking top movers, hingga data broker & foreign flow. **Kalau data Sectors.app dicabut, produk ini kehilangan fungsi intinya**: slide 4–6 di semua 6 kategori konten (lihat [Template Konten](#5-template-konten--klasifikasi-berita)) bergantung penuh pada data tersebut untuk verifikasi faktual. Tanpa itu, sistem hanya jadi rewrite berita tanpa nilai tambah — persis kebalikan dari misi produk ini.
+
+---
 
 ## 📑 Daftar Isi
 - [📌 Apa Itu SahamFYP?](#-apa-itu-sahamfyp)
 - [🎯 Latar Belakang](#-latar-belakang)
+- [🔄 Dua Workflow Otomatis (n8n)](#-dua-workflow-otomatis-n8n)
 - [🌟 Fitur Utama](#-fitur-utama)
 - [🛠️ Tech Stack](#️-tech-stack)
 - [📦 Cara Duplikasi / Clone Content Engine](#-cara-duplikasi--clone-content-engine)
 - [📁 Struktur Project](#-struktur-project)
 - [🔌 API Reference](#-api-reference)
-- [🔄 Cara Pakai (n8n Workflow)](#-cara-pakai-n8n-workflow)
 - [🔗 Quick Links & Resources](#-quick-links--resources)
 - [🔧 Troubleshooting](#-troubleshooting)
 - [📝 Catatan Versi](#-catatan-versi)
@@ -31,9 +45,13 @@
 
 ## 📌 Apa Itu SahamFYP?
 
-**SahamFYP** adalah platform/content engine yang menghasilkan konten finansial berkualitas tinggi secara otomatis untuk diposting ke berbagai media sosial (Instagram, TikTok, dll). Fokus utama: memberikan **informasi saham yang relevan, terverifikasi, dan faktual** kepada **Gen Z investor** — pengguna akhir yang mendominasi pasar modal Indonesia saat ini.
+**SahamFYP** adalah **content engine otomatis** untuk financial content creator, edukator finansial, dan sekuritas yang ingin memproduksi konten edukasi saham berkualitas tinggi — lengkap dengan data fundamental terverifikasi — tanpa harus riset manual tiap hari.
 
-SahamFYP bukan sekadar "berita saham", tapi **konten yang terintegrasi dengan data fundamental**: laporan keuangan, dividen, valuation, ownership, dan data lengkap lainnya dari **sector.app**, sehingga Gen Z bisa memahami **mengapa** sebuah saham trending, apakah benar-benar bagus, atau hanya sekadar hype.
+Dengan satu pipeline otomatis (n8n + Sectors REST API + LLM), SahamFYP menghasilkan carousel Instagram/TikTok/Threads yang **terintegrasi dengan data fundamental real**: laporan keuangan, valuation, dividen, ownership, foreign flow, dan data lainnya dari **Sectors.app**, lalu langsung dipublikasikan ke banyak akun sosial media sekaligus.
+
+**Dampaknya sampai ke audiens akhir**: Gen Z investor yang membaca konten ini di media sosial mendapat konteks *mengapa* sebuah saham trending — apakah benar-benar kuat secara fundamental, atau cuma hype — bukan sekadar judul clickbait tanpa data.
+
+> Contoh akun yang sudah berjalan otomatis: **[@sahamfyp](https://instagram.com/sahamfyp)** di Instagram, Facebook, Threads, X, dan TikTok.
 
 ---
 
@@ -50,12 +68,7 @@ Lebih dari itu, perilaku investasi Gen Z sering didorong oleh **FOMO (Fear Of Mi
 - Terpapar **misinformasi** dan ekspektasi keuntungan yang tidak realistis
 - Risiko keputusan finansial yang kurang tepat meningkat
 
-Secara spesifik, perilaku ini tercermin dalam:
-
-1. **Beli saham karena FOMO**, bukan karena analisis fundamental
-2. **Tidak cek data** dan **tidak baca laporan keuangan** perusahaan sebelumnya
-3. **Mengikuti rekomendasi tanpa verifikasi** dari media sosial, grup WhatsApp, atau influencer tanpa dasar yang jelas
-4. **Ekspektasi keuntungan tidak realistis**, mengabaikan risiko
+Di sisi lain, **content creator dan edukator finansial** yang ingin menjawab kebutuhan ini menghadapi masalah operasional: riset data fundamental untuk tiap konten (cek laporan keuangan, valuation, ownership, foreign flow) itu **memakan waktu**, sementara konten harus tayang **konsisten dan tepat waktu** (misalnya pagi sebelum bursa buka) supaya relevan.
 
 **Sumber:**
 
@@ -65,57 +78,123 @@ Secara spesifik, perilaku ini tercermin dalam:
 
 ### Solusi SahamFYP
 
-SahamFYP hadir sebagai solusi untuk:
+SahamFYP hadir sebagai **content engine untuk content creator/edukator/sekuritas**, yang:
 
-- Memberikan **konten yang informatif & faktual** — bukan cuma "trending", tapi disertai data lengkap
-- Mengintegrasikan **data dari sector.app** (laporan keuangan, dividen, valuation, ownership, dll) sebagai **verifikasi faktual**
+- Mengotomatiskan seluruh pipeline: deteksi sinyal berita → verifikasi data → generate konten → publish — **tanpa intervensi manual per siklus**
+- Mengintegrasikan **Sectors REST API** (laporan keuangan, dividen, valuation, ownership, foreign flow, broker activity, top movers) sebagai **verifikasi faktual di setiap konten**
 - **Mengontekstualisasikan tren** dengan data fundamental: apakah saham yang naik benar-benar kuat, atau hanya hype?
-- **Menjadwalkan konten tepat waktu** (misal: pagi sebelum bursa buka) agar relevan & actionable
-- **Mendukung literasi keuangan** & pengambilan keputusan yang lebih sehat bagi Gen Z investor
+- **Menjadwalkan & memicu konten tepat waktu** (market brief pagi sebelum bursa buka, monitoring berita real-time) agar konten tetap relevan & actionable
+- Meneruskan manfaatnya ke pembaca akhir (Gen Z investor) lewat konten yang **edukatif, netral, dan berbasis data** — bukan ajakan beli/jual
 
-Dengan demikian, SahamFYP tidak hanya memenuhi kebutuhan konten yang dibutuhkan Gen Z, tetapi juga mendukung **verifikasi data**, **pemahaman fundamental**, dan **pengambilan keputusan yang lebih baik**.
+> **Bukan nasihat keuangan.** Semua konten yang dihasilkan SahamFYP bersifat edukatif dan informatif (DYOR — *Do Your Own Research*), bukan rekomendasi atau ajakan membeli/menjual saham tertentu. Tanggung jawab penggunaan konten ada pada pembuat konten/akun yang mempublikasikannya.
+
+---
+
+## 🔄 Dua Workflow Otomatis (n8n)
+
+Ini adalah inti dari track **Automation & Workflows**: dua pipeline yang berjalan **otonom** tanpa intervensi manual per siklus.
+
+### 1. Daily Market Brief — Trigger Terjadwal, tiap 08:00 WIB
+
+Berjalan otomatis setiap pagi sebelum bursa buka. Dalam **satu sesi trigger**, sistem memanggil banyak endpoint Sectors REST API sekaligus untuk membangun brief pasar harian + watchlist saham. Contoh log eksekusi nyata (Sep 18, 10:17 — sesi manual test run, jadwal produksi tetap 08:00 WIB):
+
+| Waktu | Endpoint Sectors API | Tipe | Status | Credits |
+|---|---|---|---|---|
+| 10:17 | `/v2/daily/INET.JK/` | Direct API | 200 | 1 |
+| 10:17 | `/v2/company/report/PTRO.JK/` | Direct API | 200 | 3 |
+| 10:17 | `/v2/company/report/BYAN.JK/` | Direct API | 200 | 3 |
+| 10:17 | `/v2/company/report/INET.JK/` | Direct API | 200 | 3 |
+| 10:17 | `/v2/daily/BYAN.JK/` | Direct API | 200 | 1 |
+| 10:17 | `/v2/daily/MBMA.JK/` | Direct API | 200 | 1 |
+| 10:17 | `/v2/daily/PTRO.JK/` | Direct API | 200 | 1 |
+| 10:17 | `/v2/company/report/MBMA.JK/` | Direct API | 200 | 3 |
+| 10:17 | `/v2/brokers/top/` | Direct API | 200 | 2 |
+| 10:17 | `/v2/companies/top-changes/` | Direct API | 200 | 2 |
+| 10:17 | `/v2/news/` | Direct API | 200 | 1 |
+| 10:17 | `/v2/filings/` | Direct API | 200 | 1 |
+| 10:17 | `/v2/index-daily/ihsg/` | Direct API | 200 | 1 |
+
+**Alur:**
+
+```
+Schedule Trigger (08:00 WIB)
+  → SectorTrigger/open (pilih watchlist saham hari ini, generate naskah via LLM + Sectors data)
+  → Loop per slide → Render HTML → Browserless (HTML → JPEG 1080×1350)
+  → Upload ke Supabase Storage (bucket sfyp-storage) → kumpulkan imageUrls
+  → Publish ke Repliz (multi-akun: Instagram, Facebook, Threads, X, TikTok)
+  → Simpan log post ke Supabase (/api/posts)
+  → Laporan status ke Telegram (jumlah credits terpakai, saham terpilih, akun yang berhasil publish)
+```
+
+Bukti unattended run: log eksekusi (seperti tabel di atas), timestamp trigger, dan notifikasi Telegram otomatis tiap sesi selesai — semua tanpa operator menekan tombol apa pun setelah workflow di-deploy.
+
+### 2. News Monitoring — Trigger Event-Based, real-time saat ada berita baru
+
+Berjalan kontinu, memantau **8 sumber RSS media ekonomi Indonesia** (Katadata, Kontan, Okezone, Liputan6, Detik, CNN Indonesia, CNBC Indonesia, IDX Channel) setiap menit untuk mendeteksi sinyal berita baru yang berpotensi memengaruhi harga saham.
+
+**Alur:**
+
+```
+RSS Trigger (8 sumber, poll tiap menit)
+  → Cek duplikat (/api/news-scrape, cegah proses berita yang sama 2x)
+  → Scrape isi artikel penuh (/api/scrape)
+  → Classify kategori & ticker (/api/classify — LLM, 6 kategori)
+  → Score urgensi/relevansi (/api/score)
+  → Decision gate: PASS (berita tidak cukup relevan/kuat → skip, notifikasi Telegram singkat)
+             atau GENERATE (lanjut ke enrichment & produksi konten)
+  → Enrich dengan Sectors REST API sesuai kategori (lihat tabel 6 kategori di bawah)
+  → Generate naskah (LLM) → Render HTML → Browserless → Supabase Storage (upload gambar)
+  → Publish ke Repliz → Update status di Supabase → Laporan ke Telegram
+```
+
+Karena berbasis RSS multi-sumber + polling otomatis (bukan scraping satu situs saja), workflow ini lebih tahan terhadap downtime satu sumber berita dan tetap berjalan otonom mendeteksi sinyal kapan pun berita baru terbit — tanpa jadwal tetap, murni event-driven.
+
+
+
 ---
 
 ## 🌟 Fitur Utama
 
 - **Dashboard Terintegrasi** → Akses cepat untuk *Market Brief* harian dan pantauan *Stock Watchlist*.
-- **News Monitoring Canggih** → Filter berita berdasarkan rentang waktu (Start Date - End Date) untuk merangkum berita terkini secara dinamis.
-- **Accounts Manager** → Manajemen akun sosial media terpusat (Instagram, Threads, Facebook, dll). Bisa menambah, menghapus, melihat preview link profil, serta *toggle* Active/Inactive yang tersinkronisasi langsung dengan *database* Supabase.
-- **Content Generator & Multi-Publishing** → Generate konten visual AI (Form Wizard) dan kemampuan **memilih beberapa target akun sosmed** sekaligus dalam satu kali klik.
-- **Full Automation Workflow (n8n)** → Pipeline otomasi penuh dari ujung ke ujung: Scrape Berita → Auto-Classify (LLM) → Auto-Enrich (Sectors.app) → Render HTML → Convert Gambar (Browserless) → Upload ke Supabase Storage → Auto-Publish (Repliz) → Laporan Telegram.
+- **News Monitoring Real-Time** → Deteksi otomatis berita dari 8 sumber RSS, filter berdasarkan rentang waktu untuk merangkum berita terkini secara dinamis.
+- **Accounts Manager** → Manajemen akun sosial media terpusat (Instagram, Threads, Facebook, X, TikTok). Bisa menambah, menghapus, melihat preview link profil, serta *toggle* Active/Inactive yang tersinkronisasi langsung dengan *database* Supabase.
+- **Content Generator & Multi-Publishing** → Generate konten visual AI (Form Wizard) dan kemampuan **memilih beberapa target akun sosmed** sekaligus dalam satu kali klik — untuk kebutuhan konten manual/ad-hoc di luar dua workflow otomatis di atas.
+- **Full Automation Workflow (n8n)** → Dua pipeline otonom end-to-end (lihat bagian [Dua Workflow Otomatis](#-dua-workflow-otomatis-n8n)) dari deteksi sinyal → verifikasi data Sectors → generate → publish → laporan Telegram, tanpa intervensi manual per siklus.
 
 ---
 
 ## 🛠️ Tech Stack
 
-### 1. Repliz
+### 1. Sectors.app — REST API (Core Data Source)
+
+- **Fungsi**: Sumber data fundamental & pasar saham — laporan keuangan, valuation, dividen, ownership, foreign flow, broker activity, top movers, index harian, filings, dan berita pasar terverifikasi.
+- **Referensi**: https://sectors.app/
+- **Cara kerja**: Seluruh integrasi memakai **Sectors REST API** secara langsung (bukan MCP) lewat endpoint seperti `/v2/company/report/{ticker}/`, `/v2/daily/{ticker}/`, `/v2/brokers/top/`, `/v2/companies/top-changes/`, `/v2/news/`, `/v2/filings/`, `/v2/index-daily/{index}/`. Data ini dipanggil di **setiap** sesi Daily Market Brief dan di tahap enrichment News Monitoring — bukan panggilan dekoratif sekali pakai, melainkan tulang punggung verifikasi faktual seluruh konten yang diproduksi.
+
+### 2. Repliz
 
 - **Fungsi**: Publish scheduling ke berbagai media sosial (Instagram, Threads, Facebook, TikTok, Twitter/X, LinkedIn, Telegram).
 - **Referensi**: https://repliz.com/ | https://api.repliz.com/public-json
 - **Cara kerja**: Endpoint Vercel API `/api/publish` SahamFYP berperan sebagai orkestrator yang menerima daftar akun yang ingin dituju (`targetAccountIds`). API ini kemudian akan mengecek kredensial dinamis dari database Supabase (`social_accounts`) dan mengirim payload massal ke Repliz secara simultan.
 
-### 2. sector.app
-
-- **Fungsi**: Sumber data fundamental saham — laporan keuangan, dividen, valuation, ownership structure, dan data lengkap lainnya
-- **Referensi**: https://sectors.app/
-- **Cara kerja**: API sectors.app menyediakan endpoint untuk retrieve data fundamental per ticker (misal: `fetch-company-report`, `fetch-foreign-flow`, `fetch-market-overview`, `fetch-suspensions`), yang kemudian digunakan untuk enrich konten dan memberikan fakta terverifikasi terkait saham yang trending.
-
 ### 3. LLM — Sumopod (OpenAI compatible)
 
 - **Fungsi**:
   - **Klasifikasi berita** → kategori & ticker yang relevan
+  - **Scoring** → urgensi/relevansi berita untuk keputusan PASS/GENERATE
   - **Enrichment ringkasan** → ekstrak topik, insight, dan rekomendasi ticker
   - **Generate konten** → naskah slide, caption, hashtag, konten IG/TikTok
 - **Referensi**: https://ai.sumopod.com/ | https://sumopod.com/
 - **Cara kerja**: Endpoint OpenAI-compatible `POST {SUMOPOD_BASE_URL}/chat/completions` (default `https://ai.sumopod.com/v1/chat/completions`) dengan header `Authorization: Bearer <SUMOPOD_API_KEY>`. Model default `gemini/gemini-3.1-flash-lite` (ganti via `SUMOPOD_MODEL`). Wrapper server: `api/_lib/llm.ts`; wrapper client (proxy `/api/llm`): `src/services/llm.ts` — API key tidak pernah ter-expose ke bundle browser.
 
-### 4. Supabase Storage & Browserless
+### 4. Penyimpanan Gambar: Supabase Storage
 
 - **Fungsi**: Engine rendering gambar dan penyimpanan CDN publik
 - **Cara kerja**:
-  - **Browserless.io** digunakan oleh *workflow* n8n untuk mengubah skrip HTML (yang berisi data fundamental & berita) menjadi gambar beresolusi tinggi (JPEG 1080x1350).
-  - Gambar hasil render kemudian diunggah secara otomatis via n8n ke **Supabase Storage** (Bucket `sfyp-storage`).
-  - URL publik dari Supabase Storage ini dikumpulkan sebagai payload `imageUrls` (atau `cloudinaryUrls`) yang diteruskan ke API publish, menghindari risiko blokir CDN gratisan dari Meta/Facebook.
+  - **Browserless.io** digunakan oleh kedua *workflow* n8n untuk mengubah skrip HTML (berisi data fundamental & berita) menjadi gambar beresolusi tinggi (JPEG 1080×1350).
+  - Seluruh gambar hasil render diunggah ke **Supabase Storage** (bucket `sfyp-storage`).
+  - URL publik dari Supabase ini dikumpulkan sebagai payload `imageUrls` yang diteruskan ke API publish, menghindari risiko blokir CDN gratisan dari Meta/Facebook.
+
 ### 5. Template Konten & Klasifikasi Berita
 
 SahamFYP menggunakan **6 kategori utama konten** yang masing-masing memiliki struktur slide carousel **8 slide** yang konsisten.
@@ -123,7 +202,7 @@ SahamFYP menggunakan **6 kategori utama konten** yang masing-masing memiliki str
 #### a. Klasifikasi Berita Otomatis
 
 - **Endpoint**: `POST /api/classify`
-- **Fungsi**: Mengklasifikasikan berita RSS/URL ke dalam 6 kategori utama dengan menentukan kategori terbaik dan ticker yang relevan (jika ada)
+- **Fungsi**: Mengklasifikasikan berita ke dalam 6 kategori utama dengan menentukan kategori terbaik dan ticker yang relevan (jika ada)
 - **Kategori**: `SINGLE_STOCK`, `MACRO_ECONOMY`, `SECTOR_ANALYSIS`, `CORPORATE_ACTION`, `IPO_RIGHTS_ISSUE`, `SUSPENSION_DELISTING`
 - **Output**: JSON berisi `{category, ticker?, confidence}`
 - **Model**: Sumopod `gemini/gemini-3.1-flash-lite` (OpenAI compatible, bisa diganti via `SUMOPOD_MODEL`)
@@ -137,7 +216,7 @@ Semua kategori menggunakan **8 slide carousel** yang konsisten:
 | 1 | **COVER** | Headline menarik + sub-judul |
 | 2 | **TLDR** | Ringkasan cepat dalam poin-poin |
 | 3 | **KRONOLOGI** | Konteks berita (apa, kapan, siapa) + sumber |
-| 4 | **Data Enrichment** | **Beda per kategori** (lihat tabel di bawah) |
+| 4 | **Data Enrichment** | **Beda per kategori** (lihat tabel di bawah) — sumber: Sectors REST API |
 | 5 | **Point + Explanation** | **Beda per kategori** (lihat tabel di bawah) |
 | 6 | **Point + Explanation** | **Beda per kategori** (lihat tabel di bawah) |
 | 7 | **KESIMPULAN** | Rangkuman edukatif netral |
@@ -149,54 +228,54 @@ Semua kategori menggunakan **8 slide carousel** yang konsisten:
 - Slide 4: `BEDAH_DATA` — PER, PBV, ROE, ROA, EPS TTM, Foreign Flow
 - Slide 5: `PROS` — Sisi positif emiten dengan point & explanation
 - Slide 6: `CONS` — Sisi risiko dengan point & explanation
-- **Sectors.app endpoints**: `fetch-company-report` (sections: `overview`, `valuation`, `financials`, `future`, `dividend`, `ownership`) + `fetch-foreign-flow`
+- **Sectors REST API endpoints**: `/v2/company/report/{ticker}/` (sections: `overview`, `valuation`, `financials`, `future`, `dividend`, `ownership`) + `/v2/daily/{ticker}/` (foreign flow)
 
 **2. MACRO_ECONOMY — Makro Ekonomi & Tren Pasar**
 - Slide 4: `DAMPAK_PASAR` — Dampak kebijakan makro ke IHSG & portofolio
 - Slide 5: `DIUNTUNGKAN` — Saham/sector yang diuntungkan kebijakan tersebut
 - Slide 6: `PERLU_DIWASPADAI` — Risiko & hal yang perlu diwaspadai
-- **Sectors.app endpoints**: `fetch-market-overview` + `fetch-company-report` (ringan)
+- **Sectors REST API endpoints**: `/v2/index-daily/ihsg/` + `/v2/companies/top-changes/` + `/v2/company/report/{ticker}/` (ringan)
 
 **3. SECTOR_ANALYSIS — Tren Sektor & Emiten Terkait**
 - Slide 4: `DATA_SEKTOR` — Data sektor (market cap, korelasi, top stocks)
 - Slide 5: `SAHAM_JAGOAN` — Saham-saham yang mendominasi sektor
 - Slide 6: `PERLU_DIWASPADAI` — Risiko & catatan khusus sektor
-- **Sectors.app endpoints**: `fetch-sectors-overview` + `fetch-company-report` (untuk beberapa emiten)
+- **Sectors REST API endpoints**: data sektor + `/v2/company/report/{ticker}/` (untuk beberapa emiten)
 
 **4. CORPORATE_ACTION — Aksi Korporasi**
 - Slide 4: `DETAIL_AKSI` — Jadwal & detail aksi (bonus, cuan, dividend, split, dll)
 - Slide 5: `UNTUNG_BUAT_INVESTOR` — Pengaruh aksi ke investor
 - Slide 6: `PERLU_DIPERHATIKAN` — Hal yang perlu diperhatikan sebelum/after aksi
-- **Sectors.app endpoints**: `fetch-company-report` (sections: `overview`) — ringan
+- **Sectors REST API endpoints**: `/v2/filings/` + `/v2/company/report/{ticker}/` (sections: `overview`) — ringan
 
 **5. IPO_RIGHTS_ISSUE — IPO & Penawaran Emiten**
 - **(5A) Emiten dengan prospektus & data jelas**
   - Slide 4: `SKEMA_AKSI` — Skema penawaran (harga, lot, discount, jadwal)
   - Slide 5: `UNTUNG_BUAT_INVESTOR` — Potensi keuntungan
   - Slide 6: `RISIKO` — Risiko investasi IPO
-  - **Sectors.app endpoints**: `fetch-company-report` (sections: `overview`) — ringan
+  - **Sectors REST API endpoints**: `/v2/company/report/{ticker}/` (sections: `overview`) — ringan
 - **(5B) Emiten dengan info terbatas**
   - Slide 4: `DETAIL_PENAWARAN` — Detail yang tersedia (hanya yang public)
   - Slide 5: `PROFIL_PERUSAHAAN` — Profil singkat yang diketahui
   - Slide 6: `KENAPA_MENARIK` — Faktor menarik + keberadaan risiko
-  - **Sectors.app endpoints**: Tidak ada — 100% dari teks berita RSS
+  - **Sectors REST API endpoints**: Tidak ada — 100% dari teks berita hasil scrape
 
 **6. SUSPENSION_DELISTING — Suspensi & Delisting**
 - Slide 4: `FAKTA_SUSPENSI` — Fakta dasar suspensi (status, ticker, kapan dimulai)
 - Slide 5: `APA_ITU_SUSPENSI` — Edukasi tentang suspensi (mekanisme, tipe, cooling down vs delisting)
 - Slide 6: `YANG_PERLU_DILAKUKAN` — Langkah yang bisa dilakukan investor
-- **Sectors.app endpoints**: `fetch-suspensions` + `fetch-company-report` (sections: `overview`)
+- **Sectors REST API endpoints**: data suspensi + `/v2/company/report/{ticker}/` (sections: `overview`)
+
 #### d. Data Enrichment — Sumber
 
-- **Sectors.app**: Data fundamental emiten (keuangan, dividen, valuation, ownership, foreign flow, market overview, sectors)
-- **Berita RSS / Teks berita**: Kapan data tidak tersedia dari Sectors.app (misalnya IPO 5B dengan prospektus belum rilis, atau suspensi yang belum ada data lengkap), konten 100% diambil dari teks berita RSS + konteks tambahan yang di-generate
+- **Sectors REST API**: Data fundamental & pasar emiten (keuangan, dividen, valuation, ownership, foreign flow, broker activity, top movers, index harian, filings, berita pasar)
+- **RSS Multi-Sumber + Scrape**: Deteksi sinyal berita awal (8 outlet media ekonomi Indonesia) dan pengambilan teks lengkap artikel via `/api/scrape` — dipakai sebagai *trigger* dan konteks tambahan, sementara **verifikasi faktual tetap dari Sectors REST API**
 
 #### e. Panduan Konten (Standar Wajib)
 
 - Semua kategori **8 slide** — konsistensi pagination di tiap carousel
 - Slide 1, 2, 7, 8 **format relatif sama** di semua kategori (bisa reuse komponen)
 - Slide 3, 4, 5, 6 **berbeda per kategori** — masing-masing butuh komponen/template tersendiri
-- Teks "Geser →" muncul di slide 1–5, tidak ada di slide 6–8
 - Format **point + explanation** pada slide 5 & 6 adalah **standar wajib** di semua kategori
 - Konten bersifat **edukatif & netral** — tidak mengajak beli/jual, melainkan memberi perspektif & data
 
@@ -204,15 +283,46 @@ Semua kategori menggunakan **8 slide carousel** yang konsisten:
 
 Selengkapnya baca di: [`docs/Struktur_Konten_6_Kategori_SahamFYP.md`](docs/Struktur_Konten_6_Kategori_SahamFYP.md)
 
-### 6. Supabase
+
+
+### 6. Template Konten Daily Brief (Market Open & Close)
+
+Selain konten berbasis berita, SahamFYP juga memiliki template dinamis untuk trigger terjadwal (pagi dan sore) yang dirancang untuk merangkum kondisi IHSG.
+
+#### a. Market Open (08:00 WIB)
+Digunakan untuk memberikan outlook pasar sebelum bursa buka, dilengkapi watchlist saham pilihan.
+| Slide | Fungsi | Keterangan |
+|-------|--------|------------|
+| 1 | **COVER** | Judul "Market Open" + Tanggal + Jumlah Watchlist |
+| 2 | **TLDR** | Ringkasan IHSG kemarin, Top Gainers/Losers, Foreign Flow, Berita Utama |
+| 3 | **KONDISI MARKET** | Data metrik market kemarin |
+| 4...N | **STOCK SLIDES** | Bedah fundamental, teknikal, dan vibe check per saham di watchlist (berulang per saham) |
+| N+1 | **MATRIX** | Kesimpulan posisi saham di Kuadran Fundamental × Teknikal |
+| N+2 | **KAMUS** | Penjelasan istilah saham ala Gen Z |
+| N+3 | **CTA** | Ajakan diskusi di komentar |
+
+#### b. Market Close (17:00 WIB)
+Digunakan untuk merangkum pergerakan bursa hari ini setelah tutup.
+| Slide | Fungsi | Keterangan |
+|-------|--------|------------|
+| 1 | **COVER** | Judul "Recap Market" + Tanggal |
+| 2 | **TLDR** | Ringkasan angka penutupan IHSG & Top Gainers/Losers |
+| 3 | **KRONOLOGI** | Narasi singkat pergerakan IHSG hari ini |
+| 4 | **DATA** | Angka detail Gainer, Loser & Volume |
+| 5 | **PROS** | Broker asing akumulasi terbesar & saham yang diborong |
+| 6 | **CONS** | Sektor yang underperform & perlu diwaspadai |
+| 7 | **KESIMPULAN** | Ringkasan netral dari pergerakan harga hari ini |
+| 8 | **CTA** | Ajakan diskusi & Disclaimer DYOR |
+
+### 7. Supabase
 
 - **Fungsi**: Database utama, Single Source of Truth, dan Object Storage.
 - **Referensi**: https://supabase.com/
 - **Cara kerja**:
-  - **Tabel Utama**: `sector_trigger_news` (log eksekusi n8n & berita), `social_accounts` (database akun sosmed & status aktif/inaktif), dan `generated_posts` (status posting).
-  - **Storage**: Menggunakan bucket publik `sfyp-storage` untuk menyimpan puluhan ribu gambar slide carousel yang di-generate setiap harinya, sebagai alternatif CDN mandiri.
+  - **Tabel Utama**: `sector_trigger_news` (log eksekusi n8n & berita, jadi bukti unattended run), `social_accounts` (database akun sosmed & status aktif/inaktif), dan `generated_posts` (status posting).
+  - **Storage**: Menggunakan bucket publik `sfyp-storage` untuk workflow Daily Market Brief.
 
-### 7. Vercel
+### 8. Vercel
 
 - **Fungsi**:
   - Hosting untuk aplikasi web (frontend React + Vite)
@@ -224,22 +334,22 @@ Selengkapnya baca di: [`docs/Struktur_Konten_6_Kategori_SahamFYP.md`](docs/Struk
   - Output directory: `dist`
   - Config di `vercel.json` untuk routing & rewrites
 
-### 8. n8n
+### 9. n8n
 
-- **Fungsi**: Workflow automation sebagai orchestrator utama — menghubungkan semua service: scrape → classify → enrich → generate → publish
+- **Fungsi**: Workflow automation sebagai orchestrator utama untuk dua pipeline otonom (Daily Market Brief & News Monitoring) — menghubungkan Sectors REST API, LLM, storage, dan publish tanpa intervensi manual per siklus.
 - **Referensi**: https://n8n.io/
 - **Cara kerja**:
-  - Workflow JSON bisa diimport ke n8n instance
-  - Trigger: schedule (jam tertentu), manual, atau webhook
+  - Workflow JSON bisa diimport ke n8n instance (lihat `docs/n8n-workflows/`, token API sudah dianonimkan sebelum commit)
+  - Trigger: schedule (Daily Market Brief, 08:00 WIB) atau RSS event trigger (News Monitoring, tiap menit polling)
   - Setiap step memanggil API SahamFYP atau service langsung
 
-### 9. Telegram Bot
+### 10. Telegram Bot
 
-- **Fungsi**: Notifikasi status: berhasil / gagal / scheduled. Kontrol via perintah Telegram (opsional)
+- **Fungsi**: Notifikasi status tiap sesi otomatis: berhasil / gagal / scheduled — sekaligus menjadi bukti unattended run (timestamp + hasil tiap eksekusi tanpa operator).
 - **Referensi**: https://core.telegram.org/bots
 - **Cara kerja**: Menggunakan Telegram Bot API untuk kirim notifikasi ke user/group yang diset.
 
-### 10. React + Vite
+### 11. React + Vite
 
 - **Fungsi**: Web engine / dashboard / form wizard — UI untuk monitoring, manual post, dan form wizard
 - **Referensi**: https://vitejs.dev/ | https://react.dev/
@@ -252,6 +362,7 @@ Selengkapnya baca di: [`docs/Struktur_Konten_6_Kategori_SahamFYP.md`](docs/Struk
   - React untuk component-based UI
   - Build output ke `dist/` folder
   - Deploy ke Vercel
+
 ---
 
 ## 📦 Cara Duplikasi / Clone Content Engine
@@ -262,14 +373,15 @@ Selengkapnya baca di: [`docs/Struktur_Konten_6_Kategori_SahamFYP.md`](docs/Struk
 - **npm**: 9+
 - **Git**: untuk clone repo
 - **API Dependencies**:
+  - Sectors.app API key (REST API): https://sectors.app/ — **wajib**, tanpa ini produk tidak berfungsi
   - Sumopod API key (OpenAI-compatible LLM): https://ai.sumopod.com/
-  - sectors.app API key: https://sectors.app/
   - Repliz account & API key: https://repliz.com/
   - Supabase project & credentials: https://supabase.com/
   - n8n instance (self-hosted or cloud): https://n8n.io/
   - Telegram bot token (jika pakai notifikasi Telegram): https://core.telegram.org/bots
-  - Cloudinary account & cloud name (untuk CDN gambar): https://cloudinary.com/
-- **Vercel account**: untuk deploy backend & frontend
+  - **Vercel account**: untuk deploy backend & frontend
+
+> ⚠️ **Keamanan**: jangan pernah commit API key/token asli (termasuk di file workflow JSON n8n) ke repository publik. Ganti dengan placeholder/environment variable sebelum push. Kalau terlanjur bocor, rotate key tersebut segera di provider terkait sebelum melakukan commit apa pun.
 
 ### Langkah Instalasi
 
@@ -303,27 +415,29 @@ npm run build
 Buat file `.env.local` dengan variabel berikut:
 
 ```bash
+# Sectors.app (REST API — core data source, wajib)
+SECTORS_API_KEY=your_sectors_api_key_here
+
 # LLM (OpenAI-compatible: Sumopod)
 SUMOPOD_API_KEY=your_sumopod_api_key_here
 # Opsional (ada default di api/_lib/llm.ts)
 SUMOPOD_BASE_URL=https://ai.sumopod.com/v1
 SUMOPOD_MODEL=gemini/gemini-3.1-flash-lite
 
-# sectors.app
-SECTORS_API_KEY=your_sectors_api_key_here
-
 # Repliz
 REPLIZ_ACCESS_KEY=your_repliz_access_key
 REPLIZ_SECRET_KEY=your_repliz_secret_key
 REPLIZ_ACCOUNT_ID=your_repliz_account_id
 # Opsional: TikTok account ID (jika beda dari Instagram)
-# REPLIZ_TIKTOK_ACCOUNT_ID=your_repliz_tiktok_account_id
 REPLIZ_TIKTOK_ACCOUNT_ID=your_repliz_tiktok_account_id_optional
 
-# Cloudinary (CDN gambar)
+# Cloudinary (CDN gambar — dipakai workflow News Monitoring)
 CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
 CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+
+# Browserless (HTML → image renderer)
+BROWSERLESS_IO_KEY=your_browserless_api_key
 
 # Supabase
 SUPABASE_URL=your_supabase_project_url
@@ -332,13 +446,14 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 
 # n8n
 # Dipakai untuk autentikasi webhook calls dari n8n ke endpoint:
-# /api/enrich, /api/generate, /api/posts, /api/publish, /api/llm
+# /api/enrich, /api/generate, /api/posts, /api/publish, /api/llm, /api/classify, /api/score, /api/news-scrape, /api/sector-trigger/open
 N8N_API_KEY=your_n8n_api_key_optional
 
 # Telegram Bot (opsional)
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token_optional
 TELEGRAM_CHAT_ID=your_telegram_chat_id_optional
 ```
+
 ### Database Schema (Supabase)
 
 Jalankan SQL ini di Supabase SQL Editor:
@@ -380,14 +495,6 @@ CREATE TABLE IF NOT EXISTS post_images (
 );
 ```
 
-### Cloudinary Setup (Opsional)
-
-1. Buat account di https://cloudinary.com/
-2. Dapatkan credentials: `CLOUD_NAME`, `API_KEY`, `API_SECRET`
-3. Tambahkan ke `.env.local`
-4. Upload gambar slide ke Cloudinary sebelum publish (gunakan SDK atau API Cloudinary)
-5. Gunakan URL yang dihasilkan sebagai `cloudinaryUrls` dalam payload publish
-
 ### Deploy ke Vercel
 
 ```bash
@@ -405,20 +512,21 @@ vercel
 
 Set environment variables di Vercel dashboard (Settings > Environment Variables) sesuai variabel di atas.
 
-> **Note**: Anda TIDAK PERLU menambahkan VITE_ keys secara manual. Build command 
-ode scripts/sync-env.mjs && npm run build akan auto-generate VITE_ duplicates dari non-prefixed keys (lihat .env.example dan scripts/sync-env.mjs).
+> **Note**: Anda TIDAK PERLU menambahkan VITE_ keys secara manual. Build command `node scripts/sync-env.mjs && npm run build` akan auto-generate VITE_ duplicates dari non-prefixed keys (lihat `.env.example` dan `scripts/sync-env.mjs`).
 
 ### Setup n8n Workflow
 
 1. Buat n8n instance (self-hosted atau cloud)
-2. Import workflow JSON (jika disediakan) atau buat manual
-3. Setup trigger: schedule / manual / webhook
+2. Import kedua workflow JSON: `Daily Market Brief` (schedule trigger 08:00 WIB) dan `News Monitoring` (RSS trigger, 8 sumber, poll tiap menit)
+3. Isi credential (Sectors API key, N8N_API_KEY, Telegram, dsb) — jangan hardcode token di node
 4. Hubungkan API nodes ke endpoint SahamFYP:
-   - `POST /api/classify` → klasifikasi berita
-   - `POST /api/enrich` → enrich dengan sector.app
+   - `POST /api/sector-trigger/open` → mulai sesi Daily Market Brief
+   - `POST /api/scrape`, `/api/classify`, `/api/score`, `/api/news-scrape` → pipeline News Monitoring
+   - `POST /api/enrich` → enrich dengan Sectors REST API
    - `POST /api/generate` → generate slide & caption
    - `POST /api/publish` → publish ke Repliz
-5. Setup notifikasi Telegram (jika dipakai)
+5. Setup notifikasi Telegram sebagai bukti unattended run
+
 ---
 
 ## 📁 Struktur Project
@@ -428,12 +536,16 @@ sahamFYP/
 ├── api/
 │   ├── _lib/              # Shared utilities
 │   ├── classify.ts        # Klasifikasi berita endpoint
-│   ├── enrich.ts          # Enrichment data sector.app endpoint
+│   ├── score.ts           # Scoring urgensi/relevansi berita endpoint
+│   ├── enrich.ts          # Enrichment data Sectors REST API endpoint
 │   ├── generate.ts        # Generate konten (slide + caption) endpoint
+│   ├── news-scrape.ts     # Dedup check & simpan berita scraped endpoint
+│   ├── sector-trigger/
+│   │   └── open.ts        # Trigger sesi Daily Market Brief endpoint
 │   ├── posts/
 │   │   └── index.ts       # Posts management endpoints
 │   ├── publish.ts         # Publish ke Repliz endpoint
-│   ├── scrape.ts          # Scrape berita RSS endpoint
+│   ├── scrape.ts          # Scrape isi artikel penuh endpoint
 │   └── health.ts          # Health check endpoint
 ├── src/
 │   ├── components/        # React components
@@ -448,7 +560,10 @@ sahamFYP/
 │   ├── Templates.tsx      # Template konten components
 │   └── ...
 ├── docs/
-│   └── Struktur_Konten_6_Kategori_SahamFYP.md  # Referensi template konten
+│   ├── Struktur_Konten_6_Kategori_SahamFYP.md  # Referensi template konten
+│   └── n8n-workflows/     # Export workflow JSON (token dianonimkan)
+│       ├── SahamFYP_-_Daily_Market_Brief.json
+│       └── SahamFYP_-_News_Monitoring.json
 ├── base/                  # Reference documents
 │   ├── Master_Prompt_SahamFYP_Classifier.md
 │   └── Data_Mapping_Spec_SahamFYP.md
@@ -485,7 +600,15 @@ sahamFYP/
 }
 ```
 
-### Klassify Berita
+### Trigger Sesi Daily Market Brief
+
+**POST** `/api/sector-trigger/open`
+
+- **Auth**: `X-API-Key` (= `N8N_API_KEY`)
+- **Fungsi**: Memulai satu sesi Daily Market Brief — memilih watchlist saham hari ini, memanggil rangkaian endpoint Sectors REST API (lihat contoh log di bagian [Dua Workflow Otomatis](#-dua-workflow-otomatis-n8n)), dan generate naskah slide via LLM
+- **Response**: Session data berisi `logId`, `naskah` (slides + caption), `selection` (alasan saham terpilih), `creditsUsed`
+
+### Klasifikasi Berita
 
 **POST** `/api/classify`
 
@@ -507,6 +630,13 @@ sahamFYP/
 ```
 - **Kategori yang didukung**: `SINGLE_STOCK`, `MACRO_ECONOMY`, `SECTOR_ANALYSIS`, `CORPORATE_ACTION`, `IPO_RIGHTS_ISSUE`, `SUSPENSION_DELISTING`
 
+### Scoring Berita
+
+**POST** `/api/score`
+
+- **Auth**: `x-api-key` header (N8N_API_KEY)
+- **Fungsi**: Menilai urgensi/relevansi berita untuk menentukan keputusan `PASS` (berita di-skip, tidak cukup kuat/relevan) atau `GENERATE` (lanjut diproses jadi konten) di workflow News Monitoring
+
 ### LLM Prompt (proxy)
 
 **POST** `/api/llm`
@@ -525,7 +655,7 @@ sahamFYP/
 - **Response** (text mode): `{ "model": "gemini/gemini-3.1-flash-lite", "text": "..." }`
 - **Response** (json mode, `"json": true`): `{ "model": "gemini/gemini-3.1-flash-lite", "data": { ... } }`
 
-### Enrich Berita
+### Enrich Berita (Sectors REST API)
 
 **POST** `/api/enrich`
 
@@ -539,7 +669,7 @@ sahamFYP/
   "content": "..."
 }
 ```
-- **Response**: Data fundamental dari sector.app
+- **Response**: Data fundamental dari Sectors REST API
 ```json
 {
   "report": {
@@ -557,7 +687,7 @@ sahamFYP/
 **POST** `/api/generate`
 
 - **Auth**: `x-api-key` header (N8N_API_KEY)
-- **Request body** (contuh full pipeline):
+- **Request body** (contoh full pipeline):
 ```json
 {
   "title": "Emas Antam Turun Rp4.000",
@@ -625,6 +755,7 @@ sahamFYP/
   }
 }
 ```
+
 ### Publish ke Repliz
 
 **POST** `/api/publish`
@@ -634,8 +765,8 @@ sahamFYP/
 ```json
 {
   "postId": "...",
-  "cloudinaryUrls": [
-    "https://res.cloudinary.com/your-cloud/image/upload/v1/sample.jpg"
+  "imageUrls": [
+    "https://xxxx.supabase.co/storage/v1/object/public/sfyp-storage/slide-1.jpg"
   ],
   "caption": "Harga emas Antam turun Rp4.000 per gram...",
   "platform": "instagram",
@@ -656,9 +787,9 @@ sahamFYP/
 - Jika `scheduleAt` tidak diisi → posting segera (jam WIB sekarang)
 - Jika `scheduleAt` diisi dengan format `YYYY-MM-DDTHH:mm:ss` (tanpa timezone) → dianggap WIB, ditambahkan offset `+07:00`
 - Jika `scheduleAt` dengan timezone eksplisit (misal `+07:00` atau `Z`) → pakai apa adanya
-- `cloudinaryUrls` bisa berisi 1 (single image) atau lebih (album/carousel). Jika 1 → type `image`, jika 2+ → type `album`
+- `imageUrls`/`cloudinaryUrls` bisa berisi 1 (single image) atau lebih (album/carousel). Jika 1 → type `image`, jika 2+ → type `album`
 
-### Scrape Berita
+### Scrape Isi Artikel
 
 **POST** `/api/scrape`
 
@@ -666,51 +797,20 @@ sahamFYP/
 - **Request body**:
 ```json
 {
-  "url": "https://www.investing.com/news/stock-market-news/..."
+  "url": "https://www.cnbcindonesia.com/market/..."
 }
 ```
 - **Response**: Teks berita yang di-scrape (jika berhasil)
+- **Konteks**: Dipanggil setelah RSS trigger (News Monitoring) mendeteksi berita baru dari salah satu dari 8 sumber (Katadata, Kontan, Okezone, Liputan6, Detik, CNN Indonesia, CNBC Indonesia, IDX Channel), untuk mengambil isi artikel penuh sebelum diklasifikasi & di-enrich dengan Sectors REST API.
 
-**Catatan**:
-- Endpoint ini rentan terhadap blokir oleh target website (403 Forbidden). Beberapa situs mungkin memblokir scraping.
-- **Saat ini**: scraping ditujukan ke **CNBC Indonesia** (https://www.cnbcindonesia.com/) sebagai sumber berita utama. Pastikan URL yang dimasukkan adalah dari domain CNBC Indonesia.
+**Catatan**: Endpoint ini rentan terhadap blokir oleh target website (403 Forbidden) — mitigasi: RSS multi-sumber membuat pipeline tetap berjalan meski satu situs sedang memblokir.
 
----
+### Cek Duplikat & Simpan Berita
 
-## 🔄 Cara Pakai (n8n Workflow)
+**POST** `/api/news-scrape`
 
-Engine utama SahamFYP berjalan di atas **n8n** sebagai orkestrator yang mengkoordinasikan Vercel API dan Sectors API. Terdapat dua pipeline utama yang beroperasi secara otonom:
-
-### 1. Daily Market Brief (Proaktif / Terjadwal)
-Workflow ini berjalan otomatis setiap hari bursa sebelum market buka (08.00 WIB) untuk memberikan ringkasan pembukaan pasar kepada investor.
-- **Trigger**: Schedule Trigger (Cron job harian).
-- **Alur & Endpoint**:
-  1. Menarik data *Foreign Flow* dan *Market Overview* via `Sectors API`.
-  2. Memanggil `/api/llm` (Sumopod) untuk menyusun naskah brief.
-  3. Mengubah HTML ke Gambar menggunakan `Browserless.io`.
-  4. Mengunggah gambar ke `Supabase Storage` (sfyp-storage).
-  5. Memanggil `/api/publish` untuk menyebarkan secara massal (multi-account) ke Instagram, Threads, Facebook, dll via Repliz.
-- **Sectors API yang digunakan**: `fetch-market-overview`, `fetch-foreign-flow`, dan `fetch-company-report` (untuk detail saham terpilih).
-- **Estimasi API Credits**: ~3 hingga 5 credits per run (tergantung jumlah saham yang disorot).
-
-### 2. News Monitoring (Reaktif / Berbasis Berita)
-Workflow ini memantau feed berita terbaru dan merespon secara *real-time* atau *batch* (berdasarkan rentang waktu Start-End Date) jika ada berita signifikan.
-- **Trigger**: Polling RSS (Webhook/Schedule).
-- **Alur & Endpoint**:
-  1. **Scrape Berita**: `/api/scrape` menarik teks berita utuh dari URL.
-  2. **Classify Berita**: `/api/classify` menggunakan AI untuk menentukan kategori (misal: *Corporate Action*) dan mengekstrak *ticker* saham.
-  3. **Enrich Data**: `/api/enrich` menarik metrik fundamental dari `Sectors API` berdasarkan ticker yang didapat.
-  4. **Generate Konten**: `/api/generate` merakit berita + data fundamental menjadi naskah dan slide presentasi.
-  5. Memanggil `/api/publish` untuk posting ke berbagai platform.
-- **Sectors API yang digunakan**: `fetch-company-report` (menarik valuasi, dividen, finansial, kepemilikan saham), dan terkadang `fetch-suspensions` (jika kategori suspensi).
-- **Estimasi API Credits**: ~2 hingga 4 credits per proses berita.
-
-### 3. Manual / Form Wizard (Web Dashboard)
-Bagi *Content Creator* atau admin yang ingin memposting secara manual atau merevisi konten:
-1. Buka **Web Dashboard** (`/`) → **Form Wizard** / **Manual Post**
-2. Pilih rentang waktu berita, pilih akun sosmed target (bisa jamak).
-3. Sesuaikan template konten, generate preview, dan klik Publish.
-4. Payload akan dikirim ke `/api/publish` untuk dieksekusi oleh Repliz.
+- **Auth**: Tidak perlu (public, dipanggil internal oleh n8n)
+- **Fungsi**: `action: "check"` untuk cek apakah URL berita sudah pernah diproses (cegah duplikat konten); `action: "update"` untuk update kategori/skor berita yang tersimpan
 
 ---
 
@@ -718,19 +818,27 @@ Bagi *Content Creator* atau admin yang ingin memposting secara manual atau merev
 
 - **Dashboard Web**: https://saham-fyp.vercel.app/
 - **API Health**: https://saham-fyp.vercel.app/api/health
+- **Akun live**: [@sahamfyp](https://instagram.com/sahamfyp) di Instagram, Facebook, Threads, X, TikTok
+- **API Sector Trigger**: `POST /api/sector-trigger/open`
 - **API Classify**: `POST /api/classify`
+- **API Score**: `POST /api/score`
 - **API Enrich**: `POST /api/enrich`
 - **API Generate**: `POST /api/generate`
 - **API Posts**: `GET/POST /api/posts`
 - **API Publish**: `POST /api/publish`
 - **API Scrape**: `POST /api/scrape`
+- **API Score**: `POST /api/score`
+- **API News Scrape**: `POST /api/news-scrape`
+- **API Sector Trigger Open**: `POST /api/sector-trigger/open`
+- **API Sector Trigger Close**: `POST /api/sector-trigger/close`
+- **API News Scrape**: `POST /api/news-scrape`
 
 ### Referensi Eksternal
 
+- **Sectors.app REST API**: https://sectors.app/
 - **Google AI Studio**: https://aistudio.google.com/
 - **Google Generative AI Docs**: https://ai.google.dev/
 - **Repliz**: https://repliz.com/ | https://api.repliz.com/public-json
-- **sector.app**: https://sectors.app/
 - **Cloudinary**: https://cloudinary.com/
 - **Supabase**: https://supabase.com/
 - **Vercel**: https://vercel.com/
@@ -758,67 +866,50 @@ Bagi *Content Creator* atau admin yang ingin memposting secara manual atau merev
 1. **`FUNCTION_INVOCATION_FAILED` di API routes**
    - Cek log di Vercel → Deployment → View Function Logs
    - Pastikan environment variables sudah di-set di Vercel dashboard
-   - Pastikan semua import paths benar (tanpa ekstensi `.ts` jika pakai ES modules)
 
 2. **`401 Unauthorized` saat publish ke Repliz**
-   - Pastikan `REPLIZ_ACCESS_KEY` dan `REPLIZ_SECRET_KEY` benar
-   - Pastikan `REPLIZ_ACCOUNT_ID` sesuai
-   - Cek apakah akun Repliz sudah upgrade ke package yang mendukung fitur yang dipakai
+   - Pastikan `REPLIZ_ACCESS_KEY`, `REPLIZ_SECRET_KEY`, `REPLIZ_ACCOUNT_ID` benar dan akun Repliz mendukung fitur yang dipakai
 
-3. **`403 Forbidden` atau gagal scrape berita**
-   - Beberapa website mungkin memblokir scraping (CNBC Indonesia, dll)
-   - Coba dari IP yang berbeda / gunakan proxy (jika perlu)
-   - Pastikan URL yang dimasukkan valid & bisa diakses via browser
+3. **`403 Forbidden` saat scrape artikel**
+   - Beberapa situs sumber (dari 8 RSS feed) bisa memblokir scraping sesekali — pipeline tetap jalan karena multi-sumber, cek log source mana yang gagal
 
-4. **Gambar tidak muncul di posting**
-   - Pastikan URL gambar valid & bisa diakses publik
-   - Jika pakai Cloudinary, pastikan gambar sudah di-upload & URL sudah benar
-   - Hindari placeholder URL (misal `placehold.co`) yang mungkin tidak didukung
+4. **Data enrichment kosong / tidak lengkap dari Sectors API**
+   - Cek apakah ticker yang dimasukkan benar (format: kode saham + `.JK`, misal `ANTM.JK`)
+   - Cek quota `SECTORS_API_KEY` dan endpoint yang dipanggil sesuai dokumentasi Sectors.app
 
 5. **LLM API error / rate limit (Sumopod)**
    - Cek quota & billing di dashboard Sumopod (https://ai.sumopod.com)
-   - Pastikan `SUMOPOD_API_KEY` aktif & tidak kadaluarsa
-   - Jika error model not found, pastikan `SUMOPOD_MODEL` tersedia di gateway yang dipakai
+   - Pastikan `SUMOPOD_API_KEY` aktif
 
-6. **npm ERESOLVE saat install / build**
-   - Pastikan versi vite yang dipakai sesuai (`^5.4.0`)
-   - Jika ada konflik, coba `npm install --force` atau update package.json sesuai yang direkomendasikan
+6. **Publish ke Repliz gagal dengan error "scheduleId not found"**
+   - Cek response `/api/publish` — pastikan payload sesuai format yang diharapkan Repliz
 
-7. **Data enrichment kosong / tidak lengkap**
-   - Cek apakah ticker yang dimasukkan benar (format: kode saham tanpa huruf tambahan)
-   - Cek apakah endpoint sector.app yang dipanggil sesuai dengan data yang tersedia
+> Troubleshooting lebih lengkap (npm/build/dependency issues) tersedia terpisah agar README utama tetap ringkas — lihat issue tracker di GitHub.
 
-8. **Publish ke Repliz gagal dengan error "scheduleId not found"**
-   - Cek kembali response dari `/api/publish` — biasanya error terjadi sebelum schedule created
-   - Pastikan payload sesuai dengan format yang diharapkan Repliz (lihat API Reference)
 ### 💡 Tips
 
-1. **Gunakan Cloudinary untuk gambar**: Lebih reliable daripada URL random atau placeholder
-2. **Test dulu dengan single image**: Sebelah pakai carousel/album, test dengan 1 image dulu untuk memastikan flow berjalan
-3. **Verifikasi scheduleAt timezone**: Kalau pakai form wizard/manual post, pastikan waktu dalam WIB. Jika pakai format tanpa timezone, sistem akan asumsikan WIB (ditambahkan `+07:00`)
-4. **Monitoring via Telegram**: Aktifkan notifikasi Telegram (jika dipakai) untuk monitoring status publish
-5. **Backup environment variables**: Jangan simpan API key di repo. Gunakan `.env.local` yang tidak di-commit ke git
-6. **Update dependency secara berkala**: Vite, SDK Supabase, dan dependency lain mungkin ada update yang memperbaiki bug atau menambah fitur
+1. **Verifikasi scheduleAt timezone**: pastikan waktu dalam WIB; format tanpa timezone otomatis dianggap WIB (`+07:00`)
+2. **Monitoring via Telegram**: aktifkan notifikasi Telegram untuk memantau tiap sesi otomatis tanpa buka dashboard
+3. **Jangan simpan API key di repo**: gunakan `.env.local` (tidak di-commit) dan anonimkan token di file export workflow n8n sebelum commit
 
 ---
-
-
 
 ## 📝 Catatan Versi
 
 ### v1.0.0 (Current)
 
-- Klasifikasi berita otomatis (6 kategori)
-- Enrichment data fundamental (sector.app)
+- Dua workflow otonom: Daily Market Brief (schedule 08:00 WIB) & News Monitoring (RSS event-trigger real-time)
+- Klasifikasi & scoring berita otomatis (6 kategori)
+- Enrichment data fundamental via Sectors REST API
 - Generate konten (slide + caption + hashtag)
-- Publish ke Repliz (Instagram & TikTok)
+- Publish otomatis ke 5 platform (Instagram, Facebook, Threads, X, TikTok) lewat Repliz — live di akun [@sahamfyp](https://instagram.com/sahamfyp)
 - Manual post / form wizard dengan fleksibel waktu posting (WIB)
-- Upload gambar ke Cloudinary (CDN)
-- n8n workflow automation
-- Telegram bot notifikasi (opsional)
+- Penyimpanan gambar: Supabase Storage
+- Telegram bot notifikasi sebagai bukti unattended run
 - Web dashboard (React + Vite)
-- Scrape berita (CNBC Indonesia)
+- Monitoring 8 sumber RSS media ekonomi Indonesia
 - Dokumentasi lengkap (README.md + Struktur_Konten_6_Kategori_SahamFYP.md)
+
 ---
 
 ## 📊 Data Pendukung Latar Belakang (Gen Z Investor)
@@ -845,27 +936,26 @@ Pull requests adalah welcome. Untuk perubahan besar, harap buat issue dulu untuk
 
 ## 📄 Lisensi
 
-Proyek ini dikembangkan untuk keperluan edukasi dan riset.
+Proyek ini dikembangkan untuk keperluan edukasi dan riset, dan disubmit untuk Sectors Hackathon 2026 (Track: Automation & Workflows).
 
 ---
 
 ## 🙏 Acknowledgement
 
-- **Sumopod** — LLM API (OpenAI-compatible) untuk classification, enrichment, dan content generation
-- **Repliz** — Platform scheduling & publishing ke Instagram/TikTok
-- **sector.app** — Data fundamental saham
-- **Cloudinary** — CDN & penyimpanan gambar
+- **Sectors.app** — Data fundamental & pasar saham (REST API), core data source produk ini
+- **Sumopod** — LLM API (OpenAI-compatible) untuk classification, scoring, enrichment, dan content generation
+- **Repliz** — Platform scheduling & publishing ke Instagram/Facebook/Threads/X/TikTok
+- **Supabase Storage** — CDN & penyimpanan gambar
 - **Supabase** — Database & Backend-as-a-Service
 - **Vercel** — Hosting & Serverless Functions
 - **n8n** — Workflow automation platform
 - **Telegram** — Notifikasi & integrasi bot
 - **React & Vite** — Web engine
-- **CNBC Indonesia** — Sumber berita utama (scraping)
 
 ---
 
-> **Disclaimer**: Aplikasi ini adalah tool untuk membuat konten edukasi saham.
-> Semua konten yang dihasilkan bertanggung jawab kepada pembuat konten.
+> **Disclaimer**: Aplikasi ini adalah tool untuk membuat konten edukasi saham bagi financial content creator, edukator finansial, dan sekuritas.
+> Semua konten yang dihasilkan bersifat informasi & analisis, **bukan nasihat keuangan**, dan tanggung jawab publikasinya ada pada pembuat konten/akun terkait.
 > Bukan merupakan ajakan untuk membeli/menjual saham tertentu (**DYOR** — Do Your Own Research).
 
 ---
