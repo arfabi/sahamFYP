@@ -90,8 +90,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       try {
         const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
         
-        // Cari di database apakah hari ini sudah ada berita dengan ticker yang sama
-        const { data: existingPosts, error: checkError } = await supabaseServer
+        // 1. Cek di tabel automation_posts (jika sudah benar-benar terpublish di sosmed)
+        const { data: publishedPosts, error: err1 } = await supabaseServer
           .from('automation_posts')
           .select('id')
           .eq('workflow_type', 'news_monitoring')
@@ -99,12 +99,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           .ilike('caption', `%#${ticker.toLowerCase()}%`)
           .limit(1);
 
-        if (!checkError && existingPosts && existingPosts.length > 0) {
-          console.log(`[Score] Ticker ${ticker} sudah dipublish hari ini. Melewati berita.`);
+        // 2. Cek di tabel news_scrape (jika berita dengan ticker ini sudah mendapat score GENERATE hari ini)
+        const { data: scrapedNews, error: err2 } = await supabaseServer
+          .from('news_scrape')
+          .select('id')
+          .eq('ticker', ticker)
+          .eq('decision', 'GENERATE')
+          .gte('created_at', `${todayStr}T00:00:00+07:00`)
+          .limit(1);
+
+        if (
+          (!err1 && publishedPosts && publishedPosts.length > 0) || 
+          (!err2 && scrapedNews && scrapedNews.length > 0)
+        ) {
+          console.log(`[Score] Ticker ${ticker} sudah diproses/dipublish hari ini. Melewati berita.`);
           return res.status(200).json({
             score: 0,
             decision: 'PASS',
-            reason: `Berita dengan emiten ${ticker} sudah pernah digenerate hari ini. Menghindari spam/duplikasi post.`,
+            reason: `Berita dengan emiten ${ticker} sudah pernah digenerate/dipublish hari ini. Menghindari duplikasi.`,
             catalyst: null,
             dataQuality: 'low',
           });
