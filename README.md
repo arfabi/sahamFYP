@@ -4,6 +4,8 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5.3-blue)](https://typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-5.4.0-purple)](https://vitejs.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4.10-cyan)](https://tailwindcss.com/)
+[![n8n](https://img.shields.io/badge/n8n-Workflow%20Automation-red)](https://n8n.io/)
+[![Browserless](https://img.shields.io/badge/Browserless-HTML%20to%20Image-yellow)](https://www.browserless.io/)
 [![LLM: Sumopod](https://img.shields.io/badge/LLM-Sumopod%20(OpenAI%20compatible)-orange)](https://ai.sumopod.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-Database-green)](https://supabase.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
@@ -61,14 +63,11 @@ Dengan demikian, SahamFYP tidak hanya memenuhi kebutuhan konten yang dibutuhkan 
 
 ## 🌟 Fitur Utama
 
-- **Auto-Classify Berita** → Klasifikasi otomatis berita ke kategori & ticker yang relevan
-- **Auto-Enrich Berita** → Data lengkap dari sector.app: laporan keuangan, dividen, valuation, ownership, dan lainnya
-- **Auto-Generate Konten** → Generate slide, caption, hashtag, dan konten IG/TikTok yang siap posting
-- **Auto-Publish** → Schedule posting ke Repliz (Instagram, TikTok, dan platform lainnya)
-- **Manual Post / Form Wizard** → Fleksibel, user bisa pilih waktu posting sendiri (WIB)
-- **n8n Workflow Automation** → Pipeline lengkap: scrape → classify → enrich → generate → publish
-- **Telegram Bot** → Notifikasi & kontrol via Telegram
-- **Web Dashboard (React + Vite)** → UI untuk monitoring, manual post, dan form wizard
+- **Dashboard Terintegrasi** → Akses cepat untuk *Market Brief* harian dan pantauan *Stock Watchlist*.
+- **News Monitoring Canggih** → Filter berita berdasarkan rentang waktu (Start Date - End Date) untuk merangkum berita terkini secara dinamis.
+- **Accounts Manager** → Manajemen akun sosial media terpusat (Instagram, Threads, Facebook, dll). Bisa menambah, menghapus, melihat preview link profil, serta *toggle* Active/Inactive yang tersinkronisasi langsung dengan *database* Supabase.
+- **Content Generator & Multi-Publishing** → Generate konten visual AI (Form Wizard) dan kemampuan **memilih beberapa target akun sosmed** sekaligus dalam satu kali klik.
+- **Full Automation Workflow (n8n)** → Pipeline otomasi penuh dari ujung ke ujung: Scrape Berita → Auto-Classify (LLM) → Auto-Enrich (Sectors.app) → Render HTML → Convert Gambar (Browserless) → Upload ke Supabase Storage → Auto-Publish (Repliz) → Laporan Telegram.
 
 ---
 
@@ -76,9 +75,9 @@ Dengan demikian, SahamFYP tidak hanya memenuhi kebutuhan konten yang dibutuhkan 
 
 ### 1. Repliz
 
-- **Fungsi**: Publish scheduling ke Instagram, TikTok, dan platform lainnya
+- **Fungsi**: Publish scheduling ke berbagai media sosial (Instagram, Threads, Facebook, TikTok, Twitter/X, LinkedIn, Telegram).
 - **Referensi**: https://repliz.com/ | https://api.repliz.com/public-json
-- **Cara kerja**: API scheduling menerima payload berupa judul, deskripsi, media (gambar/video), dan waktu posting (`scheduleAt`). SahamFYP menggunakan **HTTP Basic Auth** dengan access key dan secret key. Waktu posting ditambahkan dalam offset **WIB (`+07:00`)** untuk manual/form wizard — fleksibel, user bisa pilih waktu posting sendiri.
+- **Cara kerja**: Endpoint Vercel API `/api/publish` SahamFYP berperan sebagai orkestrator yang menerima daftar akun yang ingin dituju (`targetAccountIds`). API ini kemudian akan mengecek kredensial dinamis dari database Supabase (`social_accounts`) dan mengirim payload massal ke Repliz secara simultan.
 
 ### 2. sector.app
 
@@ -95,14 +94,13 @@ Dengan demikian, SahamFYP tidak hanya memenuhi kebutuhan konten yang dibutuhkan 
 - **Referensi**: https://ai.sumopod.com/ | https://sumopod.com/
 - **Cara kerja**: Endpoint OpenAI-compatible `POST {SUMOPOD_BASE_URL}/chat/completions` (default `https://ai.sumopod.com/v1/chat/completions`) dengan header `Authorization: Bearer <SUMOPOD_API_KEY>`. Model default `gemini/gemini-3.1-flash-lite` (ganti via `SUMOPOD_MODEL`). Wrapper server: `api/_lib/llm.ts`; wrapper client (proxy `/api/llm`): `src/services/llm.ts` — API key tidak pernah ter-expose ke bundle browser.
 
-### 4. Cloudinary
+### 4. Supabase Storage & Browserless
 
-- **Fungsi**: CDN & penyimpanan gambar untuk slide konten
-- **Referensi**: https://cloudinary.com/
+- **Fungsi**: Engine rendering gambar dan penyimpanan CDN publik
 - **Cara kerja**:
-  - Upload gambar slide hasil generate ke Cloudinary
-  - URL gambar disimpan / digunakan sebagai `cloudinaryUrls` dalam payload publish
-  - Cloudinary berfungsi sebagai CDN yang reliable untuk gambar yang di-post ke Instagram/TikTok
+  - **Browserless.io** digunakan oleh *workflow* n8n untuk mengubah skrip HTML (yang berisi data fundamental & berita) menjadi gambar beresolusi tinggi (JPEG 1080x1350).
+  - Gambar hasil render kemudian diunggah secara otomatis via n8n ke **Supabase Storage** (Bucket `sfyp-storage`).
+  - URL publik dari Supabase Storage ini dikumpulkan sebagai payload `imageUrls` (atau `cloudinaryUrls`) yang diteruskan ke API publish, menghindari risiko blokir CDN gratisan dari Meta/Facebook.
 ### 5. Template Konten & Klasifikasi Berita
 
 SahamFYP menggunakan **6 kategori utama konten** yang masing-masing memiliki struktur slide carousel **8 slide** yang konsisten.
@@ -193,12 +191,11 @@ Selengkapnya baca di: [`docs/Struktur_Konten_6_Kategori_SahamFYP.md`](docs/Struk
 
 ### 6. Supabase
 
-- **Fungsi**: Database utama untuk menyimpan data posts (`generated_posts`, `post_images`), log aktivitas & status posting, konfigurasi & metadata
+- **Fungsi**: Database utama, Single Source of Truth, dan Object Storage.
 - **Referensi**: https://supabase.com/
 - **Cara kerja**:
-  - Menggunakan Supabase JS client untuk connect ke database
-  - Tabel yang digunakan: `generated_posts` (status posting IG/TikTok, schedule_id, permalink, engagement data), `post_images`, dan tabel terkait lainnya
-  - Storage untuk menyimpan gambar slides (jika diperlukan)
+  - **Tabel Utama**: `sector_trigger_news` (log eksekusi n8n & berita), `social_accounts` (database akun sosmed & status aktif/inaktif), dan `generated_posts` (status posting).
+  - **Storage**: Menggunakan bucket publik `sfyp-storage` untuk menyimpan puluhan ribu gambar slide carousel yang di-generate setiap harinya, sebagai alternatif CDN mandiri.
 
 ### 7. Vercel
 
@@ -276,9 +273,8 @@ cp .env.example .env.local
 # 4. Setup database Supabase
 # Jalankan SQL migration di Supabase SQL Editor sesuai schema di bawah
 
-# 5. Setup Cloudinary (opsional, untuk gambar slide)
-# Jika menggunakan Cloudinary sebagai CDN gambar, set variabel:
-# CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
+# 5. Setup Supabase Storage
+# Buat bucket bernama "sfyp-storage" di dashboard Supabase dan pastikan diset sebagai Public.
 
 # 6. Test local development
 npm run dev
