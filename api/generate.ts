@@ -310,7 +310,7 @@ async function generateNaskah(params: {
   }
 }`;
 
-  const COMMON_RULES = \`
+  const COMMON_RULES = `
 ATURAN WAJIB:
 1. Output HARUS JSON valid — tanpa markdown, tanpa teks di luar JSON.
 2. Semua field wajib diisi — jangan biarkan string kosong, gunakan "-" jika data tidak tersedia.
@@ -325,22 +325,22 @@ ATURAN WAJIB:
 11. KRONOLOGI (slide 3): description WAJIB MAKSIMAL 30 KATA — JANGAN LEBIH! Cek sendiri word count (split teks by spasi) sebelum output, potong jika lebih. Sumber/gambar kredit set di field "source".
 12. Caption IG: hook menarik + isi konten ringkas + CTA (Call to Action) + 3 hashtags relevan.
 13. Caption TikTok: hook agresif/penasaran + CTA ringkas + #fyp #foryou #sahamindonesia.
-\`;
+`;
 
   let prompt = '';
   const dataStr = JSON.stringify(enrichment?.data || {}, null, 2);
 
   switch (category) {
     case 'SINGLE_STOCK':
-      prompt = \`Kamu adalah AI Content Writer untuk @sahamfyp — akun edukasi saham Indonesia.
+      prompt = `Kamu adalah AI Content Writer untuk @sahamfyp — akun edukasi saham Indonesia.
 Tugasmu: tulis naskah carousel 8 slide untuk berita analisis emiten tunggal.
 
 BERITA:
-- Judul: \${title}
-- Isi: \${content}
+- Judul: ${title}
+- Isi: ${content}
 
 DATA ENRICHMENT (dari Sectors.app):
-\${dataStr}
+${dataStr}
 
 STRUKTUR 8 SLIDE:
 1. COVER — Headline menarik + sub judul (hook pertanyaan)
@@ -352,21 +352,21 @@ STRUKTUR 8 SLIDE:
 7. KESIMPULAN — Rangkuman netral, cocok buat tipe investor apa
 8. CTA_DYOR — Ajakan diskusi + disclaimer DYOR
 
-\${COMMON_RULES}
+${COMMON_RULES}
 
 FORMAT OUTPUT:
-\${OUTPUT_SCHEMA}\`;
+${OUTPUT_SCHEMA}`;
       break;
     case 'MACRO_ECONOMY':
-      prompt = \`Kamu adalah AI Content Writer untuk @sahamfyp — akun edukasi saham Indonesia.
+      prompt = `Kamu adalah AI Content Writer untuk @sahamfyp — akun edukasi saham Indonesia.
 Tugasmu: tulis naskah carousel 8 slide untuk berita makro ekonomi & tren pasar.
 
 BERITA:
-- Judul: \${title}
-- Isi: \${content}
+- Judul: ${title}
+- Isi: ${content}
 
 DATA ENRICHMENT (dari Sectors.app):
-\${dataStr}
+${dataStr}
 
 STRUKTUR 8 SLIDE:
 1. COVER — Headline menarik + sub judul (hook pertanyaan)
@@ -378,21 +378,21 @@ STRUKTUR 8 SLIDE:
 7. KESIMPULAN — Rangkuman netral
 8. CTA_DYOR — Ajakan diskusi + disclaimer DYOR
 
-\${COMMON_RULES}
+${COMMON_RULES}
 
 FORMAT OUTPUT:
-\${OUTPUT_SCHEMA}\`;
+${OUTPUT_SCHEMA}`;
       break;
     case 'SECTOR_ANALYSIS':
-      prompt = \`Kamu adalah AI Content Writer untuk @sahamfyp — akun edukasi saham Indonesia.
+      prompt = `Kamu adalah AI Content Writer untuk @sahamfyp — akun edukasi saham Indonesia.
 Tugasmu: tulis naskah carousel 8 slide untuk berita rotasi/sektor analisis.
 
 BERITA:
-- Judul: \${title}
-- Isi: \${content}
+- Judul: ${title}
+- Isi: ${content}
 
 DATA ENRICHMENT (dari Sectors.app):
-\${dataStr}
+${dataStr}
 
 STRUKTUR 8 SLIDE:
 1. COVER — Headline menarik + sub judul (hook pertanyaan)
@@ -404,21 +404,21 @@ STRUKTUR 8 SLIDE:
 7. KESIMPULAN — Rangkuman netral
 8. CTA_DYOR — Ajakan diskusi + disclaimer DYOR
 
-\${COMMON_RULES}
+${COMMON_RULES}
 
 FORMAT OUTPUT:
-\${OUTPUT_SCHEMA}\`;
+${OUTPUT_SCHEMA}`;
       break;
     case 'CORPORATE_ACTION':
-      prompt = \`Kamu adalah AI Content Writer untuk @sahamfyp — akun edukasi saham Indonesia.
+      prompt = `Kamu adalah AI Content Writer untuk @sahamfyp — akun edukasi saham Indonesia.
 Tugasmu: tulis naskah carousel 8 slide untuk berita aksi korporat (dividen, RUPS, buyback, stock split).
 
 BERITA:
-- Judul: \${title}
-- Isi: \${content}
+- Judul: ${title}
+- Isi: ${content}
 
 DATA ENRICHMENT (dari Sectors.app):
-\${dataStr}
+${dataStr}
 
 STRUKTUR 8 SLIDE:
 1. COVER — Headline menarik + sub judul (hook pertanyaan)
@@ -430,19 +430,19 @@ STRUKTUR 8 SLIDE:
 7. KESIMPULAN — Rangkuman netral
 8. CTA_DYOR — Ajakan diskusi + disclaimer DYOR
 
-\${COMMON_RULES}
+${COMMON_RULES}
 
 FORMAT OUTPUT:
-\${OUTPUT_SCHEMA}\`;
+${OUTPUT_SCHEMA}`;
       break;
     case 'IPO_RIGHTS_ISSUE':
       if (!ticker) {
-        prompt = \`Kamu adalah AI Content Writer untuk @sahamfyp — akun edukasi saham Indonesia.
+        prompt = `Kamu adalah AI Content Writer untuk @sahamfyp — akun edukasi saham Indonesia.
 Tugasmu: tulis naskah carousel 8 slide untuk berita IPO baru (calon emiten belum listing).
 
 BERITA:
-- Judul: \${title}
-- Isi: \${content}
+- Judul: ${title}
+- Isi: ${content}
 
 CATATAN: Ini IPO BARU — belum ada data enrichment dari Sectors.app.
 Semua data diambil 100% dari isi berita. JANGAN panggil API, JANGAN mengarang data.
@@ -457,20 +457,20 @@ STRUKTUR 8 SLIDE:
 7. KESIMPULAN — Rangkuman netral
 8. CTA_DYOR — Ajakan diskusi + disclaimer DYOR
 
-\${COMMON_RULES}
+${COMMON_RULES}
 
 FORMAT OUTPUT:
-\${OUTPUT_SCHEMA}\`;
+${OUTPUT_SCHEMA}`;
       } else {
-        prompt = \`Kamu adalah AI Content Writer untuk @sahamfyp — akun edukasi saham Indonesia.
+        prompt = `Kamu adalah AI Content Writer untuk @sahamfyp — akun edukasi saham Indonesia.
 Tugasmu: tulis naskah carousel 8 slide untuk berita Right Issue / Stock Split.
 
 BERITA:
-- Judul: \${title}
-- Isi: \${content}
+- Judul: ${title}
+- Isi: ${content}
 
 DATA ENRICHMENT (dari Sectors.app):
-\${dataStr}
+${dataStr}
 
 STRUKTUR 8 SLIDE:
 1. COVER — Headline menarik + sub judul (hook pertanyaan)
@@ -482,22 +482,22 @@ STRUKTUR 8 SLIDE:
 7. KESIMPULAN — Rangkuman netral
 8. CTA_DYOR — Ajakan diskusi + disclaimer DYOR
 
-\${COMMON_RULES}
+${COMMON_RULES}
 
 FORMAT OUTPUT:
-\${OUTPUT_SCHEMA}\`;
+${OUTPUT_SCHEMA}`;
       }
       break;
     case 'SUSPENSION_DELISTING':
-      prompt = \`Kamu adalah AI Content Writer untuk @sahamfyp — akun edukasi saham Indonesia.
+      prompt = `Kamu adalah AI Content Writer untuk @sahamfyp — akun edukasi saham Indonesia.
 Tugasmu: tulis naskah carousel 8 slide untuk berita suspensi/delisting saham.
 
 BERITA:
-- Judul: \${title}
-- Isi: \${content}
+- Judul: ${title}
+- Isi: ${content}
 
 DATA ENRICHMENT (dari Sectors.app):
-\${dataStr}
+${dataStr}
 
 STRUKTUR 8 SLIDE:
 1. COVER — Headline menarik + sub judul (hook pertanyaan)
@@ -509,21 +509,21 @@ STRUKTUR 8 SLIDE:
 7. KESIMPULAN — Rangkuman netral
 8. CTA_DYOR — Ajakan diskusi + disclaimer DYOR
 
-\${COMMON_RULES}
+${COMMON_RULES}
 
 FORMAT OUTPUT:
-\${OUTPUT_SCHEMA}\`;
+${OUTPUT_SCHEMA}`;
       break;
     default:
-      prompt = \`Kamu adalah AI Content Writer untuk @sahamfyp.
+      prompt = `Kamu adalah AI Content Writer untuk @sahamfyp.
 Tugasmu: tulis naskah carousel 8 slide untuk berita saham.
 
 BERITA:
-- Judul: \${title}
-- Isi: \${content}
+- Judul: ${title}
+- Isi: ${content}
 
 DATA ENRICHMENT:
-\${dataStr}
+${dataStr}
 
 STRUKTUR 8 SLIDE:
 1. COVER — Headline menarik
@@ -535,10 +535,10 @@ STRUKTUR 8 SLIDE:
 7. KESIMPULAN — Rangkuman netral
 8. CTA_DYOR — Ajakan diskusi
 
-\${COMMON_RULES}
+${COMMON_RULES}
 
 FORMAT OUTPUT:
-\${OUTPUT_SCHEMA}\`;
+${OUTPUT_SCHEMA}`;
   }
 
 
