@@ -12,6 +12,23 @@
 
 ---
 
+
+## 📑 Daftar Isi
+- [📌 Apa Itu SahamFYP?](#-apa-itu-sahamfyp)
+- [🎯 Latar Belakang](#-latar-belakang)
+- [🌟 Fitur Utama](#-fitur-utama)
+- [🛠️ Tech Stack](#️-tech-stack)
+- [📦 Cara Duplikasi / Clone Content Engine](#-cara-duplikasi--clone-content-engine)
+- [📁 Struktur Project](#-struktur-project)
+- [🔌 API Reference](#-api-reference)
+- [🔄 Cara Pakai (n8n Workflow)](#-cara-pakai-n8n-workflow)
+- [🔗 Quick Links & Resources](#-quick-links--resources)
+- [🔧 Troubleshooting](#-troubleshooting)
+- [📝 Catatan Versi](#-catatan-versi)
+- [📊 Data Pendukung](#-data-pendukung-latar-belakang-gen-z-investor)
+
+---
+
 ## 📌 Apa Itu SahamFYP?
 
 **SahamFYP** adalah platform/content engine yang menghasilkan konten finansial berkualitas tinggi secara otomatis untuk diposting ke berbagai media sosial (Instagram, TikTok, dll). Fokus utama: memberikan **informasi saham yang relevan, terverifikasi, dan faktual** kepada **Gen Z investor** — pengguna akhir yang mendominasi pasar modal Indonesia saat ini.
@@ -25,8 +42,6 @@ SahamFYP bukan sekadar "berita saham", tapi **konten yang terintegrasi dengan da
 ### Masalah
 
 Berdasarkan data dari **Bursa Efek Indonesia (BEI)** per Mei 2026, **54,4% investor pasar modal** berasal dari **Generasi Z** (lahir 1997–2012). Sementara itu, data **Kustodian Sentral Efek Indonesia (KSEI)** per Juni 2024 mencatat bahwa **55,38% investor individu** berusia **30 tahun ke bawah**.
-
-Meskipun jumlah investor Gen Z mendominasi, **kontribusi aset mereka masih kecil**: hanya **Rp48,3 triliun** atau **3,2% dari total aset** di C-Best BEI (Mei 2026). Ini mengindikasikan bahwa meskipun frekuensi partisipasi tinggi, nilainya belum sebesar investor kelompok lain.
 
 Lebih dari itu, perilaku investasi Gen Z sering didorong oleh **FOMO (Fear Of Missing Out)** dan informasi dari media sosial. Berbagai riset dan opini menunjukkan bahwa:
 
@@ -664,35 +679,39 @@ sahamFYP/
 
 ## 🔄 Cara Pakai (n8n Workflow)
 
-### Flow Utama (Auto)
+Engine utama SahamFYP berjalan di atas **n8n** sebagai orkestrator yang mengkoordinasikan Vercel API dan Sectors API. Terdapat dua pipeline utama yang beroperasi secara otonom:
 
-```
-Scrape Berita → Classify → Enrich → Generate → Publish
-     (CNBC)        (LLM)     (Sectors.app)  (LLM)      (Repliz)
-```
+### 1. Daily Market Brief (Proaktif / Terjadwal)
+Workflow ini berjalan otomatis setiap hari bursa sebelum market buka (08.00 WIB) untuk memberikan ringkasan pembukaan pasar kepada investor.
+- **Trigger**: Schedule Trigger (Cron job harian).
+- **Alur & Endpoint**:
+  1. Menarik data *Foreign Flow* dan *Market Overview* via `Sectors API`.
+  2. Memanggil `/api/llm` (Sumopod) untuk menyusun naskah brief.
+  3. Mengubah HTML ke Gambar menggunakan `Browserless.io`.
+  4. Mengunggah gambar ke `Supabase Storage` (sfyp-storage).
+  5. Memanggil `/api/publish` untuk menyebarkan secara massal (multi-account) ke Instagram, Threads, Facebook, dll via Repliz.
+- **Sectors API yang digunakan**: `fetch-market-overview`, `fetch-foreign-flow`, dan `fetch-company-report` (untuk detail saham terpilih).
+- **Estimasi API Credits**: ~3 hingga 5 credits per run (tergantung jumlah saham yang disorot).
 
-1. **Scrape Berita** (`POST /api/scrape`) — Input: URL berita dari CNBC Indonesia → Output: teks berita
-2. **Classify Berita** (`POST /api/classify`) — Input: teks berita → Output: `{category, ticker?, confidence}`
-3. **Enrich Data** (`POST /api/enrich`) — Input: `{category, ticker?, title, content}` → Output: data fundamental dari sector.app
-4. **Generate Konten** (`POST /api/generate`) — Input: berita utuh + kategori + ticker → Output: `{slides[], caption, hashtags}`
-5. **Publish ke Repliz** (`POST /api/publish`) — Input: `{postId?, cloudinaryUrls, caption, platform, scheduleAt?}` → Output: `{status, scheduleId, platform, scheduleAt}`. Upload gambar ke Cloudinary terlebih dahulu (jika pakai Cloudinary).
+### 2. News Monitoring (Reaktif / Berbasis Berita)
+Workflow ini memantau feed berita terbaru dan merespon secara *real-time* atau *batch* (berdasarkan rentang waktu Start-End Date) jika ada berita signifikan.
+- **Trigger**: Polling RSS (Webhook/Schedule).
+- **Alur & Endpoint**:
+  1. **Scrape Berita**: `/api/scrape` menarik teks berita utuh dari URL.
+  2. **Classify Berita**: `/api/classify` menggunakan AI untuk menentukan kategori (misal: *Corporate Action*) dan mengekstrak *ticker* saham.
+  3. **Enrich Data**: `/api/enrich` menarik metrik fundamental dari `Sectors API` berdasarkan ticker yang didapat.
+  4. **Generate Konten**: `/api/generate` merakit berita + data fundamental menjadi naskah dan slide presentasi.
+  5. Memanggil `/api/publish` untuk posting ke berbagai platform.
+- **Sectors API yang digunakan**: `fetch-company-report` (menarik valuasi, dividen, finansial, kepemilikan saham), dan terkadang `fetch-suspensions` (jika kategori suspensi).
+- **Estimasi API Credits**: ~2 hingga 4 credits per proses berita.
 
-### Manual / Form Wizard
-
-Untuk pengguna yang ingin post manual:
-
+### 3. Manual / Form Wizard (Web Dashboard)
+Bagi *Content Creator* atau admin yang ingin memposting secara manual atau merevisi konten:
 1. Buka **Web Dashboard** (`/`) → **Form Wizard** / **Manual Post**
-2. Pilih kategori berita (atau input berita manual)
-3. Sesuaikan template konten (slide, caption, hashtag)
-4. Upload gambar ke Cloudinary (jika pakai Cloudinary)
-5. Pilih waktu posting (WIB) atau posting segera
-6. Kirim → akan masuk ke Repliz sesuai schedule
+2. Pilih rentang waktu berita, pilih akun sosmed target (bisa jamak).
+3. Sesuaikan template konten, generate preview, dan klik Publish.
+4. Payload akan dikirim ke `/api/publish` untuk dieksekusi oleh Repliz.
 
-### Telegram Bot (Opsional)
-
-- Notifikasi status: berhasil / gagal / scheduled
-- Perintah kontrol (jika diimplementasikan): cek status, trigger manual, dll
-- Setup: set `TELEGRAM_BOT_TOKEN` dan `TELEGRAM_CHAT_ID` di environment variables
 ---
 
 ## 🔗 Quick Links & Resources
@@ -783,31 +802,7 @@ Untuk pengguna yang ingin post manual:
 
 ---
 
-## 🔮 Future Roadmap
 
-Fitur yang sedang direncanakan atau dalam tahap pengembangan:
-
-### Short-term
-- [ ] **Multi-platform publish** — Selain Instagram & TikTok, support platform lain (misalnya Twitter/X, Facebook)
-- [ ] **Custom template editor** — User bisa edit template konten sendiri (bukan cuma pakai 6 kategori default)
-- [ ] **Analytics dashboard** — Monitoring performa posting (views, engagement, reach) dari Repliz & platform target
-- [ ] **Batch schedule** — Schedule beberapa post sekaligus dalam satu workflow
-- [ ] **Web Dashboard yang lebih lengkap** — Form wizard yang lebih interaktif & preview slide sebelum publish
-
-### Medium-term
-- [ ] **Multi-bahasa konten** — Generate konten dalam bahasa lain (Inggris, dll) untuk market yang lebih luas
-- [ ] **Integrasi platform analisis teknikal** — Tambah data teknikal (indikator, chart pattern) untuk konten yang lebih komprehensif
-- [ ] **Auto-respond komentar** — Bot yang bisa me-response komentar di posting (jika platform support)
-- [ ] **Collaborative workflow** — Multi-user / team workflow (misalnya: editor, publisher, approver)
-- [ ] **Custom branding / watermark** — Tambahkan watermark atau branding pada slide konten
-
-### Long-term
-- [ ] **Marketplace template** — Template konten dari kreator lain bisa digunakan
-- [ ] **AI improvement** — Model yang lebih canggih untuk classification & generation (fine-tuned model, dsb)
-- [ ] **Mobile app** — Aplikasi mobile untuk monitoring & kontrol
-- [ ] **Subscription / premium features** — Untuk pengguna yang butuh fitur lebih lanjut
-
----
 
 ## 📝 Catatan Versi
 
