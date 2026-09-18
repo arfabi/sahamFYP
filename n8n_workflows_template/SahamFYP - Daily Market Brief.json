@@ -1,0 +1,438 @@
+{
+  "name": "SahamFYP - Daily Market Brief",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://saham-fyp.vercel.app/api/sector-trigger/open",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmMzAyMDViMi1hMzY1LTQyZDUtODE0ZS0yYzRiYjJkNDQyYmIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiNDdmMGMwYjktMTQ1MC00NjcwLTk3ZjktZjA1ZDU2Y2EzM2ViIiwiaWF0IjoxNzg4OTM1MDA2fQ.PVtFSytgbdeoVO_86oOpYZPMmNbYOYEV9MCaUSVVGos"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -2624,
+        2208
+      ],
+      "id": "18b00c41-bd92-4542-8111-a8c53ded9af5",
+      "name": "SectorTrigger - OPEN"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -2848,
+        2208
+      ],
+      "id": "666c838e-2adb-40d2-84ee-d0da275b3ced",
+      "name": "Schedule 08.30 WIB"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -2176,
+        2208
+      ],
+      "id": "50ff4b89-3644-429d-86fa-59c63efa8e5a",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://chrome.browserless.io/screenshot?token=2VEwVdb9hWKYbvoe74f8dd268e526e79608c5d9d5c23154ac",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"url\": \"data:text/html;charset=utf-8,{{ encodeURIComponent($json.html) }}\",\n  \"options\": {\n    \"type\": \"jpeg\",\n    \"fullPage\": true\n  },\n  \"viewport\": {\n    \"width\": 1080,\n    \"height\": 1350\n  }\n}\n",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -1728,
+        2208
+      ],
+      "id": "b550fa5f-fb44-4ffe-b9d0-bbd2713b59e5",
+      "name": "Browserless.io"
+    },
+    {
+      "parameters": {
+        "jsCode": "const allItems = $input.all();\nconst imageUrls = allItems.map(item => {\n  // item.json.Key berisi \"sfyp-storage/slide-xxx.jpg\" dari respon Supabase\n  return \"https://xgqsrttpdxiiqknuulwl.supabase.co/storage/v1/object/public/\" + item.json.Key;\n});\n\nreturn {\n  json: {\n    imageUrls: imageUrls\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1952,
+        2016
+      ],
+      "id": "2e5e0250-5e85-484d-a793-eb5f99c1ea01",
+      "name": "Collect All URLs"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// ============================================================\n// n8n Code Node — \"Slides HTML - Image\" v2\n// Mode: Run Once for Each Item\n// Input: setiap item adalah 1 slide object dari naskah.slides[]\n//        + $json.foreignFlowSummary (dari node Fetch Foreign Flow sebelumnya)\n// Output: { html: string }\n// ============================================================\n\nconst s = $json;\n\n// ── Pagination ──────────────────────────────────────────────\nconst currentSlide = (s.slideIndex !== undefined ? s.slideIndex + 1 : $itemIndex + 1);\nconst totalCount   = s.totalSlides || 10;\n\n// ── Meta ────────────────────────────────────────────────────\nconst dateStr   = s.dateIndonesia || s.date || 'SahamFYP Update';\nconst badgeText = s.badgeText || 'OPEN';\nconst handle    = s.handle || '@sahamfyp';\n\n// ── Foreign Flow Summary (dari node sebelumnya jika ada) ────\n// Set di node \"Fetch Foreign Flow\" sebelumnya, diteruskan via merge ke setiap slide\nconst ff = s.foreignFlowSummary || {};\nconst ffNet     = ff.net_foreign_flow || null;   // e.g. \"-910.24 M\" atau \"+286.79 M\"\nconst ffBuy     = ff.net_buy || null;\nconst ffSell    = ff.net_sell || null;\nconst ffIsInflow = ff.is_inflow === true;\n\n// ── CSS Base Styles ─────────────────────────────────────────\nfunction buildBaseStyles() {\n  return `<style>\n    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');\n    * { box-sizing: border-box; margin: 0; padding: 0; }\n    body {\n      width: 1080px; height: 1350px;\n      background: #F8F6F0;\n      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;\n      color: #14182B; overflow: hidden;\n    }\n    .slide {\n      width: 1080px; height: 1350px;\n      padding: 44px 60px 38px 60px;\n      display: flex; flex-direction: column;\n      background: #F8F6F0;\n    }\n    .top-header {\n      display: flex; justify-content: space-between; align-items: center;\n      padding-bottom: 20px; border-bottom: 2px solid rgba(20,24,43,0.1);\n      margin-bottom: 2px; flex-shrink: 0;\n    }\n    .handle-tag { font-weight: 800; font-size: 24px; color: #14182B; display: flex; align-items: center; gap: 12px; }\n    .badge-pill { background: #14182B; color: #FFF; font-size: 15px; font-weight: 900; padding: 4px 16px; border-radius: 20px; letter-spacing: 1px; text-transform: uppercase; }\n    .brand-title { font-weight: 800; font-size: 22px; color: #64748B; letter-spacing: 0.3px; }\n    .bottom-footer {\n      display: flex; justify-content: space-between; align-items: center;\n      border-top: 2px solid rgba(20,24,43,0.1); padding-top: 16px;\n      flex-shrink: 0; margin-top: 4px;\n    }\n    .date-tag { font-size: 21px; font-weight: 700; color: #64748B; display: flex; align-items: center; gap: 8px; }\n    .page-badge { background: #14182B; color: #FFF; font-size: 21px; font-weight: 900; padding: 8px 22px; border-radius: 22px; }\n\n    /* Main body — padding-top 54px (+50% dari 36px) */\n    .main-body {\n      flex: 1; display: flex; flex-direction: column;\n      justify-content: flex-start;\n      padding: 28px 0 14px 0;\n      gap: 16px; overflow: hidden; min-height: 0;\n    }\n\n    .title { font-size: 46px; font-weight: 900; line-height: 1.2; color: #14182B; }\n    .subtitle { font-size: 24px; font-weight: 600; color: #64748B; margin-top: -4px; line-height: 1.4; }\n\n    .card-box { background: #FFFFFF; border-radius: 22px; padding: 22px 26px; box-shadow: 0 8px 24px -6px rgba(0,0,0,0.07); border: 1px solid rgba(0,0,0,0.04); }\n\n    .ticker-badge { background: #14182B; color: #F2A93B; font-weight: 900; display: inline-block; }\n    .sector-badge { background: #E2E8F0; color: #475569; font-weight: 700; }\n    .tag-list { display: flex; flex-wrap: wrap; gap: 8px; }\n    .tag-item { background: #FFFBEB; border: 1px solid #FDE68A; color: #D97706; font-weight: 700; border-radius: 8px; }\n\n    .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }\n    .narasi-box { background: rgba(242,169,59,0.12); border-left: 5px solid #F2A93B; padding: 16px 20px; border-radius: 12px; font-size: 20px; line-height: 1.5; color: #14182B; }\n\n    .matrix-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 14px; flex: 1; min-height: 0; }\n    .matrix-cell { border-radius: 20px; padding: 20px 22px; display: flex; flex-direction: column; }\n    .matrix-cell.q1 { background: rgba(76,175,125,0.12); border: 2px solid #4CAF7D; }\n    .matrix-cell.q2 { background: rgba(242,169,59,0.12); border: 2px solid #F2A93B; }\n    .matrix-cell.q3 { background: rgba(245,158,11,0.12); border: 2px solid #F59E0B; }\n    .matrix-cell.q4 { background: rgba(228,87,46,0.12); border: 2px solid #E4572E; }\n    .q-title { font-size: 20px; font-weight: 800; margin-bottom: 4px; }\n    .q1 .q-title { color: #2E7D32; } .q2 .q-title { color: #D97706; }\n    .q3 .q-title { color: #B45309; } .q4 .q-title { color: #C2410C; }\n\n    .ticker-chip-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }\n    .ticker-chip { background: #14182B; color: #FFF; font-weight: 900; font-size: 22px; padding: 10px 20px; border-radius: 12px; }\n    .empty-text { font-size: 17px; color: #94A3B8; font-style: italic; }\n\n    .table-list { display: flex; flex-direction: column; gap: 6px; }\n    .table-row { display: flex; justify-content: space-between; align-items: center; font-size: 18px; padding: 9px 14px; background: rgba(20,24,43,0.05); border-radius: 10px; font-weight: 700; }\n  </style>`;\n}\n\n// ── Template Builder ─────────────────────────────────────────\nlet bodyContent = '';\nconst template = String(s.template || '').toLowerCase().trim();\n\nswitch (template) {\n\n  // ── COVER ──────────────────────────────────────────────────\n  case 'cover': {\n    bodyContent = `\n      <div class=\"main-body\" style=\"justify-content:center;align-items:center;text-align:center;gap:28px;padding-top:134px;\">\n        <div style=\"align-self:flex-start;\">\n          <span style=\"background:#14182B;color:#F2A93B;font-size:20px;font-weight:900;padding:8px 22px;border-radius:30px;\">DAILY MARKET BRIEF 🚀</span>\n        </div>\n        <div>\n          <h1 class=\"title\" style=\"font-size:58px;line-height:1.15;\">Key Catalyst & Watchlist Saham Hari Ini</h1>\n          <p class=\"subtitle\" style=\"font-size:26px;margin-top:16px;\">Bedah Berita, Aksi Korporasi & Sinyal Teknikal Pilihan</p>\n        </div>\n        <div class=\"card-box\" style=\"background:#14182B;color:#FFF;display:flex;justify-content:space-around;padding:30px;margin-top:8px;width:100%;\">\n          <div style=\"text-align:center;\">\n            <div style=\"font-size:42px;font-weight:900;color:#F2A93B;\">${s.newsCount || 0}</div>\n            <div style=\"font-size:18px;color:#94A3B8;font-weight:600;\">Berita Pilihan</div>\n          </div>\n          <div style=\"width:1px;background:rgba(255,255,255,0.15);\"></div>\n          <div style=\"text-align:center;\">\n            <div style=\"font-size:42px;font-weight:900;color:#F2A93B;\">${s.watchlistCount || 0}</div>\n            <div style=\"font-size:18px;color:#94A3B8;font-weight:600;\">Emiten Radar</div>\n          </div>\n        </div>\n      </div>`;\n    break;\n  }\n\n  // ── TLDR ───────────────────────────────────────────────────\n  case 'tldr': {\n    const cards = s.tldrCards || [];\n\n    const marketCards   = cards.filter(c => c.section === 'kondisiMarket' || (!c.section && (c.text.includes('IHSG') || c.text.toLowerCase().includes('gainer') || c.text.toLowerCase().includes('loser') || c.text.toLowerCase().includes('asing'))));\n    const fillingsCards = cards.filter(c => c.section === 'fillings');\n    const katalisCards  = cards.filter(c => c.section === 'katalis' || (!c.section && !c.text.toLowerCase().includes('watchlist') && !c.text.includes('IHSG') && !c.text.toLowerCase().includes('gainer') && !c.text.toLowerCase().includes('loser') && !c.text.toLowerCase().includes('asing')));\n    const watchlistCard = cards.find(c => c.section === 'watchlist' || c.text.toLowerCase().includes('watchlist'));\n\n    const watchlistText = watchlistCard ? watchlistCard.text.replace(/watchlist:/i, '').trim() : '';\n    const tickerChips   = watchlistText.split(/[,\\s]+/).filter(t => t.replace('.JK','').length >= 2 && t.replace('.JK','').length <= 6);\n\n    // Kondisi Market: IHSG + Foreign Flow net total saja\n    const ffNetStr = ffNet\n      ? `🌍 Foreign Flow: ${ffIsInflow ? '🟢' : '🔴'} ${ffNet}`\n      : '';\n\n    const renderSection = (title, icon, color, bg, items) => items.length === 0 ? '' : `\n      <div class=\"card-box\" style=\"padding:14px 20px;background:${bg};border:1px solid ${color};box-shadow:none;\">\n        <div style=\"font-size:16px;font-weight:900;color:${color};margin-bottom:9px;text-transform:uppercase;letter-spacing:0.5px;\">${icon} ${title}</div>\n        <div style=\"display:flex;flex-direction:column;gap:7px;\">\n          ${items.map(k => `<div style=\"font-size:18px;font-weight:600;color:#1E293B;display:flex;gap:8px;align-items:flex-start;\"><span style=\"color:${color};font-weight:900;flex-shrink:0;\">•</span><span>${k.text}</span></div>`).join('')}\n          ${title.includes('Market') && ffNetStr ? `<div style=\"font-size:18px;font-weight:600;color:#1E293B;display:flex;gap:8px;align-items:flex-start;\"><span style=\"font-weight:900;flex-shrink:0;\">•</span><span>${ffNetStr}</span></div>` : ''}\n        </div>\n      </div>`;\n\n    bodyContent = `\n      <div class=\"main-body\" style=\"gap:11px;padding-top:106px;\">\n        <h1 class=\"title\" style=\"font-size:40px; margin-bottom: 26px;\">📌 ${s.title || 'TL;DR — Ringkasan Hari Ini'}</h1>\n        ${renderSection('Kondisi Market Kemarin', '📈', '#14182B', 'rgba(20,24,43,0.06)', marketCards)}\n        ${renderSection('Fillings & Keterbukaan', '📋', '#2563EB', 'rgba(37,99,235,0.07)', fillingsCards)}\n        ${renderSection('Katalis Hari Ini', '🔥', '#D97706', 'rgba(217,119,6,0.08)', katalisCards)}\n        <div class=\"card-box\" style=\"padding:14px 20px;background:#14182B;color:#FFF;box-shadow:none;\">\n          <div style=\"font-size:16px;font-weight:900;color:#F2A93B;margin-bottom:9px;text-transform:uppercase;letter-spacing:0.5px;\">🎯 Watchlist Saham Hari Ini</div>\n          <div class=\"ticker-chip-list\">\n            ${tickerChips.length > 0\n              ? tickerChips.map(t => `<span class=\"ticker-chip\" style=\"background:#F2A93B;color:#14182B;font-size:24px;padding:8px 22px;\">${t.replace('.JK','')}</span>`).join('')\n              : `<span style=\"font-size:18px;color:#94A3B8;\">${watchlistText || 'Pantau update berikutnya'}</span>`\n            }\n          </div>\n        </div>\n      </div>`;\n    break;\n  }\n\n  // ── MARKET ─────────────────────────────────────────────────\n  case 'market': {\n    const ihsg      = s.ihsg || {};\n    const ihsgPrice = ihsg.price ? Number(ihsg.price).toLocaleString('id-ID') : '-';\n    const chgPct    = Number(ihsg.changePct || 0);\n    const ihsgChg   = `${chgPct >= 0 ? '+' : ''}${chgPct.toFixed(2)}%`;\n    const ihsgColor = chgPct >= 0 ? '#16A34A' : '#DC2626';\n    const ihsgArrow = chgPct >= 0 ? '▲' : '▼';\n    const ihsgBg    = chgPct >= 0 ? '#DCFCE7' : '#FEE2E2';\n\n    const gainers = (s.topGainers || []).slice(0, 5).map(g => {\n      const sym  = (g.symbol || g.ticker || '').replace('.JK','');\n      const name = (g.name || g.companyName || sym).slice(0, 18);\n      const chg  = Number(g.changePct || 0).toFixed(2);\n      return `<div class=\"table-row\"><span><b>${sym}</b> <span style=\"font-size:15px;color:#64748B;font-weight:600;\">${name}</span></span><span style=\"color:#16A34A;\">+${chg}%</span></div>`;\n    }).join('');\n\n    const losers = (s.topLosers || []).slice(0, 5).map(l => {\n      const sym  = (l.symbol || l.ticker || '').replace('.JK','');\n      const name = (l.name || l.companyName || sym).slice(0, 18);\n      const chg  = Number(l.changePct || 0).toFixed(2);\n      return `<div class=\"table-row\"><span><b>${sym}</b> <span style=\"font-size:15px;color:#64748B;font-weight:600;\">${name}</span></span><span style=\"color:#DC2626;\">${chg}%</span></div>`;\n    }).join('');\n\n    // Foreign Flow Summary (dari node sebelumnya)\n    const ffSection = ffNet ? `\n      <div class=\"card-box\" style=\"padding:16px 22px;box-shadow:none;border:1.5px solid ${ffIsInflow ? '#4CAF7D' : '#E4572E'};background:${ffIsInflow ? 'rgba(76,175,125,0.08)' : 'rgba(228,87,46,0.08'};\">\n        <div style=\"font-size:18px;font-weight:800;color:#64748B;margin-bottom:10px;\">🌍 Foreign Flow Kemarin</div>\n        <div style=\"display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;text-align:center;\">\n          <div>\n            <div style=\"font-size:13px;font-weight:700;color:#94A3B8;margin-bottom:4px;text-transform:uppercase;\">Net Total</div>\n            <div style=\"font-size:20px;font-weight:900;color:${ffIsInflow ? '#16A34A' : '#DC2626'};\">${ffNet}</div>\n          </div>\n          <div>\n            <div style=\"font-size:13px;font-weight:700;color:#94A3B8;margin-bottom:4px;text-transform:uppercase;\">Net Buy</div>\n            <div style=\"font-size:20px;font-weight:900;color:#16A34A;\">${ffBuy || '-'}</div>\n          </div>\n          <div>\n            <div style=\"font-size:13px;font-weight:700;color:#94A3B8;margin-bottom:4px;text-transform:uppercase;\">Net Sell</div>\n            <div style=\"font-size:20px;font-weight:900;color:#DC2626;\">${ffSell || '-'}</div>\n          </div>\n        </div>\n      </div>` : '';\n\n    bodyContent = `\n      <div class=\"main-body\" style=\"gap:14px;padding-top:108px;padding-bottom:14px;\">\n        <h1 class=\"title\" style=\"font-size:40px; margin-bottom: 26px;\">📊 ${s.title || 'Kondisi Market Kemarin'}</h1>\n\n        <!-- IHSG Banner -->\n        <div class=\"card-box\" style=\"background:#14182B;color:#FFF;display:flex;justify-content:space-between;align-items:center;padding:22px 30px;\">\n          <div>\n            <div style=\"font-size:20px;font-weight:800;color:#94A3B8;margin-bottom:4px;\">IHSG</div>\n            <div style=\"font-size:40px;font-weight:900;color:#F2A93B;\">${ihsgPrice}</div>\n          </div>\n          <div style=\"text-align:right;\">\n            <div style=\"font-size:28px;font-weight:900;background:${ihsgBg};color:${ihsgColor};padding:8px 20px;border-radius:16px;\">${ihsgArrow} ${ihsgChg}</div>\n            <div style=\"font-size:15px;color:#94A3B8;margin-top:6px;\">${s.dataDateIndonesia || ''}</div>\n          </div>\n        </div>\n\n        <!-- Foreign Flow (jika ada) -->\n        ${ffSection}\n\n        <!-- Top Gainers & Losers -->\n        <div class=\"grid-2col\">\n          <div class=\"card-box\" style=\"padding:18px 20px;\">\n            <div style=\"font-size:20px;font-weight:900;color:#16A34A;margin-bottom:10px;\">🚀 TOP GAINERS</div>\n            <div class=\"table-list\">${gainers}</div>\n          </div>\n          <div class=\"card-box\" style=\"padding:18px 20px;\">\n            <div style=\"font-size:20px;font-weight:900;color:#DC2626;margin-bottom:10px;\">🔻 TOP LOSERS</div>\n            <div class=\"table-list\">${losers}</div>\n          </div>\n        </div>\n      </div>`;\n    break;\n  }\n\n  // ── STOCK ──────────────────────────────────────────────────\n  case 'stock': {\n    const fund        = s.fundamentals || {};\n    const tech        = s.technical    || {};\n    const tldr        = s.tldrSaham    || {};\n    const cleanTicker = (s.ticker || 'EMITEN').replace('.JK','');\n    const sectorName  = s.sector || fund.sector || 'Sektor';\n    const formattedPrice = s.hargaTerakhir ? `Rp ${Number(s.hargaTerakhir).toLocaleString('id-ID')}` : '';\n    const displaySource  = s.sumberBerita || 'Sector.app News';\n\n    const perVs = fund.perSector ? ` (vs ${fund.perSector})` : '';\n    const pbvVs = fund.pbvSector ? ` (vs ${fund.pbvSector})` : '';\n    const roeVs = fund.roeSector ? ` (vs ${fund.roeSector})` : '';\n\n    const signalVibe = tech.narasiVibe || (\n      (tech.crossSignal || '').includes('Golden Cross') ? 'MA20 memotong ke atas MA50 — sinyal tren naik.' :\n      (tech.crossSignal || '').includes('Death Cross')  ? 'MA20 memotong ke bawah MA50 — sinyal tren turun.' :\n      (tech.crossSignal || '').includes('Bullish')      ? 'Harga di atas MA20 & MA50 — tren naik masih berlanjut.' :\n      'Belum ada arah yang jelas, pantau pergerakan harga dan volume.'\n    );\n\n    const ma20Fmt = tech.ma20 ? Number(tech.ma20).toLocaleString('id-ID') : '-';\n    const ma50Fmt = tech.ma50 ? Number(tech.ma50).toLocaleString('id-ID') : '-';\n\n    // News description — diperluas, ambil newsDescription penuh\n    const newsDescFull = s.newsDescription || s.narasiBerita || s.apa || '';\n\n    bodyContent = `\n      <div class=\"main-body\" style=\"gap:16px;padding-top:108px;padding-bottom:14px;\">\n\n        <!-- Header: Ticker + Harga -->\n        <div style=\"margin-bottom: 24px;\">\n          <div style=\"display:flex;justify-content:space-between;align-items:center;\">\n            <span class=\"ticker-badge\" style=\"font-size:50px;padding:6px 26px;border-radius:16px;\">${cleanTicker}</span>\n            ${formattedPrice ? `<span style=\"font-size:42px;font-weight:900;color:#D97706;\">${formattedPrice}</span>` : ''}\n          </div>\n          <div style=\"display:flex;justify-content:space-between;align-items:center;margin-top:10px;\">\n            <div style=\"font-size:26px;font-weight:800;color:#14182B;\">${s.companyName || ''}</div>\n            <span class=\"sector-badge\" style=\"font-size:17px;padding:6px 18px;border-radius:20px;\">Sektor ${sectorName}</span>\n          </div>\n          ${s.tags && s.tags.length > 0 ? `\n            <div class=\"tag-list\" style=\"margin-top:8px;\">\n              ${s.tags.map(tg => `<span class=\"tag-item\" style=\"font-size:15px;padding:4px 12px;\">#${tg}</span>`).join('')}\n            </div>` : ''}\n        </div>\n\n        <!-- News Card — deskripsi diperluas -->\n        <div class=\"card-box\" style=\"padding:20px 24px;border-left:6px solid #F2A93B;\">\n          <div style=\"font-size:22px;font-weight:900;color:#14182B;line-height:1.35;margin-bottom:10px;\">${s.newsTitle || ''}</div>\n          <div style=\"font-size:19px;color:#334155;line-height:1.55;\">${newsDescFull}</div>\n          ${s.kenapa ? `<div style=\"font-size:18px;color:#475569;margin-top:8px;line-height:1.5;\">💬 ${s.kenapa}</div>` : ''}\n          ${s.dampak ? `<div style=\"font-size:17px;color:#64748B;margin-top:6px;font-style:italic;line-height:1.45;\">📌 Dampak: ${s.dampak}</div>` : ''}\n          <div style=\"font-size:14px;font-weight:700;color:#94A3B8;text-align:right;margin-top:10px;\">${displaySource}</div>\n        </div>\n\n        <!-- Fundamental & Teknikal Grid -->\n        <div class=\"grid-2col\">\n          <!-- Fundamental -->\n          <div class=\"card-box\" style=\"padding:18px 20px;\">\n            <div style=\"font-size:20px;font-weight:900;color:#14182B;margin-bottom:10px;border-bottom:2px solid #F1F5F9;padding-bottom:7px;\">📊 Fundamental</div>\n            <div style=\"font-size:17px;display:flex;flex-direction:column;gap:9px;font-weight:600;color:#14182B;\">\n              <div style=\"display:flex;justify-content:space-between;align-items:center;\">\n                <span><b>PER:</b> ${fund.per || '-'}<span style=\"color:#94A3B8;font-weight:500;font-size:15px;\">${perVs}</span></span>\n                ${fund.perSignal ? `<span style=\"font-size:14px;font-weight:700;\">${fund.perSignal}</span>` : ''}\n              </div>\n              <div style=\"display:flex;justify-content:space-between;align-items:center;\">\n                <span><b>PBV:</b> ${fund.pbv || '-'}<span style=\"color:#94A3B8;font-weight:500;font-size:15px;\">${pbvVs}</span></span>\n                ${fund.pbvSignal ? `<span style=\"font-size:14px;font-weight:700;\">${fund.pbvSignal}</span>` : ''}\n              </div>\n              <div style=\"display:flex;justify-content:space-between;align-items:center;\">\n                <span><b>ROE:</b> ${fund.roe || '-'}<span style=\"color:#94A3B8;font-weight:500;font-size:15px;\">${roeVs}</span></span>\n                ${fund.roeSignal ? `<span style=\"font-size:14px;font-weight:700;\">${fund.roeSignal}</span>` : ''}\n              </div>\n            </div>\n            ${fund.narasiFundamental ? `\n              <div style=\"font-size:15px;color:#475569;font-style:italic;margin-top:10px;border-top:1px dashed #E2E8F0;padding-top:8px;line-height:1.5;\">\n                💡 ${fund.narasiFundamental}\n              </div>` : ''}\n          </div>\n          <!-- Teknikal -->\n          <div class=\"card-box\" style=\"padding:18px 20px;\">\n            <div style=\"font-size:20px;font-weight:900;color:#14182B;margin-bottom:10px;border-bottom:2px solid #F1F5F9;padding-bottom:7px;\">📈 Teknikal</div>\n            <div style=\"font-size:17px;display:flex;flex-direction:column;gap:9px;font-weight:600;color:#14182B;\">\n              <div style=\"display:flex;justify-content:space-between;align-items:center;\">\n                <span><b>Sinyal:</b></span>\n                <span style=\"color:#F2A93B;font-size:15px;font-weight:900;\">${tech.crossSignal || 'Konsolidasi 🟡'}</span>\n              </div>\n              <div><b>MA20:</b> Rp ${ma20Fmt}</div>\n              <div><b>MA50:</b> Rp ${ma50Fmt}</div>\n            </div>\n            <div style=\"font-size:15px;color:#475569;font-style:italic;margin-top:10px;border-top:1px dashed #E2E8F0;padding-top:8px;line-height:1.5;\">\n              💡 ${signalVibe}\n            </div>\n          </div>\n        </div>\n\n        <!-- Key Takeaway -->\n        <div class=\"card-box\" style=\"padding:18px 24px;background:#14182B;color:#FFF;border-radius:20px;\">\n          <div style=\"font-size:19px;font-weight:900;color:#F2A93B;margin-bottom:6px;\">💡 Key Takeaway:</div>\n          <div style=\"font-size:18px;color:#F8FAFC;line-height:1.5;font-weight:500;\">\n            ${tldr.swing || tldr.investasi || tldr.dayTrading || tech.trigger || 'Pantau volume dan support MA20 untuk menentukan titik entry optimal.'}\n          </div>\n        </div>\n\n        ${s.warning ? `<div style=\"background:rgba(228,87,46,0.12);border:2px solid #E4572E;color:#9A2C12;border-radius:14px;padding:12px 18px;font-size:17px;font-weight:700;display:flex;align-items:center;gap:10px;\">⚠️ ${s.warning}</div>` : ''}\n      </div>`;\n    break;\n  }\n\n  // ── MATRIX ─────────────────────────────────────────────────\n  case 'matrix': {\n    const stocks = s.stocks || [];\n    const getChips = q => {\n      const tickers = stocks.filter(x => x.quadrant === q).map(x => x.ticker);\n      if (!tickers.length) return `<span class=\"empty-text\">Tidak ada emiten</span>`;\n      return `<div class=\"ticker-chip-list\">${tickers.map(t => `<span class=\"ticker-chip\" style=\"font-size:24px;padding:10px 20px;\">${t.replace('.JK','')}</span>`).join('')}</div>`;\n    };\n\n    bodyContent = `\n      <div class=\"main-body\" style=\"gap:18px;padding-top:108px;padding-bottom:14px;\">\n        <div style=\"margin-bottom: 24px;\">\n          <h1 class=\"title\">🧩 ${s.title || 'Kesimpulan Watchlist Hari Ini'}</h1>\n          <div class=\"subtitle\">${s.subtitle || 'Framework: Matrix Fundamental × Teknikal'}</div>\n        </div>\n        <div class=\"matrix-grid\">\n          <div class=\"matrix-cell q1\">\n            <div class=\"q-title\">🟢 Q1: Fund ✅ + Tech ✅</div>\n            <div style=\"font-size:13px;color:#2E7D32;font-weight:700;margin-bottom:10px;font-style:italic;\">${s.q1Label || 'Cocok: Investasi & Swing Trading'}</div>\n            ${getChips('q1')}\n          </div>\n          <div class=\"matrix-cell q2\">\n            <div class=\"q-title\">🟡 Q2: Fund ✅ + Tech ⚠️</div>\n            <div style=\"font-size:13px;color:#D97706;font-weight:700;margin-bottom:10px;font-style:italic;\">${s.q2Label || 'Cocok: Value Investing, tunggu teknikal'}</div>\n            ${getChips('q2')}\n          </div>\n          <div class=\"matrix-cell q3\">\n            <div class=\"q-title\">🟠 Q3: Fund ⚠️ + Tech ✅</div>\n            <div style=\"font-size:13px;color:#B45309;font-weight:700;margin-bottom:10px;font-style:italic;\">${s.q3Label || 'Trading momentum jangka pendek SAJA'}</div>\n            ${getChips('q3')}\n          </div>\n          <div class=\"matrix-cell q4\">\n            <div class=\"q-title\">🔴 Q4: Fund ⚠️ + Tech ⚠️</div>\n            <div style=\"font-size:13px;color:#C2410C;font-weight:700;margin-bottom:10px;font-style:italic;\">${s.q4Label || 'Hindari dulu, tunggu pemulihan'}</div>\n            ${getChips('q4')}\n          </div>\n        </div>\n        ${s.note ? `<div style=\"font-size:17px;color:#64748B;font-style:italic;\">💡 ${s.note}</div>` : ''}\n      </div>`;\n    break;\n  }\n\n  // ── KAMUS ──────────────────────────────────────────────────\n  case 'kamus': {\n    const kamusItems = s.items || [\n      { term: 'PER',                  category: 'fundamental', definition: 'Berapa tahun balik modal dari laba perusahaan.', analogi: 'Beli HP Rp15jt, untung Rp1jt/thn → PER 15x. Makin kecil = makin cepet balik modal!' },\n      { term: 'PBV',                  category: 'fundamental', definition: 'Bayar berapa kali lipat dari aset bersih.', analogi: 'PBV < 1 = beli aset di bawah harga buku = diskon! PBV tinggi = bayar premium buat ekspektasi.' },\n      { term: 'ROE & DER',            category: 'fundamental', definition: 'Efisiensi modal (ROE) vs beban utang (DER).', analogi: 'ROE tinggi = jago putar modal. DER < 1x = aman. DER > 3x = hati-hati paylater membengkak!' },\n      { term: 'MA20 & MA50',          category: 'teknikal',    definition: 'Rata-rata harga 20 & 50 hari — patokan support/resistance.', analogi: 'MA20 = mood pasar bulan ini. MA50 = mood 2.5 bulan. Harga di atas keduanya = on top vibes!' },\n      { term: 'Golden & Death Cross', category: 'teknikal',    definition: 'Sinyal pembalikan tren dari perpotongan MA20 vs MA50.', analogi: 'Golden Cross 🚀 = MA20 naik ke atas MA50 (bullish!). Death Cross ☠️ = MA20 turun ke bawah.' },\n      { term: 'Foreign Flow',         category: 'teknikal',    definition: 'Arus dana investor asing — net buy (masuk) atau net sell (keluar).', analogi: 'Asing net buy = influencer borong = sentimen positif. Net sell = waspada, tapi jangan langsung panik!' },\n    ];\n\n    const fundItems = kamusItems.filter(k => k.category === 'fundamental' || !k.category);\n    const techItems = kamusItems.filter(k => k.category === 'teknikal');\n\n    const renderItem = (k, color) => `\n      <div class=\"card-box\" style=\"padding:12px 16px;border-left:4px solid ${color};box-shadow:none;border-radius:14px;\">\n        <div style=\"font-size:18px;font-weight:900;color:#14182B;margin-bottom:2px;\">${k.term}</div>\n        <div style=\"font-size:14px;color:#64748B;font-weight:600;margin-bottom:5px;\">${k.definition}</div>\n        <div style=\"font-size:15px;color:#334155;font-style:italic;line-height:1.4;\">💡 ${k.analogi}</div>\n      </div>`;\n\n    bodyContent = `\n      <div class=\"main-body\" style=\"gap:12px;padding-top:106px;padding-bottom:14px;\">\n        <div style=\"margin-bottom: 28px;\">\n          <h1 class=\"title\" style=\"font-size:40px;\">📖 ${s.title || 'Kamus Ala Gen Z'}</h1>\n          <div class=\"subtitle\" style=\"font-size:20px;\">${s.subtitle || 'Biar lo ngerti semua istilah di slide sebelumnya 👆'}</div>\n        </div>\n        <div style=\"display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:2px;\">\n          <div style=\"display:flex;flex-direction:column;gap:9px;\">\n            <div style=\"font-size:14px;font-weight:900;color:#2563EB;text-transform:uppercase;letter-spacing:0.6px;padding-bottom:4px;\">📊 Fundamental</div>\n            ${fundItems.map(k => renderItem(k, '#2563EB')).join('')}\n          </div>\n          <div style=\"display:flex;flex-direction:column;gap:9px;\">\n            <div style=\"font-size:14px;font-weight:900;color:#F2A93B;text-transform:uppercase;letter-spacing:0.6px;padding-bottom:4px;\">📈 Teknikal</div>\n            ${techItems.map(k => renderItem(k, '#F2A93B')).join('')}\n          </div>\n        </div>\n      </div>`;\n    break;\n  }\n\n  // ── CTA ────────────────────────────────────────────────────\n  case 'cta': {\n    bodyContent = `\n      <div class=\"main-body\" style=\"justify-content:center;align-items:center;text-align:center;gap:28px;padding-top:134px;padding-bottom:20px;\">\n        <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"72\" height=\"72\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#F2A93B\" stroke-width=\"2\"><path d=\"M7.9 20A9 9 0 1 0 4 16.1L2 22Z\"/></svg>\n        <h1 class=\"title\" style=\"font-size:56px;\">${s.title || 'Gimana Menurutmu?'}</h1>\n        <p class=\"subtitle\" style=\"font-size:28px;max-width:800px;color:#334155;\">${s.description || 'Drop pendapatmu di kolom komentar! 👇'}</p>\n        <div style=\"background:#14182B;color:#F2A93B;font-size:26px;font-weight:900;padding:16px 40px;border-radius:30px;margin-top:8px;\">Follow @sahamfyp 🚀</div>\n        ${s.disclaimer ? `<div style=\"font-size:18px;color:#94A3B8;margin-top:16px;\">${s.disclaimer}</div>` : ''}\n      </div>`;\n    break;\n  }\n\n  default: {\n    bodyContent = `\n      <div class=\"main-body\" style=\"padding-top:134px;\">\n        <h1 class=\"title\">${s.title || ''}</h1>\n        <p class=\"subtitle\">${s.description || ''}</p>\n      </div>`;\n  }\n}\n\n// ── HTML Wrapper ─────────────────────────────────────────────\nconst html = `<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  ${buildBaseStyles()}\n</head>\n<body>\n  <div class=\"slide\">\n    <div class=\"top-header\">\n      <div class=\"handle-tag\">\n        <span>${handle}</span>\n        <span class=\"badge-pill\">${badgeText}</span>\n      </div>\n      <div class=\"brand-title\">Daily Market Brief</div>\n    </div>\n\n    ${bodyContent}\n\n    <div class=\"bottom-footer\">\n      <div class=\"date-tag\">🗓️ <span>${dateStr}</span></div>\n      <div class=\"page-badge\">${currentSlide}/${totalCount}</div>\n    </div>\n  </div>\n</body>\n</html>`;\n\nreturn { html, index: currentSlide, name: `slide_${currentSlide}.jpg` };\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1952,
+        2208
+      ],
+      "id": "9342796a-54ad-4d08-95c2-58e1f79e6181",
+      "name": "Slides HTML - Image"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://saham-fyp.vercel.app/api/publish",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmMzAyMDViMi1hMzY1LTQyZDUtODE0ZS0yYzRiYjJkNDQyYmIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiNDdmMGMwYjktMTQ1MC00NjcwLTk3ZjktZjA1ZDU2Y2EzM2ViIiwiaWF0IjoxNzg4OTM1MDA2fQ.PVtFSytgbdeoVO_86oOpYZPMmNbYOYEV9MCaUSVVGos"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n  JSON.stringify({\n    postId: $('SectorTrigger - OPEN').first().json.logId,\n    imageUrls: $('Collect All URLs').first().json.imageUrls,\n    caption: $('SectorTrigger - OPEN').first().json.naskah.caption?.instagram || \"Market Brief SahamFYP Hari Ini\",\n    platform: \"instagram\"\n  })\n}}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -1280,
+        2016
+      ],
+      "id": "e07f3eb6-f39b-45e5-a619-734666830221",
+      "name": "Publish - Repliz"
+    },
+    {
+      "parameters": {
+        "chatId": "294594761",
+        "text": "={{ $json.message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -832,
+        2016
+      ],
+      "id": "a3a7ac74-8b72-47be-b3c1-72c16bbe456d",
+      "name": "Broadcast - Reports",
+      "webhookId": "6b2464cd-a7fb-405f-92e6-b6aa9ba85f5b",
+      "credentials": {
+        "telegramApi": {
+          "id": "7nKsmDhD828CPjdX",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const sessionData = $('SectorTrigger - OPEN').first().json || {};\nconst naskah = sessionData.naskah || {};\nconst selection = sessionData.selection || {};\nconst slides = naskah.slides || [];\n\n// Mengambil data hasil publish dari node sebelumnya\nconst publishData = $('Publish - Repliz').first().json || {};\nconst publishResults = publishData.results || [];\n\nconst now = new Date();\n\n// Format waktu Indonesia (WIB)\nconst options = { \n  weekday: 'long', \n  year: 'numeric', \n  month: '2-digit', \n  day: '2-digit', \n  hour: '2-digit', \n  minute: '2-digit',\n  timeZone: 'Asia/Jakarta'\n};\nconst waktu = now.toLocaleString('id-ID', options).replace(/\\//g, '/');\n\n// Mengambil saham terpilih dari slides\nconst stockSlides = slides.filter(s => s.template === 'stock');\nconst selectedList = stockSlides.length > 0 \n  ? stockSlides.map(s => `• *${s.ticker}* (${s.companyName || ''})`).join('\\n')\n  : 'Tidak ada saham terpilih';\n\n// Helper untuk generate URL profil berdasarkan platform\nfunction getProfileUrl(platform, name) {\n  const cleanName = (name || '').replace('@', '');\n  if (!cleanName) return '#';\n  switch (platform.toLowerCase()) {\n    case 'instagram': return `https://instagram.com/${cleanName}`;\n    case 'twitter': return `https://x.com/${cleanName}`;\n    case 'tiktok': return `https://tiktok.com/@${cleanName}`;\n    case 'facebook': return `https://facebook.com/${cleanName}`;\n    case 'threads': return `https://threads.net/@${cleanName}`;\n    case 'telegram': return `https://t.me/${cleanName}`;\n    case 'linkedin': return `https://linkedin.com/company/${cleanName}`;\n    default: return '#';\n  }\n}\n\n// Membangun daftar platform yang sukses\nlet publishList = publishResults\n  .filter(r => r.status === 'success')\n  .map(r => {\n    // Membuat huruf pertama platform menjadi kapital (contoh: instagram -> Instagram)\n    const platformName = r.platform.charAt(0).toUpperCase() + r.platform.slice(1);\n    const link = getProfileUrl(r.platform, r.accountName);\n    return `• ${platformName} : ${link}`;\n  })\n  .join('\\n');\n\nif (!publishList) {\n  publishList = \"_Tidak ada publikasi yang sukses_\";\n}\n\nlet message = `🚀 *SahamFYP - Market Brief OPEN*\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `🕐 *Waktu* : ${waktu} WIB\\n`;\nmessage += `📌 *Judul* : ${slides[0]?.title || 'Market Brief Open'}\\n`;\nmessage += `💳 *Credits Used* : ${sessionData.creditsUsed || 0} Credits\\n\\n`;\n\nmessage += `🎯 *Watchlist Saham Terpilih (${stockSlides.length})*:\\n`;\nmessage += `${selectedList}\\n\\n`;\n\nmessage += `📝 *Alasan Seleksi*:\\n`;\nmessage += `_${selection.reasoning || 'Katalis korporasi terpilih'}_\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `✨ *Berhasil terbit ke ${publishData.success_count || 0} akun*:\\n`;\nmessage += `${publishList}`;\n\nreturn { json: { message } };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1056,
+        2016
+      ],
+      "id": "37474ecf-3ef5-4b72-9e91-b887cd02707a",
+      "name": "Chat Generator - Reports"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://saham-fyp.vercel.app/api/posts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmMzAyMDViMi1hMzY1LTQyZDUtODE0ZS0yYzRiYjJkNDQyYmIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiNDdmMGMwYjktMTQ1MC00NjcwLTk3ZjktZjA1ZDU2Y2EzM2ViIiwiaWF0IjoxNzg4OTM1MDA2fQ.PVtFSytgbdeoVO_86oOpYZPMmNbYOYEV9MCaUSVVGos"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "imageUrls",
+              "value": "={{ $json.imageUrls }}"
+            },
+            {
+              "name": "naskah",
+              "value": "={{ $('SectorTrigger - OPEN').item.json.naskah }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -1728,
+        2016
+      ],
+      "id": "921ab133-8278-41d6-b427-52c9728908e3",
+      "name": "Save - Supabase"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "naskah.slides",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -2400,
+        2208
+      ],
+      "id": "d0751b6d-2de4-4ff2-9f4b-d2e9f82257df",
+      "name": "Split Out - Slide by slide"
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -1504,
+        2016
+      ],
+      "id": "c5dcefdf-1e87-4665-a2a4-9f1e8980ffb7",
+      "name": "Wait",
+      "webhookId": "54a8dae4-e0f7-49c5-aaa9-f1d42a40fa51"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://xgqsrttpdxiiqknuulwl.supabase.co/storage/v1/object/sfyp-storage/slide-{{$execution.id}}-{{$runIndex}}.jpg",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "image/jpeg"
+            },
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhncXNydHRwZHhpaXFrbnV1bHdsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODg0NzQzNSwiZXhwIjoyMTA0NDIzNDM1fQ.9ph-hVC34GmTDucS6PzwVri66YgOZGBknWtgxx9mbp8"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "=data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -1504,
+        2288
+      ],
+      "id": "e4634f35-67a6-4ede-b099-97c55730f130",
+      "name": "Bucket Supabase",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "fvjDamOUe1YBbbBo",
+          "name": "Bearer Auth account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule 08.30 WIB": {
+      "main": [
+        [
+          {
+            "node": "SectorTrigger - OPEN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SectorTrigger - OPEN": {
+      "main": [
+        [
+          {
+            "node": "Split Out - Slide by slide",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Collect All URLs",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slides HTML - Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Browserless.io": {
+      "main": [
+        [
+          {
+            "node": "Bucket Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect All URLs": {
+      "main": [
+        [
+          {
+            "node": "Save - Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slides HTML - Image": {
+      "main": [
+        [
+          {
+            "node": "Browserless.io",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish - Repliz": {
+      "main": [
+        [
+          {
+            "node": "Chat Generator - Reports",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Generator - Reports": {
+      "main": [
+        [
+          {
+            "node": "Broadcast - Reports",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save - Supabase": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out - Slide by slide": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Publish - Repliz",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bucket Supabase": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedPerExecution": 5
+  },
+  "versionId": "93c2027f-e8fe-4553-a237-d17174017abd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dc96f10ae7dc95d3c138575ba243a0a167923dbcb524841d451aadf9135d5fb3"
+  },
+  "nodeGroups": [],
+  "id": "oXbBARbdwQjHLmYD",
+  "tags": []
+}

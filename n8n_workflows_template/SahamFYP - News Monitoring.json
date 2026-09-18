@@ -1,0 +1,1146 @@
+{
+  "name": "SahamFYP - News Monitoring",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check-decision",
+              "leftValue": "={{ $json.decision }}",
+              "rightValue": "GENERATE",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "71d3575a-b352-499d-be5c-3e7c1d476285",
+      "name": "4. Decision?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -832,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.item.json;\nconst now = new Date();\n\n// Format waktu Indonesia\nconst options = { \n  weekday: 'long', \n  year: 'numeric', \n  month: '2-digit', \n  day: '2-digit', \n  hour: '2-digit', \n  minute: '2-digit',\n  timeZone: 'Asia/Jakarta'\n};\nconst waktu = now.toLocaleString('id-ID', options).replace(/\\//g, '/');\n\nlet message = `📰 *SahamFYP - News Update*\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `🕐 Waktu : ${waktu} WIB\\n`;\nmessage += `📌 Judul : ${$('Scrape').first().json.title  || 'N/A'}\\n`;\nmessage += `🌐 Media : ${$('Scrape').first().json.siteName || 'N/A'}\\n`;\nmessage += `🔗 Link : ${ $('Scrape').first().json.url || 'N/A'}\\n`;\nmessage += `📊 Status : ${$input.first().json.data.decision} ❌\\n`;\nmessage += `📝 Alasan : ${ $input.first().json.data.reason|| 'Tidak ada alasan'}\\n`;\nmessage += `📊 Score : ${$input.first().json.data.score} \\n\\n\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `_Tidak di-generate karena score < 9_`;\n\nreturn { json: { message } };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -608,
+        272
+      ],
+      "id": "1c5ec1e5-acc1-4650-a56c-77e283b76fda",
+      "name": "Chat Generator - PASS"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.item.json;\nconst now = new Date();\n\n// Format waktu Indonesia\nconst options = { \n  weekday: 'long', \n  year: 'numeric', \n  month: '2-digit', \n  day: '2-digit', \n  hour: '2-digit', \n  minute: '2-digit',\n  timeZone: 'Asia/Jakarta'\n};\nconst waktu = now.toLocaleString('id-ID', options).replace(/\\//g, '/');\n\nlet message = `📰 *SahamFYP - News Update*\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `🕐 Waktu : ${waktu} WIB\\n`;\nmessage += `📌 Judul : ${$('Scrape').first().json.title  || 'N/A'}\\n`;\nmessage += `🌐 Media : ${$('Scrape').first().json.siteName || 'N/A'}\\n`;\nmessage += `🔗 Link : ${ $('Scrape').first().json.url || 'N/A'}\\n`;\nmessage += `📊 Status : ${$input.first().json.data.decision} ❌\\n`;\nmessage += `📝 Alasan : ${ $input.first().json.data.reason|| 'Tidak ada alasan'}\\n`;\nmessage += `📊 Score : ${$input.first().json.data.score} \\n\\n\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `_Tidak di-generate karena score < 9_`;\n\nreturn { json: { message } };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -608,
+        80
+      ],
+      "id": "3761ddcc-9c87-4b29-895e-98499bb125ea",
+      "name": "Chat Generator - GENERATE"
+    },
+    {
+      "parameters": {
+        "chatId": "294594761",
+        "text": "={{ $json.message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -384,
+        80
+      ],
+      "id": "9c633f7d-431f-4ba8-b8a8-003df1153729",
+      "name": "BROADCAST - GENERATE",
+      "webhookId": "8a3bff5d-f9e1-4652-bdb0-1a8e80ccfdc1",
+      "credentials": {
+        "telegramApi": {
+          "id": "7nKsmDhD828CPjdX",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "294594761",
+        "text": "={{ $json.message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -384,
+        272
+      ],
+      "id": "cc03dca7-1967-4d1e-b205-4fb573639147",
+      "name": "BROADCAST - PASS",
+      "webhookId": "480e315e-4b0f-4b6b-bde3-0ccbcf72b78b",
+      "credentials": {
+        "telegramApi": {
+          "id": "7nKsmDhD828CPjdX",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "RSS TRIGGER\n\nDETEKSI SINYAL BERITA-BERITA EKONOMI/INVESTASI YANG MEMPENGARUHI HARGA SAHAM",
+        "width": 480
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1776,
+        -160
+      ],
+      "id": "51f801a7-4ee4-4293-bd2e-ede7ef3536a5",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "naskah.slides",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -1696,
+        944
+      ],
+      "id": "ba092a5e-3b36-4fb2-a9b8-3a58bd6cba7f",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1472,
+        944
+      ],
+      "id": "b6646bd9-d9f5-45eb-ad8f-62745d3b0cbf",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const slide = $input.item.json;\nconst image = $('Generate Naskah').first().json.image;\n\nfunction buildSlideHtml(slide, image) {\n  const accent = slide.accent || '#F2A93B';\n  let iconSvg = '';\n  \n  if (slide.template === 'cta') {\n    iconSvg = '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"80\" height=\"80\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"' + accent + '\" stroke-width=\"2\"><path d=\"M7.9 20A9 9 0 1 0 4 16.1L2 22Z\"/></svg>';\n  } else if (slide.template === 'pros') {\n    iconSvg = '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"32\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#4CAF7D\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m9 12 2 2 4-4\"/></svg>';\n  } else if (slide.template === 'cons') {\n    iconSvg = '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"32\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#E4572E\" stroke-width=\"2\"><path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z\"/></svg>';\n  } else {\n    iconSvg = '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"80\" height=\"80\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"' + accent + '\" stroke-width=\"2\"><polyline points=\"22 7 13.5 15.5 8.5 10.5 2 17\"/><polyline points=\"16 7 22 7 22 13\"/></svg>';\n  }\n\n  let content = '';\n  \n  if (slide.template === 'cover') {\n    content = '<div class=\"slide\" style=\"background:linear-gradient(135deg,#14182B 0%,#1E2A4A 100%)\">' +\n      (image ? '<img class=\"illustration\" src=\"' + image + '\" alt=\"\">' : '') +\n      '<h1 class=\"title\" style=\"color:' + accent + '\">' + (slide.title || '') + '</h1>' +\n      '<p class=\"description\">' + (slide.description || '') + '</p>' +\n      '</div>';\n  } else if (slide.template === 'cta') {\n    content = '<div class=\"slide\">' +\n      '<div class=\"icon-container\">' + iconSvg + '</div>' +\n      '<h1 class=\"title\" style=\"color:' + accent + '\">' + (slide.title || '') + '</h1>' +\n      '<p class=\"description\">' + (slide.description || '') + '</p>' +\n      (slide.disclaimer ? '<div class=\"disclaimer\">' + slide.disclaimer + '</div>' : '') +\n      '</div>';\n  } else {\n    content = '<div class=\"slide\">' +\n      '<div class=\"icon-container\">' + iconSvg + '</div>' +\n      '<h1 class=\"title\" style=\"color:' + accent + '\">' + (slide.title || '') + '</h1>' +\n      '<p class=\"description\">' + (slide.description || '') + '</p>' +\n      '</div>';\n  }\n\n  return '<!DOCTYPE html><html><head><style>' +\n    '*{margin:0;padding:0;box-sizing:border-box}' +\n    'body{width:1080px;height:1080px;font-family:Arial,sans-serif;background:#14182B;color:#FFF;overflow:hidden}' +\n    '.slide{width:1080px;height:1080px;padding:60px;display:flex;flex-direction:column;justify-content:center}' +\n    '.title{font-size:56px;font-weight:800;line-height:1.2;margin-bottom:24px}' +\n    '.description{font-size:32px;line-height:1.5;opacity:.9}' +\n    '.icon-container{position:absolute;top:60px;right:60px}' +\n    '.illustration{width:100%;height:400px;object-fit:cover;border-radius:16px;margin-bottom:32px}' +\n    '.disclaimer{font-size:20px;opacity:.7;margin-top:24px;padding:16px 24px;background:rgba(255,255,255,.1);border-radius:12px}' +\n    '</style></head><body>' + content + '</body></html>';\n}\n\nreturn {\n  json: {\n    html: buildSlideHtml(slide, image),\n    slideIndex: $item.index,\n    template: slide.template,\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1248,
+        944
+      ],
+      "id": "213e765b-6093-475d-819a-24236ab1a8ce",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://chrome.browserless.io/screenshot?token={{ $env.BROWSERLESS_IO_KEY }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"url\": \"data:text/html,{{ $json.html }}\",\n  \"options\": {\n    \"type\": \"png\",\n    \"fullPage\": true\n  },\n  \"viewport\": {\n    \"width\": 1080,\n    \"height\": 1080\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -1024,
+        944
+      ],
+      "id": "d07bee5e-c980-4528-9bcb-5092d679882f",
+      "name": "Browserless.io1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.cloudinary.com/v1_1/{{ $env.CLOUDINARY_CLOUD_NAME }}/image/upload",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "file",
+              "value": "={{ $binary.data }}"
+            },
+            {
+              "name": "upload_preset",
+              "value": "sahamfyp"
+            },
+            {
+              "name": "public_id",
+              "value": "=sector-{{ $('Open API').first().json.session }}-{{ $item.index }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -800,
+        1024
+      ],
+      "id": "cd8e77be-2c78-4373-a523-8eee05656d5c",
+      "name": "Cloudinary1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const allItems = $input.all();\nconst cloudinaryUrls = allItems.map(item => item.json.secure_url);\n\nreturn {\n  json: {\n    cloudinaryUrls: cloudinaryUrls,\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1248,
+        752
+      ],
+      "id": "09428498-78d7-47be-bf44-261d0f140343",
+      "name": "Collect All URLs1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://saham-fyp.vercel.app/api/publish",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "={{ $env.N8N_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"postId\": \"{{ $('Open API').first().json.postId }}\",\n  \"cloudinaryUrls\": {{ $json.cloudinaryUrls }},\n  \"caption\": \"{{ $('Open API').first().json.naskah.caption.instagram }}\",\n  \"platform\": \"instagram\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -800,
+        752
+      ],
+      "id": "93006cea-80de-4e03-a9fa-62ac2355ed83",
+      "name": "Publish - Repliz1"
+    },
+    {
+      "parameters": {
+        "chatId": "294594761",
+        "text": "={{ $json.message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -352,
+        752
+      ],
+      "id": "c235aee2-1024-4b1b-8ee9-a72d788276e1",
+      "name": "Broadcast - Reports1",
+      "webhookId": "b594caaf-5815-4711-b36d-1109c9b4b87c",
+      "credentials": {
+        "telegramApi": {
+          "id": "7nKsmDhD828CPjdX",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.item.json;\nconst now = new Date();\n\n// Format waktu Indonesia\nconst options = { \n  weekday: 'long', \n  year: 'numeric', \n  month: '2-digit', \n  day: '2-digit', \n  hour: '2-digit', \n  minute: '2-digit',\n  timeZone: 'Asia/Jakarta'\n};\nconst waktu = now.toLocaleString('id-ID', options).replace(/\\//g, '/');\n\nlet message = `📰 *SahamFYP - News Update*\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `🕐 Waktu : ${waktu} WIB\\n`;\nmessage += `📌 Judul : ${$('Scrape').first().json.title  || 'N/A'}\\n`;\nmessage += `🌐 Media : ${$('Scrape').first().json.siteName || 'N/A'}\\n`;\nmessage += `🔗 Link : ${ $('Scrape').first().json.url || 'N/A'}\\n`;\nmessage += `📊 Status : ${$input.first().json.decision} ❌\\n`;\nmessage += `📝 Alasan : ${ $input.first().json.reason|| 'Tidak ada alasan'}\\n`;\nmessage += `📊 Score : ${$input.first().json.score} \\n\\n\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `_Tidak di-generate karena score < 9_`;\n\nreturn { json: { message } };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -576,
+        752
+      ],
+      "id": "efa53e1c-8c4d-4089-bf44-99893610fa19",
+      "name": "Chat Generator - Reports1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://saham-fyp.vercel.app/api/posts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "={{ $env.N8N_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "={{ $('Open API').first().json.postId }}"
+            },
+            {
+              "name": "cloudinaryUrls",
+              "value": "={{ $json.cloudinaryUrls }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -1024,
+        752
+      ],
+      "id": "cc370c60-acab-4788-ae0c-366129c8cbaf",
+      "name": "Update Post"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "128f0e56-1fcb-427f-b678-7eb21eecf379",
+              "leftValue": "={{ $json.exists }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2400,
+        176
+      ],
+      "id": "35db6438-f83f-4769-8513-f94cc481a1a5",
+      "name": "IF Exists?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://saham-fyp.vercel.app/api/scrape",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "={{ $('Check Exists?').item.json.url }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a92d36bc-9c1b-499a-b20e-bd4e8a910d4c",
+      "name": "Scrape",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2176,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://saham-fyp.vercel.app/api/classify",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "title",
+              "value": "={{ $json.data.title }}"
+            },
+            {
+              "name": "content",
+              "value": "={{ $json.data.content }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3969e296-64ae-4555-9265-8b12dc704f4d",
+      "name": "Classify",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1728,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://saham-fyp.vercel.app/api/score",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "title",
+              "value": "={{ $('Scrape').item.json.title }}"
+            },
+            {
+              "name": "content",
+              "value": "={{ $('Scrape').item.json.content }}"
+            },
+            {
+              "name": "category",
+              "value": "={{ $json.data.category }}"
+            },
+            {
+              "name": "ticker",
+              "value": "={{ $json.data.ticker }}"
+            },
+            {
+              "name": "reason",
+              "value": "={{ $json.data.reason }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ae50f3da-4011-47e2-b895-efb9463b8d10",
+      "name": "Score",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1280,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://saham-fyp.vercel.app/api/news-scrape",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "={{ $json.link }}"
+            },
+            {
+              "name": "action",
+              "value": "check"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -2624,
+        176
+      ],
+      "id": "500c39f7-8328-43d3-9519-5e69183040ee",
+      "name": "Check Exists?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://saham-fyp.vercel.app/api/news-scrape",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "={{ $json.url }}"
+            },
+            {
+              "name": "title",
+              "value": "={{ $json.title }}"
+            },
+            {
+              "name": "content",
+              "value": "={{ $json.content }}"
+            },
+            {
+              "name": "description",
+              "value": "={{ $json.description }}"
+            },
+            {
+              "name": "image",
+              "value": "={{ $json.image }}"
+            },
+            {
+              "name": "sitename",
+              "value": "={{ $json.siteName }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -1952,
+        176
+      ],
+      "id": "a7093502-3043-4802-b033-ae67205e39fe",
+      "name": "Save Scraped - DB"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://saham-fyp.vercel.app/api/news-scrape",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "action",
+              "value": "update"
+            },
+            {
+              "name": "url",
+              "value": "={{ $('Scrape').item.json.url }}"
+            },
+            {
+              "name": "category",
+              "value": "={{ $json.category }}"
+            },
+            {
+              "name": "ticker",
+              "value": "={{ $json.ticker }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -1504,
+        176
+      ],
+      "id": "3851ec13-5b28-48f0-84f8-eadf5b3b1050",
+      "name": "Update Category - DB"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://saham-fyp.vercel.app/api/news-scrape",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "action",
+              "value": "update"
+            },
+            {
+              "name": "url",
+              "value": "={{ $('Scrape').item.json.url }}"
+            },
+            {
+              "name": "score",
+              "value": "={{ $json.score }}"
+            },
+            {
+              "name": "decision",
+              "value": "={{ $json.decision }}"
+            },
+            {
+              "name": "reason",
+              "value": "={{ $json.reason }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -1056,
+        176
+      ],
+      "id": "32287d3f-a449-4366-8352-9d6786c2a755",
+      "name": "Update Score - DB"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "feedUrl": "https://katadata.co.id/rss"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2848,
+        848
+      ],
+      "id": "f4e374dc-8ccf-4d6b-ab18-09aa26502f5d",
+      "name": "Katadata",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "feedUrl": "https://keuangan.kontan.co.id/rss"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2848,
+        656
+      ],
+      "id": "a93b3bf6-d7de-4db3-9d2e-2abd7eb75db2",
+      "name": "Kontan",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "feedUrl": "https://sindikasi.okezone.com/index.php/rss/11/RSS2.0"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2848,
+        464
+      ],
+      "id": "8bc58db2-c195-4ba5-9052-91a926371142",
+      "name": "OKEZONE",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "feedUrl": "https://feed.liputan6.com/rss/saham"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2848,
+        272
+      ],
+      "id": "b5a0c125-5d2d-4053-89a5-f20882815828",
+      "name": "Liputan6",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "feedUrl": "https://finance.detik.com/rss"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2848,
+        80
+      ],
+      "id": "571e83d0-9b1b-4db8-aa5d-c077e62c22d5",
+      "name": "Detik",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "feedUrl": "https://www.cnnindonesia.com/ekonomi/rss"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2848,
+        -112
+      ],
+      "id": "2fa7cdd2-68a2-4fd9-843b-5c4214d428fe",
+      "name": "CNN",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "feedUrl": "https://www.cnbcindonesia.com/market/rss"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2848,
+        -496
+      ],
+      "id": "55cff7da-14e0-4e6f-bdc1-4c930878426e",
+      "name": "CNBC",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "feedUrl": "https://www.idxchannel.com/rss"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2848,
+        -304
+      ],
+      "id": "39d5e545-4d5d-4074-8a04-eccb197f3b8e",
+      "name": "IDX Channel",
+      "disabled": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "4. Decision?": {
+      "main": [
+        [
+          {
+            "node": "Chat Generator - GENERATE",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Chat Generator - PASS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Generator - PASS": {
+      "main": [
+        [
+          {
+            "node": "BROADCAST - PASS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Generator - GENERATE": {
+      "main": [
+        [
+          {
+            "node": "BROADCAST - GENERATE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BROADCAST - PASS": {
+      "main": [
+        []
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "Collect All URLs1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Browserless.io1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Browserless.io1": {
+      "main": [
+        [
+          {
+            "node": "Cloudinary1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cloudinary1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish - Repliz1": {
+      "main": [
+        [
+          {
+            "node": "Chat Generator - Reports1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Generator - Reports1": {
+      "main": [
+        [
+          {
+            "node": "Broadcast - Reports1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect All URLs1": {
+      "main": [
+        [
+          {
+            "node": "Update Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Post": {
+      "main": [
+        [
+          {
+            "node": "Publish - Repliz1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Exists?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Scrape",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrape": {
+      "main": [
+        [
+          {
+            "node": "Save Scraped - DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify": {
+      "main": [
+        [
+          {
+            "node": "Update Category - DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score": {
+      "main": [
+        [
+          {
+            "node": "Update Score - DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BROADCAST - GENERATE": {
+      "main": [
+        []
+      ]
+    },
+    "Check Exists?": {
+      "main": [
+        [
+          {
+            "node": "IF Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Scraped - DB": {
+      "main": [
+        [
+          {
+            "node": "Classify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Category - DB": {
+      "main": [
+        [
+          {
+            "node": "Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Score - DB": {
+      "main": [
+        [
+          {
+            "node": "4. Decision?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CNBC": {
+      "main": [
+        [
+          {
+            "node": "Check Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IDX Channel": {
+      "main": [
+        [
+          {
+            "node": "Check Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CNN": {
+      "main": [
+        [
+          {
+            "node": "Check Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detik": {
+      "main": [
+        [
+          {
+            "node": "Check Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Liputan6": {
+      "main": [
+        [
+          {
+            "node": "Check Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OKEZONE": {
+      "main": [
+        [
+          {
+            "node": "Check Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kontan": {
+      "main": [
+        [
+          {
+            "node": "Check Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Katadata": {
+      "main": [
+        [
+          {
+            "node": "Check Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedPerExecution": 5
+  },
+  "versionId": "8d9d20cf-181e-4863-82f1-db7b905b5c89",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dc96f10ae7dc95d3c138575ba243a0a167923dbcb524841d451aadf9135d5fb3"
+  },
+  "nodeGroups": [],
+  "id": "pNpygEWFXQskabcb",
+  "tags": []
+}

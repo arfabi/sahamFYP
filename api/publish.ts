@@ -26,7 +26,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { postId, cloudinaryUrls, imageUrls, caption, scheduleAt, targetAccountIds } = parseBody(req);
+  const { postId, cloudinaryUrls, imageUrls, caption, scheduleAt, targetAccountIds, workflowType = 'daily_market_brief' } = parseBody(req);
   
   const finalImageUrls = imageUrls || cloudinaryUrls;
 
@@ -172,6 +172,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           instagram_status: 'scheduled',
         })
         .eq('id', postId);
+    }
+
+    // Save to automation_posts if workflowType is provided (e.g. from n8n automations)
+    if (workflowType && replizSuccesses.length > 0) {
+      const firstSuccess = replizSuccesses[0];
+      await supabaseServer
+        .from('automation_posts')
+        .insert({
+          workflow_type: workflowType,
+          account_id: firstSuccess.accountName,
+          caption: caption,
+          thumbnail_url: finalImageUrls[0],
+          post_link: '', 
+          post_id: firstSuccess.scheduleId,
+          status: 'success'
+        });
     }
 
     return res.status(200).json({

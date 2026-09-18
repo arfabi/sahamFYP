@@ -18,10 +18,10 @@
 | | |
 |---|---|
 | **Track** | Automation & Workflows |
-| **Problem statement** | Financial content creator, edukator finansial, dan sekuritas butuh cara memproduksi konten edukasi saham yang cepat, konsisten, dan **terverifikasi data fundamental** — bukan sekadar ikut tren — untuk menjangkau audiens Gen Z yang mendominasi jumlah investor pasar modal Indonesia namun rawan FOMO. |
+| **Problem statement** | Financial content creator, edukator finansial, dan sekuritas butuh cara mengubah data pasar yang kaku dan teknis menjadi konten edukasi yang benar-benar dibaca dan dipahami Gen Z — tanpa kehilangan akurasi data fundamentalnya. |
 | **Who it's for** | Financial content creator / financial educator / sekuritas yang butuh content engine otomatis dan kaya data |
 | **Impact / downstream audience** | Gen Z investor — audiens yang membaca hasil konten di media sosial dan terbantu memahami saham lewat data, bukan hype |
-| **Live proof** | Akun **@sahamfyp** sudah berjalan otomatis di Instagram, Facebook, Threads, X, dan TikTok |
+| **Live proof** | Akun **[@sahamfyp.id](https://instagram.com/sahamfyp.id)** sudah berjalan otomatis di Instagram, Facebook, Threads, TikTok, dan Telegram Channel — [contoh post](https://www.instagram.com/p/Ddaf_0piRRt/?img_index=5) |
 
 > **Catatan penting soal core data source**: SahamFYP menggunakan **Sectors REST API** di hampir setiap tahap alur — deteksi ticker, enrichment fundamental & teknikal, ranking top movers, hingga data broker & foreign flow. **Kalau data Sectors.app dicabut, produk ini kehilangan fungsi intinya**: slide 4–6 di semua 6 kategori konten (lihat [Template Konten](#5-template-konten--klasifikasi-berita)) bergantung penuh pada data tersebut untuk verifikasi faktual. Tanpa itu, sistem hanya jadi rewrite berita tanpa nilai tambah — persis kebalikan dari misi produk ini.
 
@@ -51,7 +51,13 @@ Dengan satu pipeline otomatis (n8n + Sectors REST API + LLM), SahamFYP menghasil
 
 **Dampaknya sampai ke audiens akhir**: Gen Z investor yang membaca konten ini di media sosial mendapat konteks *mengapa* sebuah saham trending — apakah benar-benar kuat secara fundamental, atau cuma hype — bukan sekadar judul clickbait tanpa data.
 
-> Contoh akun yang sudah berjalan otomatis: **[@sahamfyp](https://instagram.com/sahamfyp)** di Instagram, Facebook, Threads, X, dan TikTok.
+> **Akun live** (proof-of-concept, dikelola sebagai showcase produk ini — bukan afiliasi resmi sekuritas mana pun):
+> - Instagram: https://instagram.com/sahamfyp.id
+> - Facebook: https://facebook.com/sahamfyp.id
+> - Threads: https://www.threads.com/@sahamfyp.id
+> - TikTok: https://tiktok.com/@sahamfyp.id
+> - Telegram Channel: https://t.me/sahamfyp
+> - Contoh postingan hasil generate otomatis: https://www.instagram.com/p/Ddaf_0piRRt/?img_index=5
 
 ---
 
@@ -59,16 +65,18 @@ Dengan satu pipeline otomatis (n8n + Sectors REST API + LLM), SahamFYP menghasil
 
 ### Masalah
 
+**Daily Market Brief yang dibuat sekuritas selama ini umumnya formal, padat istilah teknis, dan disajikan sebagai dokumen/PDF** — format yang kurang cocok dengan kebiasaan konsumsi informasi Gen Z di media sosial. Akibatnya, brief semacam ini jarang benar-benar dibaca oleh audiens Gen Z, padahal merekalah kelompok investor terbesar saat ini di pasar modal Indonesia.
+
 Berdasarkan data dari **Bursa Efek Indonesia (BEI)** per Mei 2026, **54,4% investor pasar modal** berasal dari **Generasi Z** (lahir 1997–2012). Sementara itu, data **Kustodian Sentral Efek Indonesia (KSEI)** per Juni 2024 mencatat bahwa **55,38% investor individu** berusia **30 tahun ke bawah**.
 
-Lebih dari itu, perilaku investasi Gen Z sering didorong oleh **FOMO (Fear Of Missing Out)** dan informasi dari media sosial. Berbagai riset dan opini menunjukkan bahwa:
+Ironisnya, mayoritas kelompok ini justru sering membuat keputusan investasi tanpa bekal informasi yang tepat. Perilaku investasi Gen Z sering didorong oleh **FOMO (Fear Of Missing Out)** dan informasi dari media sosial, bukan dari brief resmi yang sudah tersedia. Berbagai riset dan opini menunjukkan bahwa:
 
 - Banyak Gen Z membeli saham karena **viral/trending**, bukan karena analisis fundamental
 - **Tanpa verifikasi data** dan **tanpa membaca laporan keuangan**
 - Terpapar **misinformasi** dan ekspektasi keuntungan yang tidak realistis
 - Risiko keputusan finansial yang kurang tepat meningkat
 
-Di sisi lain, **content creator dan edukator finansial** yang ingin menjawab kebutuhan ini menghadapi masalah operasional: riset data fundamental untuk tiap konten (cek laporan keuangan, valuation, ownership, foreign flow) itu **memakan waktu**, sementara konten harus tayang **konsisten dan tepat waktu** (misalnya pagi sebelum bursa buka) supaya relevan.
+Di sisi lain, **content creator, edukator finansial, dan sekuritas** yang ingin menjembatani gap ini menghadapi masalah operasional: mengubah data fundamental resmi (laporan keuangan, valuation, ownership, foreign flow) menjadi format yang ringan dibaca itu **memakan waktu** kalau dikerjakan manual tiap hari, sementara konten harus tayang **konsisten dan tepat waktu** (pagi sebelum bursa buka, sore setelah tutup) supaya tetap relevan.
 
 **Sumber:**
 
@@ -78,10 +86,11 @@ Di sisi lain, **content creator dan edukator finansial** yang ingin menjawab keb
 
 ### Solusi SahamFYP
 
-SahamFYP hadir sebagai **content engine untuk content creator/edukator/sekuritas**, yang:
+SahamFYP hadir sebagai **content engine untuk content creator/edukator/sekuritas** yang mengubah data pasar yang sama — yang biasanya terkubur di dokumen brief formal — menjadi konten yang benar-benar dibaca Gen Z, tanpa kehilangan akurasinya:
 
+- Mengubah format: dari dokumen/PDF formal menjadi **carousel visual, bahasa santai, dan istilah teknis yang dijelaskan ulang ala Gen Z** (lihat slide "Kamus" di [Template Konten](#5-template-konten--klasifikasi-berita))
 - Mengotomatiskan seluruh pipeline: deteksi sinyal berita → verifikasi data → generate konten → publish — **tanpa intervensi manual per siklus**
-- Mengintegrasikan **Sectors REST API** (laporan keuangan, dividen, valuation, ownership, foreign flow, broker activity, top movers) sebagai **verifikasi faktual di setiap konten**
+- Mengintegrasikan **Sectors REST API** (laporan keuangan, dividen, valuation, ownership, foreign flow, broker activity, top movers) sebagai **verifikasi faktual di setiap konten**, supaya lebih mudah dibaca tidak berarti kehilangan akurasi data
 - **Mengontekstualisasikan tren** dengan data fundamental: apakah saham yang naik benar-benar kuat, atau hanya hype?
 - **Menjadwalkan & memicu konten tepat waktu** (market brief pagi sebelum bursa buka, monitoring berita real-time) agar konten tetap relevan & actionable
 - Meneruskan manfaatnya ke pembaca akhir (Gen Z investor) lewat konten yang **edukatif, netral, dan berbasis data** — bukan ajakan beli/jual
@@ -143,11 +152,13 @@ RSS Trigger (8 sumber, poll tiap menit)
   → Decision gate: PASS (berita tidak cukup relevan/kuat → skip, notifikasi Telegram singkat)
              atau GENERATE (lanjut ke enrichment & produksi konten)
   → Enrich dengan Sectors REST API sesuai kategori (lihat tabel 6 kategori di bawah)
-  → Generate naskah (LLM) → Render HTML → Browserless → Supabase Storage (upload gambar)
+  → Generate naskah (LLM) → Render HTML → Browserless → upload gambar (Supabase Storage — migrasi dari Cloudinary sedang berjalan)
   → Publish ke Repliz → Update status di Supabase → Laporan ke Telegram
 ```
 
 Karena berbasis RSS multi-sumber + polling otomatis (bukan scraping satu situs saja), workflow ini lebih tahan terhadap downtime satu sumber berita dan tetap berjalan otonom mendeteksi sinyal kapan pun berita baru terbit — tanpa jadwal tetap, murni event-driven.
+
+> **Status migrasi storage**: workflow ini sedang dipindah dari Cloudinary ke Supabase Storage supaya satu CDN dipakai konsisten di seluruh sistem. Lihat [Known Limitations](#-known-limitations--status-pengembangan) untuk detail.
 
 
 
@@ -187,13 +198,13 @@ Karena berbasis RSS multi-sumber + polling otomatis (bukan scraping satu situs s
 - **Referensi**: https://ai.sumopod.com/ | https://sumopod.com/
 - **Cara kerja**: Endpoint OpenAI-compatible `POST {SUMOPOD_BASE_URL}/chat/completions` (default `https://ai.sumopod.com/v1/chat/completions`) dengan header `Authorization: Bearer <SUMOPOD_API_KEY>`. Model default `gemini/gemini-3.1-flash-lite` (ganti via `SUMOPOD_MODEL`). Wrapper server: `api/_lib/llm.ts`; wrapper client (proxy `/api/llm`): `src/services/llm.ts` — API key tidak pernah ter-expose ke bundle browser.
 
-### 4. Penyimpanan Gambar: Supabase Storage
+### 4. Penyimpanan Gambar: Supabase Storage (migrasi dari Cloudinary — in progress)
 
 - **Fungsi**: Engine rendering gambar dan penyimpanan CDN publik
+- **Status**: Daily Market Brief sudah sepenuhnya pakai **Supabase Storage** (bucket `sfyp-storage`). News Monitoring **sedang dalam proses migrasi** dari Cloudinary ke Supabase Storage — belum 100% selesai, sebagian eksekusi masih bisa memakai Cloudinary sampai migrasi tuntas. Env variable Cloudinary masih dipertahankan di `.env.example` untuk sementara.
 - **Cara kerja**:
   - **Browserless.io** digunakan oleh kedua *workflow* n8n untuk mengubah skrip HTML (berisi data fundamental & berita) menjadi gambar beresolusi tinggi (JPEG 1080×1350).
-  - Seluruh gambar hasil render diunggah ke **Supabase Storage** (bucket `sfyp-storage`).
-  - URL publik dari Supabase ini dikumpulkan sebagai payload `imageUrls` yang diteruskan ke API publish, menghindari risiko blokir CDN gratisan dari Meta/Facebook.
+  - Gambar hasil render diunggah ke **Supabase Storage** (bucket `sfyp-storage`); URL publiknya dikumpulkan sebagai payload `imageUrls` yang diteruskan ke API publish, menghindari risiko blokir CDN gratisan dari Meta/Facebook.
 
 ### 5. Template Konten & Klasifikasi Berita
 
@@ -285,12 +296,12 @@ Selengkapnya baca di: [`docs/Struktur_Konten_6_Kategori_SahamFYP.md`](docs/Struk
 
 
 
-### 6. Template Konten Daily Brief (Market Open & Close)
+### 6. Template Konten Daily Brief (Market Open, live — Market Close, planned)
 
-Selain konten berbasis berita, SahamFYP juga memiliki template dinamis untuk trigger terjadwal (pagi dan sore) yang dirancang untuk merangkum kondisi IHSG.
+Selain konten berbasis berita, SahamFYP juga memiliki template dinamis untuk trigger terjadwal yang dirancang untuk merangkum kondisi IHSG.
 
-#### a. Market Open (08:00 WIB)
-Digunakan untuk memberikan outlook pasar sebelum bursa buka, dilengkapi watchlist saham pilihan.
+#### a. Market Open (08:00 WIB) — ✅ sudah live
+Digunakan untuk memberikan outlook pasar sebelum bursa buka, dilengkapi watchlist saham pilihan. Ini yang berjalan otomatis lewat workflow [Daily Market Brief](#1-daily-market-brief--trigger-terjadwal-tiap-0800-wib) di atas.
 | Slide | Fungsi | Keterangan |
 |-------|--------|------------|
 | 1 | **COVER** | Judul "Market Open" + Tanggal + Jumlah Watchlist |
@@ -301,8 +312,8 @@ Digunakan untuk memberikan outlook pasar sebelum bursa buka, dilengkapi watchlis
 | N+2 | **KAMUS** | Penjelasan istilah saham ala Gen Z |
 | N+3 | **CTA** | Ajakan diskusi di komentar |
 
-#### b. Market Close (17:00 WIB)
-Digunakan untuk merangkum pergerakan bursa hari ini setelah tutup.
+#### b. Market Close (17:00 WIB) — 🚧 direncanakan, belum dibangun
+Template & struktur slide di bawah sudah dirancang untuk merangkum pergerakan bursa setelah tutup, tapi **workflow trigger-nya (`/api/sector-trigger/close`) belum diimplementasikan** — belum ada n8n schedule trigger yang menjalankannya secara otomatis. Ditulis di sini sebagai roadmap teknis, bukan fitur yang sudah live.
 | Slide | Fungsi | Keterangan |
 |-------|--------|------------|
 | 1 | **COVER** | Judul "Recap Market" + Tanggal |
@@ -379,6 +390,7 @@ Digunakan untuk merangkum pergerakan bursa hari ini setelah tutup.
   - Supabase project & credentials: https://supabase.com/
   - n8n instance (self-hosted or cloud): https://n8n.io/
   - Telegram bot token (jika pakai notifikasi Telegram): https://core.telegram.org/bots
+  - Cloudinary account & cloud name (masih dipakai sebagian workflow News Monitoring selama migrasi ke Supabase Storage berjalan): https://cloudinary.com/
   - **Vercel account**: untuk deploy backend & frontend
 
 > ⚠️ **Keamanan**: jangan pernah commit API key/token asli (termasuk di file workflow JSON n8n) ke repository publik. Ganti dengan placeholder/environment variable sebelum push. Kalau terlanjur bocor, rotate key tersebut segera di provider terkait sebelum melakukan commit apa pun.

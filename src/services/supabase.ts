@@ -250,6 +250,40 @@ export const postImagesApi = {
   },
 };
 
+// Automation Posts API (For n8n workflows)
+export interface AutomationPost {
+  id: string;
+  workflow_type: string;
+  account_id: string;
+  caption: string;
+  thumbnail_url: string;
+  post_link: string;
+  post_id: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export const automationPostsApi = {
+  async getAll(limit = 50) {
+    const { data, error } = await supabase
+      .from('automation_posts')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    if (error) throw error;
+    return data;
+  },
+
+  async delete(id: string) {
+    const { error } = await supabase
+      .from('automation_posts')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+  },
+};
+
 // ============================================================
 // News Scrape — Untuk tracking berita yang sudah di-scrape
 // ============================================================
