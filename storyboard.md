@@ -5,10 +5,10 @@
 
 ## ⚡ One-Sentence Problem Statement
 
-> **"SahamFYP melindungi 54%+ investor Gen Z dari jebakan pom-pom media sosial dengan mentransformasi riset sekuritas dan keterbukaan informasi yang tebal menjadi visual watchlist harian berbasis data Sectors API — lengkap dengan bedah katalis dan sistem peringatan risiko (warning) objektif."**
+> **"54,4% investor pasar modal Indonesia adalah Gen Z, namun banyak dari mereka FOMO mengikuti rekomendasi saham viral dari media sosial dan grup pom-pom, alih-alih mengecek data riil perusahaan — SahamFYP hadir dengan daily market brief berbasis data Sectors API, lengkap informasi dan warning risiko, dipublikasikan langsung di media sosial: kanal tempatnya para Gen Z."**
 
 *(Versi Bahasa Inggris untuk juri internasional)*:
-> **"SahamFYP protects Gen Z investors from social media pump-and-dump traps by converting dense securities research and corporate filings into bite-sized, visual watchlists powered by Sectors API — complete with catalyst breakdown and an objective risk-warning system."**
+> **"54.4% of Indonesia's capital market investors are Gen Z, yet many fall victim to FOMO by following viral stock recommendations from social media and pump-and-dump groups instead of checking real company data — SahamFYP delivers a daily market brief powered by Sectors API data, complete with in-depth insights and risk warnings, published directly on social media: the native platform of Gen Z."**
 
 ---
 

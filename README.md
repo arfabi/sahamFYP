@@ -20,7 +20,7 @@
 | | |
 |---|---|
 | **Track** | Automation & Workflows |
-| **One-Sentence Problem Statement** | **SahamFYP melindungi 54%+ investor Gen Z dari jebakan pom-pom media sosial dengan mentransformasi riset sekuritas dan keterbukaan informasi yang tebal menjadi visual watchlist harian berbasis data Sectors API — lengkap dengan bedah katalis dan sistem peringatan risiko (warning) objektif.** |
+| **One-Sentence Problem Statement** | **54,4% investor pasar modal Indonesia adalah Gen Z, namun banyak dari mereka FOMO mengikuti rekomendasi saham viral dari media sosial dan grup pom-pom, alih-alih mengecek data riil perusahaan — SahamFYP hadir dengan daily market brief berbasis data Sectors API, lengkap informasi dan warning risiko, dipublikasikan langsung di media sosial: kanal tempatnya para Gen Z.** |
 | **Who it's for** | **End-User: Gen Z & Retail Investors** (yang butuh panduan pasar kredibel tapi ringan dicerna), serta **Financial Educators / Sekuritas** (yang butuh pipeline otomatis untuk menjangkau investor muda tanpa kehilangan akurasi data). |
 | **Core Innovation** | **Anti-FOMO Reality Check Engine**: Bukan sekadar ikut-ikutan tren viral, AI membedah 3W (*What, Why, Impact*) dari berita/filings, lalu memvalidasinya dengan data fundamental & teknikal Sectors API. Jika saham sedang ramai dibicarakan tapi fundamentalnya boncos atau utangnya bengkak, SahamFYP memberikan **Warning & Red Flag** secara transparan. |
 | **Live Proof** | Akun publik **[@sahamfyp.id](https://instagram.com/sahamfyp.id)** berjalan 100% otomatis (unattended) di Instagram, TikTok, Threads, Facebook, dan Telegram Channel — [contoh postingan live](https://www.instagram.com/p/Ddaf_0piRRt/?img_index=5). |
@@ -838,7 +838,7 @@ Panduan lengkap naskah dan alur video presentasi untuk juri Hackathon tersedia d
 📄 **[`storyboard.md`](storyboard.md)**
 
 - **One-Sentence Problem Statement**:
-  > *"SahamFYP melindungi 54%+ investor Gen Z dari jebakan pom-pom media sosial dengan mentransformasi riset sekuritas dan keterbukaan informasi yang tebal menjadi visual watchlist harian berbasis data Sectors API — lengkap dengan bedah katalis dan sistem peringatan risiko (warning) objektif."*
+  > *"54,4% investor pasar modal Indonesia adalah Gen Z, namun banyak dari mereka FOMO mengikuti rekomendasi saham viral dari media sosial dan grup pom-pom, alih-alih mengecek data riil perusahaan — SahamFYP hadir dengan daily market brief berbasis data Sectors API, lengkap informasi dan warning risiko, dipublikasikan langsung di media sosial: kanal tempatnya para Gen Z."*
 - **1-Minute Teaser Video**: Naskah hook cepat (FOMO vs riset resmi), demo automasi n8n + Sectors API, dan visual slide warning.
 - **3-Minute Judging Walkthrough**: Dekonstruksi masalah Gen Z, demonstrasi Sectors API sebagai tulang punggung kebenaran data, arsitektur pipeline otonom, dan bukti live di akun publik `@sahamfyp.id`.
 
