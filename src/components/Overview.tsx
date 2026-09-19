@@ -61,12 +61,11 @@ export default function Overview({ onNavigate }: OverviewProps) {
     { label: 'Stock Watchlist Today', value: loadingStats ? '...' : statsData.watchlistToday, icon: '👁️', color: 'bg-green-50 text-green-600', page: 'stock-watchlist' },
   ];
 
-  // Exact 5 Services Order requested:
-  // 1. Sectors.app : Stocks Market Data, Stocks News & Filling
+  // Services list:
+  // 1. Sectors.app : Stocks Market Data, Stocks News & Filing
   // 2. Sumopod LLM
   // 3. Supabase
-  // 4. Cloudinary
-  // 5. Repliz (Sosial Media Aggregator)
+  // 4. Repliz (Sosial Media Aggregator)
   const services: ServiceInfo[] = [
     {
       name: 'Sectors.app',
@@ -91,14 +90,6 @@ export default function Overview({ onNavigate }: OverviewProps) {
       connected: !!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY),
       details: import.meta.env.VITE_SUPABASE_URL ? 'Project connected' : 'Not configured',
       color: 'bg-slate-100 text-slate-600',
-    },
-    {
-      name: 'Cloudinary',
-      icon: '☁️',
-      description: 'Image hosting & CDN',
-      connected: !!(import.meta.env.VITE_CLOUDINARY_CLOUD_NAME && import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET),
-      details: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'Not configured',
-      color: 'bg-blue-50 text-blue-600',
     },
     {
       name: 'Repliz (Sosial Media Aggregator)',
