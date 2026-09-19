@@ -1,4 +1,4 @@
-﻿# SahamFYP — AI-Powered Financial Content Engine
+# SahamFYP — AI Market Brief & Anti-FOMO Watchlist for Gen Z Investors
 
 [![React](https://img.shields.io/badge/React-18.3.1-blue)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5.3-blue)](https://typescriptlang.org/)
@@ -11,6 +11,8 @@
 [![Supabase](https://img.shields.io/badge/Supabase-Database-green)](https://supabase.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
+> **"Make Market Data Make Sense."** — Mentransformasi riset pasar sekuritas dan keterbukaan informasi yang tebal menjadi visual watchlist harian berbasis Sectors API, lengkap dengan bedah katalis dan sistem peringatan risiko (warning) objektif untuk investor Gen Z.
+
 ---
 
 ## 🏆 Sectors Hackathon 2026
@@ -18,24 +20,25 @@
 | | |
 |---|---|
 | **Track** | Automation & Workflows |
-| **Problem statement** | Financial content creator, edukator finansial, dan sekuritas butuh cara mengubah data pasar yang kaku dan teknis menjadi konten edukasi yang benar-benar dibaca dan dipahami Gen Z — tanpa kehilangan akurasi data fundamentalnya. |
-| **Who it's for** | Financial content creator / financial educator / sekuritas yang butuh content engine otomatis dan kaya data |
-| **Impact / downstream audience** | Gen Z investor — audiens yang membaca hasil konten di media sosial dan terbantu memahami saham lewat data, bukan hype |
-| **Live proof** | Akun **[@sahamfyp.id](https://instagram.com/sahamfyp.id)** sudah berjalan otomatis di Instagram, Facebook, Threads, TikTok, dan Telegram Channel — [contoh post](https://www.instagram.com/p/Ddaf_0piRRt/?img_index=5) |
+| **One-Sentence Problem Statement** | **SahamFYP melindungi 54%+ investor Gen Z dari jebakan pom-pom media sosial dengan mentransformasi riset sekuritas dan keterbukaan informasi yang tebal menjadi visual watchlist harian berbasis data Sectors API — lengkap dengan bedah katalis dan sistem peringatan risiko (warning) objektif.** |
+| **Who it's for** | **End-User: Gen Z & Retail Investors** (yang butuh panduan pasar kredibel tapi ringan dicerna), serta **Financial Educators / Sekuritas** (yang butuh pipeline otomatis untuk menjangkau investor muda tanpa kehilangan akurasi data). |
+| **Core Innovation** | **Anti-FOMO Reality Check Engine**: Bukan sekadar ikut-ikutan tren viral, AI membedah 3W (*What, Why, Impact*) dari berita/filings, lalu memvalidasinya dengan data fundamental & teknikal Sectors API. Jika saham sedang ramai dibicarakan tapi fundamentalnya boncos atau utangnya bengkak, SahamFYP memberikan **Warning & Red Flag** secara transparan. |
+| **Live Proof** | Akun publik **[@sahamfyp.id](https://instagram.com/sahamfyp.id)** berjalan 100% otomatis (unattended) di Instagram, TikTok, Threads, Facebook, dan Telegram Channel — [contoh postingan live](https://www.instagram.com/p/Ddaf_0piRRt/?img_index=5). |
 
-> **Catatan penting soal core data source**: SahamFYP menggunakan **Sectors REST API** di hampir setiap tahap alur — deteksi ticker, enrichment fundamental & teknikal, ranking top movers, hingga data broker & foreign flow. **Kalau data Sectors.app dicabut, produk ini kehilangan fungsi intinya**: slide 4–6 di semua 6 kategori konten (lihat [Template Konten](#5-template-konten--klasifikasi-berita)) bergantung penuh pada data tersebut untuk verifikasi faktual. Tanpa itu, sistem hanya jadi rewrite berita tanpa nilai tambah — persis kebalikan dari misi produk ini.
+> **Catatan penting soal core data source**: SahamFYP menggunakan **Sectors REST API** di setiap tahap alur — deteksi ticker, enrichment laporan keuangan & valuasi, ranking top movers berkapitalisasi wajar, hingga foreign flow dan kalkulasi teknikal Moving Average. **Kalau data Sectors.app dicabut, produk ini kehilangan fungsi intinya**: slide 4–6 di semua template konten bergantung penuh pada data tersebut untuk verifikasi faktual. Tanpa Sectors API, sistem hanya jadi rewrite berita tanpa nilai tambah — persis kebalikan dari misi produk ini.
 
 ---
 
 ## 📑 Daftar Isi
 - [📌 Apa Itu SahamFYP?](#-apa-itu-sahamfyp)
-- [🎯 Latar Belakang](#-latar-belakang)
+- [🎯 Latar Belakang & Masalah Gen Z](#-latar-belakang--masalah-gen-z)
 - [🔄 Dua Workflow Otomatis (n8n)](#-dua-workflow-otomatis-n8n)
 - [🌟 Fitur Utama](#-fitur-utama)
 - [🛠️ Tech Stack](#️-tech-stack)
 - [📦 Cara Duplikasi / Clone Content Engine](#-cara-duplikasi--clone-content-engine)
 - [📁 Struktur Project](#-struktur-project)
 - [🔌 API Reference](#-api-reference)
+- [🎬 Pitch & Storyboard Video](#-pitch--storyboard-video)
 - [🔗 Quick Links & Resources](#-quick-links--resources)
 - [🔧 Troubleshooting](#-troubleshooting)
 - [📝 Catatan Versi](#-catatan-versi)
@@ -45,13 +48,16 @@
 
 ## 📌 Apa Itu SahamFYP?
 
-**SahamFYP** adalah **content engine otomatis** untuk financial content creator, edukator finansial, dan sekuritas yang ingin memproduksi konten edukasi saham berkualitas tinggi — lengkap dengan data fundamental terverifikasi — tanpa harus riset manual tiap hari.
+**SahamFYP** adalah **AI-Powered Market Brief & Risk Warning Engine** yang didesain khusus untuk melindungi dan mengedukasi investor generasi baru (Gen Z).
 
-Dengan satu pipeline otomatis (n8n + Sectors REST API + LLM), SahamFYP menghasilkan carousel Instagram/TikTok/Threads yang **terintegrasi dengan data fundamental real**: laporan keuangan, valuation, dividen, ownership, foreign flow, dan data lainnya dari **Sectors.app**, lalu langsung dipublikasikan ke banyak akun sosial media sekaligus.
+Setiap hari sebelum bursa saham Indonesia buka (08:00 WIB), SahamFYP memproses data pasar modal secara otonom:
+1. **Kurasi Berita & Filings Terhangat**: Mengumpulkan keterbukaan informasi BEI dan berita pasar dari 8 sumber ekonomi terpercaya.
+2. **Ekstraksi Katalis 3W**: AI memilih peristiwa dengan katalis paling signifikan dan mengekstraknya menjadi **Apa** yang terjadi, **Kenapa** terjadi, dan **Apa Dampaknya** ke emiten.
+3. **Reality Check Fundamental & Teknikal (Sectors.app)**: Data emiten langsung di-enrich dengan metrik resmi Sectors API (PER, PBV, ROE, DER, Foreign Flow, MA20/50/200, Volume ratio).
+4. **Edukasi & Warning System**: Menghasilkan watchlist harian visual dengan pemetaan kuadran objektif. Jika suatu saham sedang viral tapi fundamentalnya rapuh (utang menumpuk, rugi bersih, valuasi bubble), SahamFYP memberikan **stempel peringatan risiko (Warning / Red Flag)**.
+5. **Multi-Publishing Otomatis**: Naskah dirender menjadi carousel visual beresolusi tinggi dan diunggah secara otomatis ke Instagram, TikTok, Threads, Facebook, serta Telegram.
 
-**Dampaknya sampai ke audiens akhir**: Gen Z investor yang membaca konten ini di media sosial mendapat konteks *mengapa* sebuah saham trending — apakah benar-benar kuat secara fundamental, atau cuma hype — bukan sekadar judul clickbait tanpa data.
-
-> **Akun live** (proof-of-concept, dikelola sebagai showcase produk ini — bukan afiliasi resmi sekuritas mana pun):
+> **Akun live** (showcase produk nyata, berjalan otomatis tanpa operator):
 > - Instagram: https://instagram.com/sahamfyp.id
 > - Facebook: https://facebook.com/sahamfyp.id
 > - Threads: https://www.threads.com/@sahamfyp.id
@@ -61,41 +67,41 @@ Dengan satu pipeline otomatis (n8n + Sectors REST API + LLM), SahamFYP menghasil
 
 ---
 
-## 🎯 Latar Belakang
+## 🎯 Latar Belakang & Masalah Gen Z
 
-### Masalah
+### Realita Pasar Modal Indonesia
+Berdasarkan data resmi **Kustodian Sentral Efek Indonesia (KSEI)** dan **Bursa Efek Indonesia (BEI)**:
+- **54,4% investor pasar modal adalah Generasi Z** (usia di bawah 30 tahun mendominasi demografi investor individu).
+- Namun, nilai kepemilikan aset kelompok ini hanya **3,2% dari total aset pasar modal** (Katadata, Mei 2026). Angka ini mencerminkan tingginya angka retail pemula yang bertransaksi dengan modal terbatas dan minim literasi risiko.
 
-**Daily Market Brief yang dibuat sekuritas selama ini umumnya formal, padat istilah teknis, dan disajikan sebagai dokumen/PDF** — format yang kurang cocok dengan kebiasaan konsumsi informasi Gen Z di media sosial. Akibatnya, brief semacam ini jarang benar-benar dibaca oleh audiens Gen Z, padahal merekalah kelompok investor terbesar saat ini di pasar modal Indonesia.
+### Kontradiksi: Di Mana Gen Z Beli Saham vs Di Mana Seharusnya?
 
-Berdasarkan data dari **Bursa Efek Indonesia (BEI)** per Mei 2026, **54,4% investor pasar modal** berasal dari **Generasi Z** (lahir 1997–2012). Sementara itu, data **Kustodian Sentral Efek Indonesia (KSEI)** per Juni 2024 mencatat bahwa **55,38% investor individu** berusia **30 tahun ke bawah**.
+```
+[ Realita Perilaku Gen Z ]                     [ Sumber Rekomendasi Resmi ]
+Screenshot Grup Telegram Bandar                 Daily Market Brief Sekuritas
+Video TikTok / Reels Pom-pom      VS           Research Report Emiten (PDF 25+ Lembar)
+FOMO "To The Moon" Tanpa Analisis               Keterbukaan Informasi BEI (Filings)
+       │                                                      │
+       ▼                                                      ▼
+  CEPAT & MENARIK,                                       AKURAT & RESMI,
+  TAPI MENYESATKAN & BONCOS!                             TAPI KAKU, PANJANG, & BIKIN PUSING!
+```
 
-Ironisnya, mayoritas kelompok ini justru sering membuat keputusan investasi tanpa bekal informasi yang tepat. Perilaku investasi Gen Z sering didorong oleh **FOMO (Fear Of Missing Out)** dan informasi dari media sosial, bukan dari brief resmi yang sudah tersedia. Berbagai riset dan opini menunjukkan bahwa:
+1. **Kenapa Gen Z lari ke grup pom-pom?**  
+   Formatnya instan, bahasanya santai, dan menjanjikan keuntungan cepat.
+2. **Kenapa Gen Z tidak membaca riset sekuritas resmi?**  
+   Riset sekuritas disajikan dalam dokumen PDF 20–30 lembar, bertabur istilah teknis (DER, PBV, EBITDA margin), grafik abu-abu yang kaku, dan tulisan padat yang sangat tidak cocok dengan cara konsumsi informasi generasi mobile-first.
+3. **Akibatnya?**  
+   Gen Z sering kali membeli saham di puncak harga (*pucuk*) dan menjadi **exit liquidity** bagi bandar/pelaku manipulasi pasar.
 
-- Banyak Gen Z membeli saham karena **viral/trending**, bukan karena analisis fundamental
-- **Tanpa verifikasi data** dan **tanpa membaca laporan keuangan**
-- Terpapar **misinformasi** dan ekspektasi keuntungan yang tidak realistis
-- Risiko keputusan finansial yang kurang tepat meningkat
+### Solusi SahamFYP: Jembatan Data Riset & Bahasa Gen Z
 
-Di sisi lain, **content creator, edukator finansial, dan sekuritas** yang ingin menjembatani gap ini menghadapi masalah operasional: mengubah data fundamental resmi (laporan keuangan, valuation, ownership, foreign flow) menjadi format yang ringan dibaca itu **memakan waktu** kalau dikerjakan manual tiap hari, sementara konten harus tayang **konsisten dan tepat waktu** (pagi sebelum bursa buka, sore setelah tutup) supaya tetap relevan.
+SahamFYP mengambil **kedalaman data riset sekuritas** dan memformatnya menjadi **daya cerna konten media sosial**:
+- **Bukan Ikutan Nge-Hype, Tapi Reality Check**: SahamFYP hadir dengan komitmen independen. Jika sebuah saham sedang ramai dibicarakan tetapi perusahaannya terus merugi, valuasinya tidak masuk akal, atau kepemilikan asing terus dilepas, SahamFYP akan menyatakannya secara lugas: *"Saham ini ramai, tapi fundamentalnya merah menyala — waspada jebakan FOMO!"*.
+- **Bahasa Gaul Finansial & Kamus Gen Z**: Setiap istilah rumit (seperti Golden Cross, PER, atau Foreign Flow) langsung diterjemahkan dengan analogi kehidupan sehari-hari (misal: DER dianalogikan seperti limit paylater vs gaji).
+- **100% Otomatis & Terverifikasi**: Menghilangkan hambatan operasional riset manual. Setiap data dipasok langsung oleh **Sectors REST API** yang kredibel.
 
-**Sumber:**
-
-- Data KSEI: https://databoks.katadata.co.id/pasar/statistik/66bdf4a992e5b/gen-z-dan-milenial-mendominasi-investor-pasar-modal-di-indonesia
-- Opini Katadata: https://katadata.co.id/indepth/opini/6a505cc400c1e/membangun-fondasi-investasi-gen-z-sejak-dini
-- E-Journal Innobiz: https://ejournal.cyber-univ.ac.id/index.php/innobiz/article/view/147/123
-
-### Solusi SahamFYP
-
-SahamFYP hadir sebagai **content engine untuk content creator/edukator/sekuritas** yang mengubah data pasar yang sama — yang biasanya terkubur di dokumen brief formal — menjadi konten yang benar-benar dibaca Gen Z, tanpa kehilangan akurasinya:
-
-- Mengubah format: dari dokumen/PDF formal menjadi **carousel visual, bahasa santai, dan istilah teknis yang dijelaskan ulang ala Gen Z** (lihat slide "Kamus" di [Template Konten](#5-template-konten--klasifikasi-berita))
-- Mengotomatiskan seluruh pipeline: deteksi sinyal berita → verifikasi data → generate konten → publish — **tanpa intervensi manual per siklus**
-- Mengintegrasikan **Sectors REST API** (laporan keuangan, dividen, valuation, ownership, foreign flow, broker activity, top movers) sebagai **verifikasi faktual di setiap konten**, supaya lebih mudah dibaca tidak berarti kehilangan akurasi data
-- **Mengontekstualisasikan tren** dengan data fundamental: apakah saham yang naik benar-benar kuat, atau hanya hype?
-- **Menjadwalkan & memicu konten tepat waktu** (market brief pagi sebelum bursa buka, monitoring berita real-time) agar konten tetap relevan & actionable
-- Meneruskan manfaatnya ke pembaca akhir (Gen Z investor) lewat konten yang **edukatif, netral, dan berbasis data** — bukan ajakan beli/jual
-
-> **Bukan nasihat keuangan.** Semua konten yang dihasilkan SahamFYP bersifat edukatif dan informatif (DYOR — *Do Your Own Research*), bukan rekomendasi atau ajakan membeli/menjual saham tertentu. Tanggung jawab penggunaan konten ada pada pembuat konten/akun yang mempublikasikannya.
+> **Bukan Nasihat Keuangan (DYOR)**: Seluruh konten SahamFYP bersifat edukatif dan berbasis data publik untuk menumbuhkan kebiasaan riset mandiri (*Do Your Own Research*), bukan ajakan beli/jual saham tertentu.
 
 ---
 
@@ -823,6 +829,18 @@ sahamFYP/
 
 - **Auth**: Tidak perlu (public, dipanggil internal oleh n8n)
 - **Fungsi**: `action: "check"` untuk cek apakah URL berita sudah pernah diproses (cegah duplikat konten); `action: "update"` untuk update kategori/skor berita yang tersimpan
+
+---
+
+## 🎬 Pitch & Storyboard Video
+
+Panduan lengkap naskah dan alur video presentasi untuk juri Hackathon tersedia di:
+📄 **[`storyboard.md`](storyboard.md)**
+
+- **One-Sentence Problem Statement**:
+  > *"SahamFYP melindungi 54%+ investor Gen Z dari jebakan pom-pom media sosial dengan mentransformasi riset sekuritas dan keterbukaan informasi yang tebal menjadi visual watchlist harian berbasis data Sectors API — lengkap dengan bedah katalis dan sistem peringatan risiko (warning) objektif."*
+- **1-Minute Teaser Video**: Naskah hook cepat (FOMO vs riset resmi), demo automasi n8n + Sectors API, dan visual slide warning.
+- **3-Minute Judging Walkthrough**: Dekonstruksi masalah Gen Z, demonstrasi Sectors API sebagai tulang punggung kebenaran data, arsitektur pipeline otonom, dan bukti live di akun publik `@sahamfyp.id`.
 
 ---
 
