@@ -568,6 +568,21 @@ ${OUTPUT_SCHEMA}`;
           slide.description = limitWords(slide.description, 30);
         }
       }
+      
+      // Inject image into cover and kronologi slides
+      if (image) {
+        // Cover slide (index 0)
+        if (parsed.slides[0] && parsed.slides[0].template === 'cover') {
+          parsed.slides[0].visualMode = 'image';
+          parsed.slides[0].illustrationUrl = image;
+          parsed.slides[0].source = siteName || '';
+        }
+        // Kronologi slide (index 2)
+        if (parsed.slides[2] && parsed.slides[2].template === 'kronologi') {
+          parsed.slides[2].visualMode = 'image';
+          parsed.slides[2].illustrationUrl = image;
+        }
+      }
     }
 
     return parsed;

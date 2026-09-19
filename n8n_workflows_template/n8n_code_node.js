@@ -10,7 +10,12 @@ const s = $json;
 // ── Global Meta ─────────────────────────────────────────────
 const slideIndex = s.slideIndex !== undefined ? s.slideIndex : $itemIndex;
 const totalCount = s.totalSlides || 8;
-const badgeText  = s.badgeText || 'OPEN';
+
+// Mengambil Ticker/Badge dari node 'Generate' secara dinamis
+let badgeText = 'SAHAMFYP';
+try { badgeText = $('Generate').first().json.classification.ticker || $('Generate').first().json.naskah.badgeText; } catch(e) {}
+if (s.badgeText) badgeText = s.badgeText;
+
 const handle     = s.handle || '@sahamfyp';
 const template   = String(s.template || '').toLowerCase().trim();
 
@@ -147,16 +152,14 @@ function buildBaseStyles() {
   </style>`;
 }
 
-// Render dots pagination
+// Render footer / pagination
 function renderPagination() {
-  const isLast = slideIndex >= 7;
-  let dots = '';
-  for(let i = 0; i < 8; i++) {
-    dots += `<span class="dot ${i === slideIndex ? 'active' : 'inactive'}"></span>`;
-  }
+  const isLast = slideIndex >= (totalCount - 1);
   return `
     <div class="footer">
-      <div class="dots">${dots}</div>
+      <div class="dots">
+        <!-- Progress bar / dots dihapus sesuai permintaan -->
+      </div>
       <div class="swipe-text">
         ${isLast ? '<i data-lucide="rotate-ccw" width="32" height="32"></i>' : '<span>Geser</span> <i data-lucide="arrow-right" width="32" height="32"></i>'}
       </div>
