@@ -109,31 +109,53 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           });
         } 
         else if (account.provider === 'telegram') {
-          // Send to Telegram Bot API (sendMediaGroup)
+          // Send to Telegram Bot API (sendPhoto or sendMediaGroup)
           if (!TELEGRAM_BOT_TOKEN) throw new Error('TELEGRAM_BOT_TOKEN is not configured');
           
           const chatId = account.account_id;
-          
-          // Build media group array
-          const mediaGroup = cloudinaryUrls.map((url: string, index: number) => ({
-            type: 'photo',
-            media: url,
-            caption: index === 0 ? caption : undefined, // Attach caption only to the first image
-            parse_mode: 'HTML' // Or 'MarkdownV2' depending on caption format
-          }));
+          const tgCaption = caption ? caption.slice(0, 1024) : '';
+          let tgResult: any = null;
 
-          const tgResponse = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMediaGroup`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              chat_id: chatId,
-              media: mediaGroup
-            }),
-          });
+          if (finalImageUrls.length === 1) {
+            // Single image
+            const tgResponse = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                chat_id: chatId,
+                photo: finalImageUrls[0],
+                caption: tgCaption,
+              }),
+            });
 
-          if (!tgResponse.ok) {
-            const errData = await tgResponse.json();
-            throw new Error(`Telegram error: ${errData.description || JSON.stringify(errData)}`);
+            if (!tgResponse.ok) {
+              const errData = await tgResponse.json().catch(() => ({}));
+              throw new Error(`Telegram error: ${errData.description || tgResponse.statusText}`);
+            }
+            tgResult = await tgResponse.json();
+          } else {
+            // Media group (album, 2-10 photos)
+            const albumImages = finalImageUrls.slice(0, 10);
+            const mediaGroup = albumImages.map((url: string, index: number) => ({
+              type: 'photo',
+              media: url,
+              caption: index === 0 ? tgCaption : undefined,
+            }));
+
+            const tgResponse = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMediaGroup`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                chat_id: chatId,
+                media: mediaGroup,
+              }),
+            });
+
+            if (!tgResponse.ok) {
+              const errData = await tgResponse.json().catch(() => ({}));
+              throw new Error(`Telegram error: ${errData.description || tgResponse.statusText}`);
+            }
+            tgResult = await tgResponse.json();
           }
 
           results.push({
@@ -141,6 +163,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             provider: account.provider,
             accountName: account.account_name,
             status: 'success',
+            scheduleId: Array.isArray(tgResult?.result)
+              ? String(tgResult.result[0]?.message_id || '')
+              : String(tgResult?.result?.message_id || ''),
           });
         }
         else {
@@ -160,10 +185,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     await Promise.all(promises);
 
-    // Filter successful schedules for Repliz to update DB (optional, if we still want backward compatibility)
+    // Filter successful schedules for Repliz to update DB (backward compatibility)
     const replizSuccesses = results.filter(r => r.status === 'success' && r.provider === 'repliz' && r.scheduleId);
     if (postId && replizSuccesses.length > 0) {
-      // Pick the first successful scheduleId for backward compatibility
       const firstScheduleId = replizSuccesses[0].scheduleId;
       await supabaseServer
         .from('generated_posts')
@@ -175,18 +199,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Save to automation_posts if workflowType is provided (e.g. from n8n automations)
-    if (workflowType && replizSuccesses.length > 0) {
-      const firstSuccess = replizSuccesses[0];
+    const anySuccess = results.find(r => r.status === 'success');
+    if (workflowType && anySuccess) {
+      const cleanAccountName = anySuccess.accountName.replace('@', '');
+      const postLink = anySuccess.platform === 'telegram'
+        ? (anySuccess.accountName.startsWith('@') ? `https://t.me/${cleanAccountName}` : '')
+        : '';
+
       await supabaseServer
         .from('automation_posts')
         .insert({
           workflow_type: workflowType,
-          account_id: firstSuccess.accountName,
+          account_id: anySuccess.accountName,
           caption: caption,
           thumbnail_url: finalImageUrls[0],
-          post_link: '', 
-          post_id: firstSuccess.scheduleId,
-          status: 'success'
+          post_link: postLink,
+          post_id: anySuccess.scheduleId || '',
+          status: 'success',
         });
     }
 

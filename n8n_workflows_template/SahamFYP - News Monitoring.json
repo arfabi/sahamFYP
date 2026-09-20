@@ -567,6 +567,10 @@
             {
               "name": "ticker",
               "value": "={{ $json.ticker }}"
+            },
+            {
+              "name": "tags",
+              "value": "={{ $json.tags }}"
             }
           ]
         },

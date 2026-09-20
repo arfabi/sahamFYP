@@ -17,6 +17,10 @@
 
 ## 🏆 Sectors Hackathon 2026
 
+<p align="center">
+  <img src="public/slides/1.png" alt="Sectors Hackathon 2026 - SahamFYP" width="100%" />
+</p>
+
 | | |
 |---|---|
 | **Track** | Automation & Workflows |
@@ -47,6 +51,10 @@
 ---
 
 ## 📌 Apa Itu SahamFYP?
+
+<p align="center">
+  <img src="public/slides/sahamfyp-concept.png" alt="SahamFYP Concept & Architecture" width="100%" />
+</p>
 
 **SahamFYP** adalah **AI-Powered Market Brief & Risk Warning Engine** yang didesain khusus untuk melindungi dan mengedukasi investor generasi baru (Gen Z).
 
@@ -86,6 +94,11 @@ FOMO "To The Moon" Tanpa Analisis               Keterbukaan Informasi BEI (Filin
   CEPAT & MENARIK,                                       AKURAT & RESMI,
   TAPI MENYESATKAN & BONCOS!                             TAPI KAKU, PANJANG, & BIKIN PUSING!
 ```
+
+<p align="center">
+  <img src="public/slides/fomo-sosmed.png" alt="Beli Saham Modal FOMO & Pom-Pom Bandar" width="49%" />
+  <img src="public/slides/risetsekuritas.png" alt="Riset Sekuritas PDF Kaku" width="49%" />
+</p>
 
 1. **Kenapa Gen Z lari ke grup pom-pom?**  
    Formatnya instan, bahasanya santai, dan menjanjikan keuntungan cepat.
@@ -141,6 +154,10 @@ Schedule Trigger (08:00 WIB)
   → Laporan status ke Telegram (jumlah credits terpakai, saham terpilih, akun yang berhasil publish)
 ```
 
+<p align="center">
+  <img src="public/slides/n8n.png" alt="Workflow n8n SahamFYP 100% Otomatis" width="100%" />
+</p>
+
 Bukti unattended run: log eksekusi (seperti tabel di atas), timestamp trigger, dan notifikasi Telegram otomatis tiap sesi selesai — semua tanpa operator menekan tombol apa pun setelah workflow di-deploy.
 
 ### 2. News Monitoring — Trigger Event-Based, real-time saat ada berita baru
@@ -161,6 +178,10 @@ RSS Trigger (8 sumber, poll tiap menit)
   → Generate naskah (LLM) → Render HTML → Browserless → upload gambar (Supabase Storage — migrasi dari Cloudinary sedang berjalan)
   → Publish ke Repliz → Update status di Supabase → Laporan ke Telegram
 ```
+
+<p align="center">
+  <img src="public/slides/newsmonitoring.png" alt="News Monitoring Reality Check & Warning" width="100%" />
+</p>
 
 Karena berbasis RSS multi-sumber + polling otomatis (bukan scraping satu situs saja), workflow ini lebih tahan terhadap downtime satu sumber berita dan tetap berjalan otonom mendeteksi sinyal kapan pun berita baru terbit — tanpa jadwal tetap, murni event-driven.
 
@@ -308,6 +329,11 @@ Selain konten berbasis berita, SahamFYP juga memiliki template dinamis untuk tri
 
 #### a. Market Open (08:00 WIB) — ✅ sudah live
 Digunakan untuk memberikan outlook pasar sebelum bursa buka, dilengkapi watchlist saham pilihan. Ini yang berjalan otomatis lewat workflow [Daily Market Brief](#1-daily-market-brief--trigger-terjadwal-tiap-0800-wib) di atas.
+
+<p align="center">
+  <img src="public/slides/dailymarketbrief.png" alt="Contoh Daily Market Brief SahamFYP" width="100%" />
+</p>
+
 | Slide | Fungsi | Keterangan |
 |-------|--------|------------|
 | 1 | **COVER** | Judul "Market Open" + Tanggal + Jumlah Watchlist |
@@ -833,6 +859,10 @@ sahamFYP/
 ---
 
 ## 🎬 Pitch & Storyboard Video
+
+<p align="center">
+  <img src="public/slides/7.png" alt="Investasi Pakai Data, Bukan Hype - SahamFYP Powered by Sectors.app" width="100%" />
+</p>
 
 Panduan lengkap naskah dan alur video presentasi untuk juri Hackathon tersedia di:
 📄 **[`storyboard.md`](storyboard.md)**

@@ -3,12 +3,17 @@ import { supabaseServer } from '../_lib/supabase.js';
 
 // --- Types ---
 interface NewsScrapeRecord {
-  id?: number;
+  id?: number | string;
   url: string;
   time_scrape?: string;
+  timestamp?: string;
+  published_at?: string;
   title?: string | null;
   category?: string | null;
   ticker?: string | null;
+  symbols?: string[] | string | null;
+  tags?: string[] | string | null;
+  sector?: string | null;
   content?: string | null;
   description?: string | null;
   image?: string | null;
@@ -18,6 +23,68 @@ interface NewsScrapeRecord {
   reason?: string | null;
   created_at?: string;
   updated_at?: string;
+}
+
+// --- Helpers ---
+function formatSymbol(sym: string): string {
+  if (!sym) return '';
+  let clean = sym.trim().toUpperCase();
+  clean = clean.replace(/\.JK$/i, '');
+  if (!clean || clean === 'NULL' || clean === 'NONE') return '';
+  return `${clean}.JK`;
+}
+
+function parseSymbols(symbolsInput?: any, tickerInput?: any): string[] | null {
+  const list: string[] = [];
+
+  const add = (val: string) => {
+    const formatted = formatSymbol(val);
+    if (formatted && !list.includes(formatted)) list.push(formatted);
+  };
+
+  if (Array.isArray(symbolsInput)) {
+    for (const s of symbolsInput) {
+      if (typeof s === 'string') add(s);
+    }
+  } else if (typeof symbolsInput === 'string' && symbolsInput.trim()) {
+    try {
+      const parsed = JSON.parse(symbolsInput);
+      if (Array.isArray(parsed)) {
+        for (const s of parsed) if (typeof s === 'string') add(s);
+      } else {
+        add(symbolsInput);
+      }
+    } catch {
+      symbolsInput.split(',').forEach(add);
+    }
+  }
+
+  if (tickerInput && typeof tickerInput === 'string') {
+    add(tickerInput);
+  }
+
+  return list.length > 0 ? list : null;
+}
+
+function parseTags(tagsInput?: any): string[] | null {
+  if (!tagsInput) return null;
+  if (Array.isArray(tagsInput)) {
+    const cleaned = tagsInput.map((t) => String(t).trim()).filter(Boolean);
+    return cleaned.length > 0 ? cleaned : null;
+  }
+  if (typeof tagsInput === 'string' && tagsInput.trim()) {
+    try {
+      const parsed = JSON.parse(tagsInput);
+      if (Array.isArray(parsed)) {
+        const cleaned = parsed.map((t) => String(t).trim()).filter(Boolean);
+        return cleaned.length > 0 ? cleaned : null;
+      }
+    } catch {
+      const cleaned = tagsInput.split(',').map((t) => t.trim()).filter(Boolean);
+      return cleaned.length > 0 ? cleaned : null;
+    }
+  }
+  return null;
 }
 
 // --- Handler ---
@@ -57,7 +124,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
         const { data, error } = await supabaseServer
           .from('sector_trigger_news')
-          .select('id, url:source_url, title, time_scrape:timestamp')
+          .select('id, url:source_url, title, time_scrape:timestamp, published_at')
           .eq('source_url', body.url)
           .single();
 
@@ -72,22 +139,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         const updateData: Record<string, any> = { updated_at: new Date().toISOString() };
-        const fields = ['title', 'category', 'ticker', 'content', 'description', 'image', 'sitename', 'score', 'decision', 'reason'];
+        const fields = [
+          'title', 'category', 'ticker', 'symbols', 'tags', 'content',
+          'description', 'image', 'sitename', 'score', 'decision', 'reason',
+          'published_at', 'timestamp', 'time_scrape', 'sector'
+        ];
 
         for (const field of fields) {
           const val = (body as any)[field];
           if (val !== undefined) {
-            let dbField = field;
-            if (field === 'content') dbField = 'body';
-            if (field === 'image') dbField = 'thumbnail_url';
-            if (field === 'ticker') dbField = 'symbols';
-
-            if (field === 'score' && val !== null) {
-              updateData[dbField] = typeof val === 'string' ? parseInt(val, 10) || 0 : val;
-            } else if (field === 'ticker') {
-              updateData[dbField] = val ? [val] : [];
+            if (field === 'content') {
+              updateData.body = val;
+            } else if (field === 'image') {
+              updateData.thumbnail_url = val;
+            } else if (field === 'ticker' || field === 'symbols') {
+              const formattedSymbols = parseSymbols(body.symbols, body.ticker);
+              if (formattedSymbols) updateData.symbols = formattedSymbols;
+            } else if (field === 'tags') {
+              const formattedTags = parseTags(val);
+              if (formattedTags) updateData.tags = formattedTags;
+            } else if (field === 'score' && val !== null) {
+              updateData.score = typeof val === 'string' ? parseInt(val, 10) || 0 : val;
+            } else if (field === 'published_at' || field === 'timestamp' || field === 'time_scrape') {
+              updateData.published_at = val;
+              updateData.timestamp = val;
             } else {
-              updateData[dbField] = val;
+              updateData[field] = val;
             }
           }
         }
@@ -111,12 +188,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ error: 'url is required' });
       }
 
+      const now = new Date().toISOString();
+      const newsTime = body.published_at || body.timestamp || body.time_scrape || now;
+      const formattedSymbols = parseSymbols(body.symbols, body.ticker);
+      const formattedTags = parseTags(body.tags);
+
       const record: any = {
         source_url: body.url,
-        timestamp: body.time_scrape || new Date().toISOString(),
+        timestamp: newsTime,
+        published_at: newsTime,
         title: body.title || null,
         category: body.category || null,
-        symbols: body.ticker ? [body.ticker] : null,
+        symbols: formattedSymbols,
+        tags: formattedTags,
+        sector: body.sector || null,
         body: body.content || null,
         description: body.description || null,
         thumbnail_url: body.image || null,
