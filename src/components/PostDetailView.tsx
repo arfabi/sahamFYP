@@ -14,6 +14,7 @@ import {
   sectorTriggerNewsApi,
   syncReplizLiveLink,
   getReplizScheduleDetails,
+  supabase,
 } from '../services/supabase';
 import TemplateRenderer, { PALETTE } from '../Templates';
 
@@ -87,6 +88,12 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
 
   // State: News / Catalyst / Content Details
   const [newsDetail, setNewsDetail] = useState<any>(null);
+  const [dailyBriefData, setDailyBriefData] = useState<{
+    log: any;
+    candidates: any[];
+    news: any[];
+  } | null>(null);
+  const [loadingCatalyst, setLoadingCatalyst] = useState<boolean>(true);
   const [copiedCaption, setCopiedCaption] = useState<boolean>(false);
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
 
@@ -176,34 +183,151 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
     let isMounted = true;
 
     async function loadCatalyst() {
+      setLoadingCatalyst(true);
       try {
         if (isAutomation && autoPost) {
-          const firstLine = (autoPost.caption || '').split('\n')[0].replace(/[#*]/g, '').trim();
+          // ====================================================
+          // A. DAILY MARKET BRIEF (Multi-Emiten & Ringkasan Pasar)
+          // ====================================================
+          if (autoPost.workflow_type === 'daily_market_brief') {
+            const postDate = new Date(autoPost.created_at).toISOString().split('T')[0];
 
-          // Try searching sector_trigger_news
-          const recentNews = await sectorTriggerNewsApi.getRecent(30);
-          if (!isMounted) return;
+            let log: any = null;
+            // 1. Coba cari log dengan trigger_date yang sama
+            const { data: logsByDate } = await supabase
+              .from('sector_trigger_logs')
+              .select('*')
+              .eq('trigger_date', postDate)
+              .order('created_at', { ascending: false })
+              .limit(1);
 
-          // Best match by title keyword or recent matching
-          const match = recentNews.find(
-            (n) =>
-              (n.title && firstLine && n.title.toLowerCase().includes(firstLine.toLowerCase().slice(0, 15))) ||
-              (autoPost.thumbnail_url && n.thumbnail_url === autoPost.thumbnail_url)
-          );
+            if (logsByDate && logsByDate.length > 0) {
+              log = logsByDate[0];
+            } else {
+              // Fallback: cari log paling dekat dengan tanggal postingan
+              const { data: recentLogs } = await supabase
+                .from('sector_trigger_logs')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(5);
 
-          if (match) {
-            setNewsDetail(match);
-          } else {
-            setNewsDetail(null);
+              if (recentLogs && recentLogs.length > 0) {
+                const postTime = new Date(autoPost.created_at).getTime();
+                log = recentLogs.reduce((prev: any, curr: any) => {
+                  const prevDiff = Math.abs(new Date(prev.created_at).getTime() - postTime);
+                  const currDiff = Math.abs(new Date(curr.created_at).getTime() - postTime);
+                  return currDiff < prevDiff ? curr : prev;
+                });
+              }
+            }
+
+            if (log && isMounted) {
+              // Ambil kandidat saham & berita pada log session ini
+              const [candRes, newsRes] = await Promise.all([
+                supabase.from('sector_trigger_candidates').select('*').eq('log_id', log.id),
+                supabase.from('sector_trigger_news').select('*').eq('log_id', log.id),
+              ]);
+
+              const candidates = (candRes.data || []) as any[];
+              const newsList = (newsRes.data || []) as any[];
+
+              setDailyBriefData({
+                log,
+                candidates,
+                news: newsList,
+              });
+              setNewsDetail(null);
+            }
+            return;
+          }
+
+          // ====================================================
+          // B. NEWS MONITORING (Katalis Berita Tunggal)
+          // ====================================================
+          const caption = autoPost.caption || '';
+
+          // 1. Ekstrak ticker saham dari hashtag (#ADHI, #ULTJ, #IFII, dsb)
+          const hashtagMatches = Array.from(caption.matchAll(/#([A-Za-z0-9_]+)/g)).map((m) => m[1].toUpperCase());
+          const tickerIgnores = new Set([
+            'SAHAMFYP', 'INVESTASISAHAM', 'BELAJARSAHAM', 'INFOSAHAM', 'EDUKASISAHAM', 
+            'DIVIDENSAHAM', 'DIVIDENSEASON', 'ANALISISSAHAM', 'SAHAMINDONESIA', 'SAHAMBUMN', 
+            'SAHAMBANK', 'RIGHTSISSUE', 'BERITASAHAM', 'DYOR', 'IHSG', 'BUMN', 'BEI', 'INFOEMITEN'
+          ]);
+          const candidateTickers = hashtagMatches.filter((t) => !tickerIgnores.has(t) && t.length >= 3 && t.length <= 5);
+
+          // 2. Deteksi kata 4 huruf kapital di caption
+          const wordMatches = Array.from(caption.matchAll(/\b([A-Z]{4})\b/g)).map((m) => m[1]);
+          const allFoundTickers = Array.from(new Set([...candidateTickers, ...wordMatches])).filter((t) => !tickerIgnores.has(t));
+
+          let matchedNews: any = null;
+
+          // Cari di sector_trigger_news berdasarkan ticker
+          if (allFoundTickers.length > 0) {
+            for (const ticker of allFoundTickers) {
+              const { data: newsItems } = await supabase
+                .from('sector_trigger_news')
+                .select('*')
+                .or(`symbols.cs.{${ticker}.JK},symbols.cs.{${ticker}},title.ilike.%${ticker}%`)
+                .order('published_at', { ascending: false })
+                .limit(5);
+
+              if (newsItems && newsItems.length > 0) {
+                // Pilih berita paling dekat dengan waktu publish
+                const postTime = new Date(autoPost.created_at).getTime();
+                matchedNews = newsItems.reduce((prev: any, curr: any) => {
+                  const prevDiff = Math.abs(new Date(prev.published_at || prev.created_at).getTime() - postTime);
+                  const currDiff = Math.abs(new Date(curr.published_at || curr.created_at).getTime() - postTime);
+                  return currDiff < prevDiff ? curr : prev;
+                });
+                break;
+              }
+            }
+          }
+
+          // Fallback: Cari dengan kata kunci di judul/caption
+          if (!matchedNews) {
+            const firstLine = caption.split('\n')[0].replace(/[#*]/g, '').trim();
+            const keywords = firstLine.split(/\s+/).filter((w) => w.length >= 4).slice(0, 3);
+            if (keywords.length > 0) {
+              const { data: keywordNews } = await supabase
+                .from('sector_trigger_news')
+                .select('*')
+                .ilike('title', `%${keywords[0]}%`)
+                .order('published_at', { ascending: false })
+                .limit(5);
+
+              if (keywordNews && keywordNews.length > 0) {
+                matchedNews = keywordNews[0];
+              }
+            }
+          }
+
+          // Fallback: 15 berita terbaru
+          if (!matchedNews) {
+            const recent = await sectorTriggerNewsApi.getRecent(15);
+            if (recent.length > 0) {
+              const match = recent.find((n: any) =>
+                allFoundTickers.some((t) => n.symbols?.includes(`${t}.JK`) || n.title?.includes(t))
+              );
+              if (match) matchedNews = match;
+            }
+          }
+
+          if (isMounted) {
+            setNewsDetail(matchedNews);
+            setDailyBriefData(null);
           }
         } else if (manualPost && manualPost.log_id) {
           const log = await contentLogsApi.getById(manualPost.log_id);
           if (isMounted && log) {
             setNewsDetail(log);
+            setDailyBriefData(null);
           }
         }
       } catch (err) {
         console.warn('Error loading catalyst details:', err);
+      } finally {
+        if (isMounted) setLoadingCatalyst(false);
       }
     }
 
@@ -236,12 +360,12 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
       if (res.success === false) {
         setSyncMessage({
           type: 'error',
-          text: res.message || res.error || 'Gagal sinkronisasi status dari Repliz.',
+          text: res.message || (res as any).error || 'Gagal sinkronisasi status dari Repliz.',
         });
         return;
       }
 
-      const st = (res.status || res.scheduleStatus || '').toLowerCase();
+      const st = ((res as any).status || res.scheduleStatus || '').toLowerCase();
       const isSuccess = st === 'success' || st === 'published' || st === 'completed';
       const isFailed = st === 'failed' || st === 'error' || st === 'cancelled';
 
@@ -307,7 +431,7 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
         if (!isMounted) return;
 
         if (res.success) {
-          const st = (res.status || res.scheduleStatus || '').toLowerCase();
+          const st = ((res as any).status || res.scheduleStatus || '').toLowerCase();
           const isSuccess = st === 'success' || st === 'published' || st === 'completed';
           const isFailed = st === 'failed' || st === 'error' || st === 'cancelled';
 
@@ -690,15 +814,185 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
 
           {/* 2. Berita, Katalis & Ringkasan Analisis Card */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-              <span className="text-xl">📰</span>
-              <div>
-                <h3 className="font-bold text-slate-800 text-base">Berita & Katalis Terkait</h3>
-                <p className="text-xs text-slate-400">Sumber informasi dasar postingan</p>
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">
+                  {isAutomation && autoPost?.workflow_type === 'daily_market_brief' ? '📈' : '📰'}
+                </span>
+                <div>
+                  <h3 className="font-bold text-slate-800 text-base">
+                    {isAutomation && autoPost?.workflow_type === 'daily_market_brief'
+                      ? 'Daily Market Brief & Multi-Katalis'
+                      : 'Berita & Katalis Terkait'}
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    {isAutomation && autoPost?.workflow_type === 'daily_market_brief'
+                      ? 'Kompilasi berita pasar, sentimen IHSG, dan saham pilihan AI'
+                      : 'Sumber informasi dasar postingan'}
+                  </p>
+                </div>
               </div>
+
+              {/* Status Badge */}
+              {isAutomation && autoPost?.workflow_type === 'daily_market_brief' ? (
+                <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                  Daily Brief Digest
+                </span>
+              ) : newsDetail?.score !== undefined ? (
+                <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  Skor AI: {newsDetail.score}/10
+                </span>
+              ) : null}
             </div>
 
-            {newsDetail ? (
+            {loadingCatalyst ? (
+              <div className="flex items-center justify-center py-8 text-xs text-slate-500 gap-2">
+                <div className="animate-spin w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full" />
+                <span>Memuat data berita & analisis pasar...</span>
+              </div>
+            ) : isAutomation && autoPost?.workflow_type === 'daily_market_brief' && dailyBriefData ? (
+              /* DAILY MARKET BRIEF MULTI-NEWS & MARKET DIGEST */
+              <div className="space-y-4">
+                {/* IHSG & Session KPI Banner */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
+                  <div>
+                    <span className="text-slate-400 block font-medium">Sesi Pasar</span>
+                    <span className="text-slate-900 font-bold text-sm mt-0.5 block">
+                      {dailyBriefData.log.session === 'open' ? '☀️ Open (Pagi)' : '🌙 Close (Sore)'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block font-medium">Indeks IHSG</span>
+                    <span className="text-slate-900 font-bold text-sm mt-0.5 block">
+                      {dailyBriefData.log.ihsg_price
+                        ? Number(dailyBriefData.log.ihsg_price).toLocaleString('id-ID', { maximumFractionDigits: 2 })
+                        : '-'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block font-medium">Perubahan IHSG</span>
+                    <span
+                      className={`font-bold text-sm mt-0.5 block ${
+                        Number(dailyBriefData.log.ihsg_change) >= 0 ? 'text-emerald-600' : 'text-rose-600'
+                      }`}
+                    >
+                      {dailyBriefData.log.ihsg_change != null
+                        ? `${Number(dailyBriefData.log.ihsg_change) >= 0 ? '+' : ''}${Number(
+                            dailyBriefData.log.ihsg_change
+                          ).toFixed(2)}%`
+                        : '-'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block font-medium">Saham Terpilih</span>
+                    <span className="text-amber-600 font-bold text-sm mt-0.5 block">
+                      {dailyBriefData.candidates.length || dailyBriefData.log.tickers_selected || 0} Emiten
+                    </span>
+                  </div>
+                </div>
+
+                {/* AI Market Reasoning Quote */}
+                {dailyBriefData.log.reasoning && (
+                  <div className="p-3.5 bg-amber-50/80 rounded-xl border border-amber-200/90 text-xs space-y-1">
+                    <div className="flex items-center gap-1.5 font-bold text-amber-900">
+                      <span>🤖</span>
+                      <span>Alasan Kurasi Pasar AI:</span>
+                    </div>
+                    <p className="text-amber-950/90 leading-relaxed italic">
+                      "{dailyBriefData.log.reasoning}"
+                    </p>
+                  </div>
+                )}
+
+                {/* Selected Candidates & News List */}
+                <div className="space-y-2.5">
+                  <div className="text-xs font-bold text-slate-700 flex items-center justify-between">
+                    <span>Daftar Saham Pilihan & Katalis Berita:</span>
+                    <span className="text-slate-400 font-normal">
+                      {dailyBriefData.candidates.length} emiten dianalisis
+                    </span>
+                  </div>
+
+                  {dailyBriefData.candidates.map((cand, idx) => {
+                    const candTicker = (cand.ticker || '').replace('.JK', '');
+                    const matchedArticle = dailyBriefData.news.find(
+                      (n) =>
+                        n.symbols?.includes(cand.ticker) ||
+                        n.symbols?.includes(`${candTicker}.JK`) ||
+                        n.symbols?.includes(candTicker) ||
+                        (n.title && n.title.includes(candTicker))
+                    );
+
+                    let tech: any = null;
+                    if (cand.technical_json) {
+                      try {
+                        tech =
+                          typeof cand.technical_json === 'string'
+                            ? JSON.parse(cand.technical_json)
+                            : cand.technical_json;
+                      } catch {
+                        // ignore
+                      }
+                    }
+
+                    return (
+                      <div
+                        key={cand.id || idx}
+                        className="p-3.5 bg-slate-50/70 hover:bg-slate-50 transition rounded-xl border border-slate-200/80 space-y-2"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="font-extrabold text-amber-800 bg-amber-100 px-2 py-0.5 rounded text-xs">
+                              {candTicker}
+                            </span>
+                            <span className="font-bold text-slate-800 text-xs line-clamp-1">
+                              {cand.company_name || candTicker}
+                            </span>
+                          </div>
+                          {cand.price && (
+                            <span className="text-xs font-bold text-slate-700 whitespace-nowrap">
+                              Rp {Number(cand.price).toLocaleString('id-ID')}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* News Title & Link */}
+                        {(cand.news_title || matchedArticle?.title) && (
+                          <div className="text-xs text-slate-700 font-medium leading-snug">
+                            📰 {cand.news_title || matchedArticle?.title}
+                          </div>
+                        )}
+
+                        {/* Tags / Signals */}
+                        <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                          {tech?.crossSignal && (
+                            <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              {tech.crossSignal}
+                            </span>
+                          )}
+                          {cand.pe_signal && (
+                            <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-600">
+                              PE: {cand.pe_signal}
+                            </span>
+                          )}
+                          {matchedArticle?.source_url && (
+                            <a
+                              href={matchedArticle.source_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="ml-auto text-[11px] font-semibold text-blue-600 hover:underline flex items-center gap-0.5"
+                            >
+                              Buka Berita ↗
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : newsDetail ? (
+              /* SINGLE NEWS CARD (NEWS MONITORING / MANUAL) */
               <div className="space-y-3">
                 {/* News Thumbnail & Title */}
                 <div className="flex items-start gap-3">
@@ -759,6 +1053,7 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
                 )}
               </div>
             ) : (
+              /* FALLBACK WHEN NO MATCH FOUND */
               <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-2">
                 <div className="font-semibold text-slate-800">
                   {isAutomation
