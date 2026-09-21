@@ -12,13 +12,11 @@ import DailyMarketBrief from './DailyMarketBrief';
 import StockWatchlist from './StockWatchlist';
 import Posts from './Posts';
 import Channels from './Channels';
-import LandingPage from './LandingPage';
 
 import type { AuthUser } from '../services/auth';
 
 export type DashboardPage =
   | 'overview'
-  | 'about'
   | 'news-monitoring'
   | 'daily-market-brief'
   | 'stock-watchlist'
@@ -45,7 +43,6 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'HOME',
     items: [
       { id: 'overview', label: 'Dashboard Overview', icon: '📊' },
-      { id: 'about', label: 'Tentang SahamFYP', icon: '💡' },
     ],
   },
   { label: 'SOURCES', items: [{ id: 'news-monitoring', label: 'News Monitoring', icon: '📡' }] },
@@ -90,15 +87,6 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
     switch (activePage) {
       case 'overview':
         return <Overview onNavigate={(p) => setActivePage(p as DashboardPage)} />;
-      case 'about':
-        return (
-          <div className="h-full overflow-y-auto">
-            <LandingPage
-              inDashboard={true}
-              onBackToOverview={() => setActivePage('overview')}
-            />
-          </div>
-        );
       case 'news-monitoring':
         return <NewsMonitoring />;
       case 'daily-market-brief':
