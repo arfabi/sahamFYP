@@ -7,7 +7,7 @@
 [![n8n](https://img.shields.io/badge/n8n-Workflow%20Automation-red)](https://n8n.io/)
 [![Sectors API](https://img.shields.io/badge/Sectors-REST%20API-1a73e8)](https://sectors.app/)
 [![Browserless](https://img.shields.io/badge/Browserless-HTML%20to%20Image-yellow)](https://www.browserless.io/)
-[![LLM: Sumopod](https://img.shields.io/badge/LLM-Sumopod%20(OpenAI%20compatible)-orange)](https://ai.sumopod.com/)
+[![LLM: Sumopod](https://img.shields.io/badge/LLM-Sumopod%20(OpenAI%20compatible)-orange)](https://sumopod.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-Database-green)](https://supabase.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
@@ -42,7 +42,6 @@
 - [📦 Cara Duplikasi / Clone Content Engine](#-cara-duplikasi--clone-content-engine)
 - [📁 Struktur Project](#-struktur-project)
 - [🔌 API Reference](#-api-reference)
-- [🎬 Pitch & Storyboard Video](#-pitch--storyboard-video)
 - [🔗 Quick Links & Resources](#-quick-links--resources)
 - [🔧 Troubleshooting](#-troubleshooting)
 - [📝 Catatan Versi](#-catatan-versi)
@@ -71,7 +70,7 @@ Setiap hari sebelum bursa saham Indonesia buka (08:00 WIB), SahamFYP memproses d
 > - Threads: https://www.threads.com/@sahamfyp.id
 > - TikTok: https://tiktok.com/@sahamfyp.id
 > - Telegram Channel: https://t.me/sahamfyp
-> - Contoh postingan hasil generate otomatis: https://www.instagram.com/p/Ddaf_0piRRt/?img_index=5
+> - Contoh postingan hasil generate otomatis: https://www.instagram.com/p/Dda3y6UiQwy/
 
 ---
 
@@ -79,8 +78,11 @@ Setiap hari sebelum bursa saham Indonesia buka (08:00 WIB), SahamFYP memproses d
 
 ### Realita Pasar Modal Indonesia
 Berdasarkan data resmi **Kustodian Sentral Efek Indonesia (KSEI)** dan **Bursa Efek Indonesia (BEI)**:
-- **54,4% investor pasar modal adalah Generasi Z** (usia di bawah 30 tahun mendominasi demografi investor individu).
-- Namun, nilai kepemilikan aset kelompok ini hanya **3,2% dari total aset pasar modal** (Katadata, Mei 2026). Angka ini mencerminkan tingginya angka retail pemula yang bertransaksi dengan modal terbatas dan minim literasi risiko.
+- **54,4% investor pasar modal adalah Generasi Z** (usia di bawah 30 tahun mendominasi demografi investor individu di Indonesia).
+- **70%** Gen Z dapat info investasi dari **media sosial** — bukan dari data fundamental
+- **60%+ investor pemula** tidak melakukan analisis fundamental sebelum beli
+- **70%** pernah ikut tren tanpa pertimbangan matang
+- Rata-rata hold saham hanya **1–3 bulan** — bukan investasi, tapi FOMO trading
 
 ### Kontradiksi: Di Mana Gen Z Beli Saham vs Di Mana Seharusnya?
 
@@ -95,17 +97,27 @@ FOMO "To The Moon" Tanpa Analisis               Keterbukaan Informasi BEI (Filin
   TAPI MENYESATKAN & BONCOS!                             TAPI KAKU, PANJANG, & BIKIN PUSING!
 ```
 
+#### 1. Masalah 1: Realita Gen Z Beli Saham — Modal FOMO & Pom-Pom Media Sosial
+
 <p align="center">
-  <img src="public/slides/fomo-sosmed.png" alt="Beli Saham Modal FOMO & Pom-Pom Bandar" width="49%" />
-  <img src="public/slides/risetsekuritas.png" alt="Riset Sekuritas PDF Kaku" width="49%" />
+  <img src="public/slides/fomo-sosmed.png" alt="Beli Saham Modal FOMO & Pom-Pom Bandar" width="100%" />
 </p>
 
-1. **Kenapa Gen Z lari ke grup pom-pom?**  
-   Formatnya instan, bahasanya santai, dan menjanjikan keuntungan cepat.
-2. **Kenapa Gen Z tidak membaca riset sekuritas resmi?**  
-   Riset sekuritas disajikan dalam dokumen PDF 20–30 lembar, bertabur istilah teknis (DER, PBV, EBITDA margin), grafik abu-abu yang kaku, dan tulisan padat yang sangat tidak cocok dengan cara konsumsi informasi generasi mobile-first.
-3. **Akibatnya?**  
-   Gen Z sering kali membeli saham di puncak harga (*pucuk*) dan menjadi **exit liquidity** bagi bandar/pelaku manipulasi pasar.
+- **Kenapa Gen Z lari ke grup pom-pom & media sosial?**  
+  Formatnya instan, bahasanya santai, visualnya menggoda, dan menjanjikan keuntungan cepat ("To The Moon", "Bakal Cuan Ratusan Persen!").
+- **Dampaknya?**  
+  **70%** Gen Z menelan info investasi mentah-mentah dari media sosial tanpa analisis data fundamental. Rata-rata hold saham hanya **1–3 bulan** karena murni FOMO trading, sering kali membeli saham di puncak harga (*pucuk*), hingga akhirnya menjadi **exit liquidity** bagi bandar dan spekulan pasar.
+
+#### 2. Masalah 2: Dilema Riset Resmi Sekuritas — Akurat Tapi Kaku, Panjang & Bikin Pusing
+
+<p align="center">
+  <img src="public/slides/risetsekuritas.png" alt="Riset Sekuritas PDF Kaku" width="100%" />
+</p>
+
+- **Kenapa Gen Z tidak membaca riset sekuritas resmi?**  
+  Riset sekuritas dan keterbukaan informasi BEI sebetulnya adalah sumber rekomendasi resmi yang akurat dan berbasis data fundamental yang solid. Namun, riset ini disajikan dalam dokumen PDF 20–30+ lembar, bertabur istilah teknis rumit (DER, PBV, EBITDA margin, WACC), grafik abu-abu kaku, dan tulisan padat yang sangat tidak ramah bagi generasi *mobile-first*.
+- **Dampaknya?**  
+  **60%+ investor pemula** tidak melakukan analisis fundamental sebelum beli karena pusing membaca dokumen yang kaku tersebut, sehingga mereka kembali berpaling ke rumor media sosial.
 
 ### Solusi SahamFYP: Jembatan Data Riset & Bahasa Gen Z
 
@@ -175,7 +187,7 @@ RSS Trigger (8 sumber, poll tiap menit)
   → Decision gate: PASS (berita tidak cukup relevan/kuat → skip, notifikasi Telegram singkat)
              atau GENERATE (lanjut ke enrichment & produksi konten)
   → Enrich dengan Sectors REST API sesuai kategori (lihat tabel 6 kategori di bawah)
-  → Generate naskah (LLM) → Render HTML → Browserless → upload gambar (Supabase Storage — migrasi dari Cloudinary sedang berjalan)
+  → Generate naskah (LLM) → Render HTML → Browserless → Upload gambar ke Supabase Storage (bucket sfyp-storage)
   → Publish ke Repliz → Update status di Supabase → Laporan ke Telegram
 ```
 
@@ -184,8 +196,6 @@ RSS Trigger (8 sumber, poll tiap menit)
 </p>
 
 Karena berbasis RSS multi-sumber + polling otomatis (bukan scraping satu situs saja), workflow ini lebih tahan terhadap downtime satu sumber berita dan tetap berjalan otonom mendeteksi sinyal kapan pun berita baru terbit — tanpa jadwal tetap, murni event-driven.
-
-> **Status migrasi storage**: workflow ini sedang dipindah dari Cloudinary ke Supabase Storage supaya satu CDN dipakai konsisten di seluruh sistem. Lihat [Known Limitations](#-known-limitations--status-pengembangan) untuk detail.
 
 
 
@@ -225,13 +235,13 @@ Karena berbasis RSS multi-sumber + polling otomatis (bukan scraping satu situs s
 - **Referensi**: https://ai.sumopod.com/ | https://sumopod.com/
 - **Cara kerja**: Endpoint OpenAI-compatible `POST {SUMOPOD_BASE_URL}/chat/completions` (default `https://ai.sumopod.com/v1/chat/completions`) dengan header `Authorization: Bearer <SUMOPOD_API_KEY>`. Model default `gemini/gemini-3.1-flash-lite` (ganti via `SUMOPOD_MODEL`). Wrapper server: `api/_lib/llm.ts`; wrapper client (proxy `/api/llm`): `src/services/llm.ts` — API key tidak pernah ter-expose ke bundle browser.
 
-### 4. Penyimpanan Gambar: Supabase Storage (migrasi dari Cloudinary — in progress)
+### 4. Penyimpanan Gambar: Supabase Storage
 
-- **Fungsi**: Engine rendering gambar dan penyimpanan CDN publik
-- **Status**: Daily Market Brief sudah sepenuhnya pakai **Supabase Storage** (bucket `sfyp-storage`). News Monitoring **sedang dalam proses migrasi** dari Cloudinary ke Supabase Storage — belum 100% selesai, sebagian eksekusi masih bisa memakai Cloudinary sampai migrasi tuntas. Env variable Cloudinary masih dipertahankan di `.env.example` untuk sementara.
+- **Fungsi**: Engine rendering gambar dan penyimpanan CDN publik berkecepatan tinggi
+- **Status**: Seluruh pipeline otomatis (Daily Market Brief dan News Monitoring) 100% menggunakan **Supabase Storage** (bucket `sfyp-storage`).
 - **Cara kerja**:
-  - **Browserless.io** digunakan oleh kedua *workflow* n8n untuk mengubah skrip HTML (berisi data fundamental & berita) menjadi gambar beresolusi tinggi (JPEG 1080×1350).
-  - Gambar hasil render diunggah ke **Supabase Storage** (bucket `sfyp-storage`); URL publiknya dikumpulkan sebagai payload `imageUrls` yang diteruskan ke API publish, menghindari risiko blokir CDN gratisan dari Meta/Facebook.
+  - **Browserless.io** digunakan oleh workflow n8n untuk mengubah skrip HTML (berisi data fundamental & berita) menjadi gambar beresolusi tinggi (JPEG 1080×1350).
+  - Gambar hasil render diunggah langsung ke **Supabase Storage** (bucket `sfyp-storage`); URL publiknya dikumpulkan sebagai payload `imageUrls` yang diteruskan ke API publish Repliz, menjamin ketersediaan aset gambar tanpa risiko throttle atau blokir pihak ketiga.
 
 ### 5. Template Konten & Klasifikasi Berita
 
@@ -422,7 +432,6 @@ Template & struktur slide di bawah sudah dirancang untuk merangkum pergerakan bu
   - Supabase project & credentials: https://supabase.com/
   - n8n instance (self-hosted or cloud): https://n8n.io/
   - Telegram bot token (jika pakai notifikasi Telegram): https://core.telegram.org/bots
-  - Cloudinary account & cloud name (masih dipakai sebagian workflow News Monitoring selama migrasi ke Supabase Storage berjalan): https://cloudinary.com/
   - **Vercel account**: untuk deploy backend & frontend
 
 > ⚠️ **Keamanan**: jangan pernah commit API key/token asli (termasuk di file workflow JSON n8n) ke repository publik. Ganti dengan placeholder/environment variable sebelum push. Kalau terlanjur bocor, rotate key tersebut segera di provider terkait sebelum melakukan commit apa pun.
@@ -442,10 +451,13 @@ npm install
 cp .env.example .env.local
 
 # 4. Setup database Supabase
-# Jalankan SQL migration di Supabase SQL Editor sesuai schema di bawah
+# Skema tabel DDL lengkap tersedia di folder supabase/migrations/
+# Seed data / baris tabel siap pakai tersedia di folder supabase/table/
+# Jalankan SQL DDL di Supabase SQL Editor (lihat skema lengkap di bawah)
 
 # 5. Setup Supabase Storage
 # Buat bucket bernama "sfyp-storage" di dashboard Supabase dan pastikan diset sebagai Public.
+# Seluruh render gambar otomatis disimpan ke bucket ini.
 
 # 6. Test local development
 npm run dev
@@ -475,11 +487,6 @@ REPLIZ_ACCOUNT_ID=your_repliz_account_id
 # Opsional: TikTok account ID (jika beda dari Instagram)
 REPLIZ_TIKTOK_ACCOUNT_ID=your_repliz_tiktok_account_id_optional
 
-# Cloudinary (CDN gambar — dipakai workflow News Monitoring)
-CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
-CLOUDINARY_API_KEY=your_cloudinary_api_key
-CLOUDINARY_API_SECRET=your_cloudinary_api_secret
-
 # Browserless (HTML → image renderer)
 BROWSERLESS_IO_KEY=your_browserless_api_key
 
@@ -500,10 +507,41 @@ TELEGRAM_CHAT_ID=your_telegram_chat_id_optional
 
 ### Database Schema (Supabase)
 
-Jalankan SQL ini di Supabase SQL Editor:
+Struktur database SahamFYP dapat dieksekusi melalui **Supabase SQL Editor**.
+- **File Migrasi DDL**: Tersedia di folder [`supabase/migrations/`](supabase/migrations/)
+- **File Data Row / Seed**: Tersedia di folder [`supabase/table/`](supabase/table/) (`automation_posts_rows.sql`, `generated_posts_rows.sql`, `post_images_rows.sql`, `sector_trigger_candidates_rows.sql`, `sector_trigger_logs_rows.sql`, `sector_trigger_movers_rows.sql`, `sector_trigger_news_rows.sql`, `sector_trigger_skipped_rows.sql`, `social_accounts_rows.sql`).
+
+Berikut DDL lengkap untuk inisialisasi tabel:
 
 ```sql
--- Tabel generated_posts
+-- 1. Tabel social_accounts (Manajemen akun sosial media multi-platform)
+CREATE TABLE IF NOT EXISTS social_accounts (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  platform TEXT NOT NULL,
+  account_name TEXT NOT NULL,
+  account_id TEXT NOT NULL,
+  avatar_url TEXT,
+  profile_url TEXT,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 2. Tabel automation_posts (Riwayat postingan otomatis dari workflow n8n)
+CREATE TABLE IF NOT EXISTS automation_posts (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  workflow_type TEXT NOT NULL DEFAULT 'daily_market_brief',
+  account_id TEXT NOT NULL,
+  caption TEXT,
+  thumbnail_url TEXT,
+  post_link TEXT,
+  post_id TEXT,
+  status TEXT DEFAULT 'success',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 3. Tabel generated_posts (Generator naskah & status publish wizard)
 CREATE TABLE IF NOT EXISTS generated_posts (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   log_id UUID,
@@ -528,13 +566,110 @@ CREATE TABLE IF NOT EXISTS generated_posts (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Tabel post_images
+-- 4. Tabel post_images (Penyimpanan aset slide gambar)
 CREATE TABLE IF NOT EXISTS post_images (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  post_id UUID REFERENCES generated_posts(id),
-  url TEXT NOT NULL,
+  post_id UUID REFERENCES generated_posts(id) ON DELETE CASCADE,
+  url TEXT,
+  cloudinary_url TEXT,
   thumbnail_url TEXT,
   alt TEXT,
+  slide_number INTEGER,
+  template_type TEXT,
+  width INTEGER,
+  height INTEGER,
+  file_size BIGINT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 5. Tabel sector_trigger_logs (Log sesi eksekusi Daily Market Brief)
+CREATE TABLE IF NOT EXISTS sector_trigger_logs (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  session TEXT NOT NULL CHECK (session IN ('open', 'close')),
+  trigger_date DATE NOT NULL,
+  data_date DATE NOT NULL,
+  ihsg_price NUMERIC,
+  ihsg_change NUMERIC,
+  credits_used INTEGER DEFAULT 0,
+  tickers_selected INTEGER DEFAULT 0,
+  news_fetched INTEGER DEFAULT 0,
+  reasoning TEXT,
+  status TEXT DEFAULT 'success' CHECK (status IN ('success', 'no_candidates', 'error')),
+  error_message TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 6. Tabel sector_trigger_news (Koleksi berita pasar & keterbukaan informasi)
+CREATE TABLE IF NOT EXISTS sector_trigger_news (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  log_id UUID REFERENCES sector_trigger_logs(id) ON DELETE CASCADE,
+  news_index INTEGER,
+  title TEXT,
+  tags TEXT[],
+  symbols TEXT[],
+  sector TEXT,
+  source_url TEXT,
+  published_at TIMESTAMPTZ,
+  is_selected BOOLEAN DEFAULT FALSE,
+  category TEXT,
+  ticker TEXT,
+  urgency_score INTEGER,
+  raw_content TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 7. Tabel sector_trigger_candidates (Kandidat saham terpilih + enrichment Sectors API)
+CREATE TABLE IF NOT EXISTS sector_trigger_candidates (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  log_id UUID REFERENCES sector_trigger_logs(id) ON DELETE CASCADE,
+  ticker TEXT NOT NULL,
+  company_name TEXT,
+  sector TEXT,
+  news_title TEXT,
+  news_tags TEXT[],
+  news_body TEXT,
+  price NUMERIC,
+  market_cap NUMERIC,
+  pe_ratio NUMERIC,
+  pb_ratio NUMERIC,
+  roe NUMERIC,
+  der NUMERIC,
+  revenue NUMERIC,
+  net_income NUMERIC,
+  pe_sector_avg NUMERIC,
+  pb_sector_avg NUMERIC,
+  roe_sector_avg NUMERIC,
+  der_sector_avg NUMERIC,
+  pe_signal TEXT,
+  pb_signal TEXT,
+  roe_signal TEXT,
+  der_signal TEXT,
+  quadrant TEXT,
+  fundamental_summary TEXT,
+  technical_summary JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 8. Tabel sector_trigger_movers (Top gainers & top losers harian)
+CREATE TABLE IF NOT EXISTS sector_trigger_movers (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  log_id UUID REFERENCES sector_trigger_logs(id) ON DELETE CASCADE,
+  mover_type TEXT NOT NULL CHECK (mover_type IN ('gainers', 'losers')),
+  rank INTEGER NOT NULL,
+  ticker TEXT NOT NULL,
+  company_name TEXT,
+  price NUMERIC,
+  change_pct NUMERIC,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 9. Tabel sector_trigger_skipped (Saham yang dilewati beserta alasannya)
+CREATE TABLE IF NOT EXISTS sector_trigger_skipped (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  log_id UUID REFERENCES sector_trigger_logs(id) ON DELETE CASCADE,
+  ticker TEXT NOT NULL,
+  reason TEXT NOT NULL,
+  market_cap NUMERIC,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
@@ -831,7 +966,7 @@ sahamFYP/
 - Jika `scheduleAt` tidak diisi → posting segera (jam WIB sekarang)
 - Jika `scheduleAt` diisi dengan format `YYYY-MM-DDTHH:mm:ss` (tanpa timezone) → dianggap WIB, ditambahkan offset `+07:00`
 - Jika `scheduleAt` dengan timezone eksplisit (misal `+07:00` atau `Z`) → pakai apa adanya
-- `imageUrls`/`cloudinaryUrls` bisa berisi 1 (single image) atau lebih (album/carousel). Jika 1 → type `image`, jika 2+ → type `album`
+- `imageUrls` bisa berisi 1 (single image) atau lebih (album/carousel). Jika 1 → type `image`, jika 2+ → type `album`
 
 ### Scrape Isi Artikel
 
@@ -855,22 +990,6 @@ sahamFYP/
 
 - **Auth**: Tidak perlu (public, dipanggil internal oleh n8n)
 - **Fungsi**: `action: "check"` untuk cek apakah URL berita sudah pernah diproses (cegah duplikat konten); `action: "update"` untuk update kategori/skor berita yang tersimpan
-
----
-
-## 🎬 Pitch & Storyboard Video
-
-<p align="center">
-  <img src="public/slides/7.png" alt="Investasi Pakai Data, Bukan Hype - SahamFYP Powered by Sectors.app" width="100%" />
-</p>
-
-Panduan lengkap naskah dan alur video presentasi untuk juri Hackathon tersedia di:
-📄 **[`storyboard.md`](storyboard.md)**
-
-- **One-Sentence Problem Statement**:
-  > *"54,4% investor pasar modal Indonesia adalah Gen Z, namun banyak dari mereka FOMO mengikuti rekomendasi saham viral dari media sosial dan grup pom-pom, alih-alih mengecek data riil perusahaan — SahamFYP hadir dengan daily market brief berbasis data Sectors API, lengkap informasi dan warning risiko, dipublikasikan langsung di media sosial: kanal tempatnya para Gen Z."*
-- **1-Minute Teaser Video**: Naskah hook cepat (FOMO vs riset resmi), demo automasi n8n + Sectors API, dan visual slide warning.
-- **3-Minute Judging Walkthrough**: Dekonstruksi masalah Gen Z, demonstrasi Sectors API sebagai tulang punggung kebenaran data, arsitektur pipeline otonom, dan bukti live di akun publik `@sahamfyp.id`.
 
 ---
 
@@ -899,7 +1018,6 @@ Panduan lengkap naskah dan alur video presentasi untuk juri Hackathon tersedia d
 - **Google AI Studio**: https://aistudio.google.com/
 - **Google Generative AI Docs**: https://ai.google.dev/
 - **Repliz**: https://repliz.com/ | https://api.repliz.com/public-json
-- **Cloudinary**: https://cloudinary.com/
 - **Supabase**: https://supabase.com/
 - **Vercel**: https://vercel.com/
 - **n8n**: https://n8n.io/
@@ -974,17 +1092,19 @@ Panduan lengkap naskah dan alur video presentasi untuk juri Hackathon tersedia d
 
 ## 📊 Data Pendukung Latar Belakang (Gen Z Investor)
 
-| Sumber | Data | Periode |
-|--------|------|---------|
-| BEI (Bursa Efek Indonesia) | 54,4% investor pasar modal adalah Gen Z | Mei 2026 |
-| KSEI (Kustodian Sentral Efek Indonesia) | 55,38% investor individu berusia ≤30 tahun | Juni 2024 |
-| BPS (SUPAS) | Gen Z = 24,9% dari total penduduk Indonesia | Mei 2026 |
-| Katadata Opini | Aset Gen Z: Rp48,3 triliun / 3,2% dari total | Mei 2026 |
+| Sumber / Riset | Data / Temuan | Indikator / Keterangan |
+|----------------|---------------|------------------------|
+| BEI (Bursa Efek Indonesia) | **54,4%** investor pasar modal adalah Gen Z | Dominasi kelompok usia muda di bursa |
+| KSEI (Kustodian Sentral Efek Indonesia) | **55,38%** investor individu berusia ≤30 tahun | Kelompok investor terbesar di Indonesia |
+| Survei Edukasi Finansial & Medsos | **70%** Gen Z dapat info investasi dari **media sosial** | Sumber info didominasi medsos, bukan data fundamental |
+| Survei Perilaku Investor Pemula | **60%+ investor pemula** tidak melakukan analisis fundamental sebelum beli | Membeli saham tanpa evaluasi laporan keuangan |
+| Survei Tren Pasar Finansial | **70%** investor muda pernah ikut tren tanpa pertimbangan matang | Keputusan berbasis FOMO & ajakan viral |
+| Analisis Transaksi Ritel | Rata-rata hold saham hanya **1–3 bulan** | FOMO trading spekulatif, bukan investasi bertumbuh |
 
-### Masalah FOMO & Tanpa Analisis
+### Masalah FOMO & Minim Analisis Fundamental
 
-- Opini Katadata (Juli 2026): Maraknya misinformasi, ekspektasi keuntungan tidak realistis, risiko keputusan finansial yang kurang tepat
-- Data aset Gen Z: Rp48,3 triliun / 3,2% dari total (Mei 2026) — menunjukkan kontribusi kecil meski jumlah investor dominan
+- **Kesenjangan Literasi vs Aksi Beli**: Meskipun Gen Z mendominasi jumlah investor pasar modal Indonesia, mayoritas keputusan transaksi dipicu oleh rekomendasi viral di media sosial dan grup komunitas tanpa verifikasi rasio keuangan emiten.
+- **Tingginya Risiko Kerugian Ritel**: Akibat ketiadaan analisis fundamental dan kecenderungan *holding time* yang sangat singkat (1–3 bulan), investor pemula rentan membeli saham di puncak harga (*pucuk euphoria*) dan menjadi korban volatilitas pasar.
 
 ---
 
