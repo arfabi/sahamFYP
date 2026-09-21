@@ -74,8 +74,13 @@ export default function LoginPage({ onLoginSuccess, onBackToLanding }: LoginPage
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">📰 SahamFYP</h1>
-          <p className="text-slate-400">Generator Konten Saham untuk Instagram</p>
+          <img
+            src="/logo-sahamfyp.png"
+            alt="SahamFYP Logo"
+            className="w-16 h-16 rounded-full mx-auto mb-3 shadow-lg border border-amber-400/30 object-cover"
+          />
+          <h1 className="text-3xl font-bold text-white mb-1">SahamFYP</h1>
+          <p className="text-slate-400 text-sm">Generator Konten Saham & Anti-FOMO Engine</p>
         </div>
 
         {/* Login Card */}

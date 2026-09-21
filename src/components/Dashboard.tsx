@@ -124,7 +124,10 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       <aside className="w-64 bg-slate-900 text-white flex flex-col">
         {/* Logo */}
         <div className="p-4 border-b border-slate-800">
-          <h1 className="text-lg font-bold flex items-center gap-2">📰 SahamFYP</h1>
+          <h1 className="text-lg font-bold flex items-center gap-2.5">
+            <img src="/logo-sahamfyp.png" alt="SahamFYP Logo" className="w-7 h-7 rounded-full object-cover shadow-sm" />
+            <span>SahamFYP</span>
+          </h1>
         </div>
 
         {/* Navigation — clean fixed navigation */}
