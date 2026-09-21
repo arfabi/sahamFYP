@@ -1,8 +1,24 @@
 import React from 'react';
 import {BarChart,Bar,XAxis,YAxis,ResponsiveContainer,PieChart,Pie,Cell} from 'recharts';
+import { Newspaper, TrendingUp, TrendingDown, Building2 } from 'lucide-react';
 import {supabase} from '../services/supabase';
+import FeatureInfoCard from './FeatureInfoCard';
 const C=['#F2A93B','#4CAF7D','#E4572E','#3B82F6','#8B5CF6','#EC4899','#14B8A6','#F97316'];
-function Card({label,value,icon,color}){return <div className="bg-white rounded-2xl border border-slate-200 p-4"><div className="flex items-center gap-3"><div className={"w-10 h-10 rounded-xl flex items-center justify-center text-lg "+color}>{icon}</div><div><p className="text-2xl font-bold text-slate-800">{value}</p><p className="text-xs text-slate-500">{label}</p></div></div></div>;}
+function Card({ label, value, icon, color }: { label: string; value: React.ReactNode; icon: React.ReactNode; color: string }) {
+  return (
+    <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+      <div className="flex items-center gap-3">
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg ${color}`}>
+          {icon}
+        </div>
+        <div>
+          <p className="text-2xl font-bold text-slate-800">{value}</p>
+          <p className="text-xs text-slate-500">{label}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 function fmtDate(iso){if(!iso)return'-';try{const d=new Date(iso);if(isNaN(d.getTime()))return'-';return d.toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});}catch{return'-';}}
 const dateOf=(r)=>(r&&(r.published_at||r.timestamp||r.created_at))||null;
 const domainOf=(u)=>{try{return new URL(u).hostname.replace(/^www\./,'');}catch{return'-';}};
@@ -109,9 +125,23 @@ export default function NewsMonitoring() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">News Monitoring</h1>
-        <p className="text-sm text-slate-500 mt-1">Data dari sector trigger news</p>
+        <h1 className="text-2xl font-bold text-slate-800">📡 News Monitoring</h1>
+        <p className="text-sm text-slate-500 mt-1">Monitoring agregasi berita emiten, aksi korporasi, dan sentimen pasar modal real-time.</p>
       </div>
+
+      <FeatureInfoCard
+        id="news-monitoring"
+        title="Tentang News Monitoring"
+        badge="SOURCES"
+        description="Pusat agregasi berita dan pengumuman keterbukaan informasi (filings) emiten pasar modal Indonesia secara terpusat."
+        functionality="Menyajikan feed berita terfilter dengan ekstraksi otomatis ticker saham terkait, klasifikasi sektor, dan tagging sentimen (Bullish/Bearish) sebagai katalis pergerakan harga saham."
+        dataSource="Hasil crawling otomatis dari berbagai portal berita bisnis & investasi terkemuka di Indonesia (Bisnis.com, Kontan, CNBC Indonesia, dll) serta integrasi Sectors.app News & Filing API."
+        pipeline="Workflow n8n News Monitoring berjalan terjadwal secara periodik untuk menarik berita terbaru, memfilter duplikasi, men-tag emiten, dan menyimpan data ke tabel Supabase (sector_trigger_news)."
+        links={[
+          { label: 'Sectors.app News API', url: 'https://sectors.app' },
+          { label: 'IDX Keterbukaan Informasi', url: 'https://www.idx.co.id' }
+        ]}
+      />
 
       <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div className="flex flex-wrap gap-4 items-end">
@@ -177,10 +207,10 @@ export default function NewsMonitoring() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card label="Total Berita" value={total} icon="NEWS" color="bg-blue-50 text-blue-600" />
-        <Card label="Bullish" value={gen} icon="UP" color="bg-green-50 text-green-600" />
-        <Card label="Bearish" value={pass} icon="DN" color="bg-orange-50 text-orange-600" />
-        <Card label="Emiten" value={tickers} icon="TK" color="bg-purple-50 text-purple-600" />
+        <Card label="Total Berita" value={total} icon={<Newspaper className="w-5 h-5" />} color="bg-blue-50 text-blue-600" />
+        <Card label="Bullish" value={gen} icon={<TrendingUp className="w-5 h-5" />} color="bg-green-50 text-green-600" />
+        <Card label="Bearish" value={pass} icon={<TrendingDown className="w-5 h-5" />} color="bg-orange-50 text-orange-600" />
+        <Card label="Emiten" value={tickers} icon={<Building2 className="w-5 h-5" />} color="bg-purple-50 text-purple-600" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

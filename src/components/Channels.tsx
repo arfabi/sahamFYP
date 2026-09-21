@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Instagram, Send, Music, Twitter, Facebook, AtSign, Linkedin, Link2 } from 'lucide-react';
 import { supabase } from '../services/supabase';
+import FeatureInfoCard from './FeatureInfoCard';
 
 interface SocialAccount {
   id: string;
@@ -113,6 +114,19 @@ export default function Channels({ onNavigate }: { onNavigate?: (page: string) =
           + Add Account
         </button>
       </div>
+
+      <FeatureInfoCard
+        id="channels"
+        title="Tentang Akun & Channel Publikasi"
+        badge="PUBLISHING"
+        description="Kelola akun media sosial tujuan pengiriman konten otomatis dan manual (Instagram, TikTok, Telegram, dll)."
+        functionality="Menyimpan identitas channel tujuan (Account ID), platform penerbitan, dan status keaktifan akun dalam pipeline publikasi."
+        dataSource="Disimpan secara aman di database Supabase pada tabel social_accounts."
+        pipeline="Digunakan oleh alur Repliz API & bot Telegram untuk menentukan tujuan ke mana postingan berita dan market brief diterbitkan secara simultan."
+        links={[
+          { label: 'Repliz Dashboard', url: 'https://app.repliz.com' }
+        ]}
+      />
 
       {loading ? (
         <div className="text-slate-500">Loading accounts...</div>

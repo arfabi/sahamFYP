@@ -7,6 +7,7 @@ import AutomationPostRow from './AutomationPostRow';
 import AutomationPostCard from './AutomationPostCard';
 import ManualPostCard from './ManualPostCard';
 import PostDetailView from './PostDetailView';
+import FeatureInfoCard from './FeatureInfoCard';
 
 function toLocalDateString(isoStr?: string): string {
   if (!isoStr) return '';
@@ -233,6 +234,20 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
           </button>
         </div>
       </div>
+
+      <FeatureInfoCard
+        id="posts"
+        title="Tentang Manajemen Posts & Distribusi"
+        badge="PUBLISHING"
+        description="Pusat pemantauan seluruh konten publikasi SahamFYP baik hasil otomatisasi maupun pembuatan manual."
+        functionality="Melihat pratinjau carousel slide, status jadwal antrean, hingga sinkronisasi tautan live post di media sosial secara real-time."
+        dataSource="Data tersimpan di database Supabase (tabel automation_posts untuk alur n8n dan generated_posts untuk generator manual)."
+        pipeline="Setiap postingan terhubung dengan Repliz API untuk distribusi otomatis ke platform Instagram, TikTok, Threads, FB, & Telegram, termasuk auto-check dan sinkronisasi status penerbitan."
+        links={[
+          { label: 'Repliz Dashboard', url: 'https://app.repliz.com' },
+          { label: 'Supabase Database', url: 'https://supabase.com' }
+        ]}
+      />
 
       {/* Tabs & View Mode Switcher */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-1">

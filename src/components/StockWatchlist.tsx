@@ -6,6 +6,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
+import FeatureInfoCard from './FeatureInfoCard';
 
 interface TriggerLog {
   id: string;
@@ -204,6 +205,19 @@ export default function StockWatchlist() {
           </select>
         </div>
       </div>
+
+      <FeatureInfoCard
+        id="stock-watchlist"
+        title="Tentang Stock Watchlist"
+        badge="ANALYSIS"
+        description="Daftar saham-saham pilihan yang disaring berdasarkan korelasi berita katalis dan rasio valuasi fundamental terhadap rata-rata sektornya."
+        functionality="Menyajikan komparasi rasio keuangan (PE vs PE Sektor, PBV vs PBV Sektor, ROE, DER), sinyal valuasi (murah/wajar/mahal), serta analisis teknikal per emiten."
+        dataSource="Hasil ekstraksi otomatis dari tabel Supabase sector_trigger_candidates yang dihitung pada setiap sesi Daily Market Brief."
+        pipeline="Pipeline automasi menyaring emiten yang muncul di berita, menarik data fundamental real-time dari Sectors.app API, lalu mengevaluasi apakah emiten layak masuk watchlist."
+        links={[
+          { label: 'Sectors.app Financials', url: 'https://sectors.app' }
+        ]}
+      />
 
       {!logs.length ? (
         <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm">

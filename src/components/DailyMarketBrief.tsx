@@ -4,6 +4,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
+import FeatureInfoCard from './FeatureInfoCard';
 
 interface TriggerLog {
   id: string;
@@ -178,6 +179,19 @@ export default function DailyMarketBrief() {
           🔄 Refresh
         </button>
       </div>
+
+      <FeatureInfoCard
+        id="daily-market-brief"
+        title="Tentang Daily Market Brief"
+        badge="ANALYSIS"
+        description="Ringkasan harian kondisi pasar modal Indonesia yang dieksekusi 2 kali sehari: saat Market Open (pagi) dan Market Close (sore)."
+        functionality="Menganalisis pergerakan indeks IHSG, top gainers/losers, ringkasan berita katalis utama, serta seleksi emiten potensial berdasarkan valuasi sektoral."
+        dataSource="Data historis dan metrik finansial emiten ditarik dari Sectors.app Market & Financials API dan disimpan di tabel Supabase sector_trigger_logs."
+        pipeline="Dijalankan secara terjadwal otomatis oleh workflow n8n / cron endpoint (/api/sector-trigger) untuk menghasilkan log komprehensif sebagai dasar pembuatan konten pasar."
+        links={[
+          { label: 'Sectors.app API', url: 'https://sectors.app' }
+        ]}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left: Log List */}
