@@ -10,7 +10,7 @@
           "parameters": [
             {
               "name": "X-API-Key",
-              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmMzAyMDViMi1hMzY1LTQyZDUtODE0ZS0yYzRiYjJkNDQyYmIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiNDdmMGMwYjktMTQ1MC00NjcwLTk3ZjktZjA1ZDU2Y2EzM2ViIiwiaWF0IjoxNzg4OTM1MDA2fQ.PVtFSytgbdeoVO_86oOpYZPMmNbYOYEV9MCaUSVVGos"
+              "value": "MASUKKAN KEY API ANDA DISINI"
             }
           ]
         },
@@ -41,7 +41,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://chrome.browserless.io/screenshot?token=2VEwVdb9hWKYbvoe74f8dd268e526e79608c5d9d5c23154ac",
+        "url": "=https://chrome.browserless.io/screenshot?token=MASUKKAN KEY API ANDA DISINI",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"url\": \"data:text/html;charset=utf-8,{{ encodeURIComponent($json.html) }}\",\n  \"options\": {\n    \"type\": \"jpeg\",\n    \"fullPage\": true\n  },\n  \"viewport\": {\n    \"width\": 1080,\n    \"height\": 1350\n  }\n}\n",
@@ -98,7 +98,7 @@
           "parameters": [
             {
               "name": "X-API-Key",
-              "value": "=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmMzAyMDViMi1hMzY1LTQyZDUtODE0ZS0yYzRiYjJkNDQyYmIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiNDdmMGMwYjktMTQ1MC00NjcwLTk3ZjktZjA1ZDU2Y2EzM2ViIiwiaWF0IjoxNzg4OTM1MDA2fQ.PVtFSytgbdeoVO_86oOpYZPMmNbYOYEV9MCaUSVVGos"
+              "value": "MASUKKAN KEY API ANDA DISINI"
             }
           ]
         },
@@ -160,7 +160,7 @@
           "parameters": [
             {
               "name": "X-API-Key",
-              "value": "=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmMzAyMDViMi1hMzY1LTQyZDUtODE0ZS0yYzRiYjJkNDQyYmIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiNDdmMGMwYjktMTQ1MC00NjcwLTk3ZjktZjA1ZDU2Y2EzM2ViIiwiaWF0IjoxNzg4OTM1MDA2fQ.PVtFSytgbdeoVO_86oOpYZPMmNbYOYEV9MCaUSVVGos"
+              "value": "MASUKKAN KEY API ANDA DISINI"
             }
           ]
         },
@@ -232,7 +232,7 @@
             },
             {
               "name": "apikey",
-              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhncXNydHRwZHhpaXFrbnV1bHdsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODg0NzQzNSwiZXhwIjoyMTA0NDIzNDM1fQ.9ph-hVC34GmTDucS6PzwVri66YgOZGBknWtgxx9mbp8"
+              "value": "MASUKKAN KEY API ANDA DISINI"
             }
           ]
         },

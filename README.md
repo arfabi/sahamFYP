@@ -36,9 +36,9 @@
 ## 📑 Daftar Isi
 - [📌 Apa Itu SahamFYP?](#-apa-itu-sahamfyp)
 - [🎯 Latar Belakang & Masalah Gen Z](#-latar-belakang--masalah-gen-z)
-- [🔄 Dua Workflow Otomatis (n8n)](#-dua-workflow-otomatis-n8n)
 - [🌟 Fitur Utama](#-fitur-utama)
 - [🛠️ Tech Stack](#️-tech-stack)
+- [📑 Template Konten Postingan](#-template-konten-postingan)
 - [📦 Cara Duplikasi / Clone Content Engine](#-cara-duplikasi--clone-content-engine)
 - [📁 Struktur Project](#-struktur-project)
 - [🔌 API Reference](#-api-reference)
@@ -130,84 +130,13 @@ SahamFYP mengambil **kedalaman data riset sekuritas** dan memformatnya menjadi *
 
 ---
 
-## 🔄 Dua Workflow Otomatis (n8n)
-
-Ini adalah inti dari track **Automation & Workflows**: dua pipeline yang berjalan **otonom** tanpa intervensi manual per siklus.
-
-### 1. Daily Market Brief — Trigger Terjadwal, tiap 08:00 WIB
-
-Berjalan otomatis setiap pagi sebelum bursa buka. Dalam **satu sesi trigger**, sistem memanggil banyak endpoint Sectors REST API sekaligus untuk membangun brief pasar harian + watchlist saham. Contoh log eksekusi nyata (Sep 18, 10:17 — sesi manual test run, jadwal produksi tetap 08:00 WIB):
-
-| Waktu | Endpoint Sectors API | Tipe | Status | Credits |
-|---|---|---|---|---|
-| 10:17 | `/v2/daily/INET.JK/` | Direct API | 200 | 1 |
-| 10:17 | `/v2/company/report/PTRO.JK/` | Direct API | 200 | 3 |
-| 10:17 | `/v2/company/report/BYAN.JK/` | Direct API | 200 | 3 |
-| 10:17 | `/v2/company/report/INET.JK/` | Direct API | 200 | 3 |
-| 10:17 | `/v2/daily/BYAN.JK/` | Direct API | 200 | 1 |
-| 10:17 | `/v2/daily/MBMA.JK/` | Direct API | 200 | 1 |
-| 10:17 | `/v2/daily/PTRO.JK/` | Direct API | 200 | 1 |
-| 10:17 | `/v2/company/report/MBMA.JK/` | Direct API | 200 | 3 |
-| 10:17 | `/v2/brokers/top/` | Direct API | 200 | 2 |
-| 10:17 | `/v2/companies/top-changes/` | Direct API | 200 | 2 |
-| 10:17 | `/v2/news/` | Direct API | 200 | 1 |
-| 10:17 | `/v2/filings/` | Direct API | 200 | 1 |
-| 10:17 | `/v2/index-daily/ihsg/` | Direct API | 200 | 1 |
-
-**Alur:**
-
-```
-Schedule Trigger (08:00 WIB)
-  → SectorTrigger/open (pilih watchlist saham hari ini, generate naskah via LLM + Sectors data)
-  → Loop per slide → Render HTML → Browserless (HTML → JPEG 1080×1350)
-  → Upload ke Supabase Storage (bucket sfyp-storage) → kumpulkan imageUrls
-  → Publish ke Repliz (multi-akun: Instagram, Facebook, Threads, X, TikTok)
-  → Simpan log post ke Supabase (/api/posts)
-  → Laporan status ke Telegram (jumlah credits terpakai, saham terpilih, akun yang berhasil publish)
-```
-
-<p align="center">
-  <img src="public/slides/n8n.png" alt="Workflow n8n SahamFYP 100% Otomatis" width="100%" />
-</p>
-
-Bukti unattended run: log eksekusi (seperti tabel di atas), timestamp trigger, dan notifikasi Telegram otomatis tiap sesi selesai — semua tanpa operator menekan tombol apa pun setelah workflow di-deploy.
-
-### 2. News Monitoring — Trigger Event-Based, real-time saat ada berita baru
-
-Berjalan kontinu, memantau **8 sumber RSS media ekonomi Indonesia** (Katadata, Kontan, Okezone, Liputan6, Detik, CNN Indonesia, CNBC Indonesia, IDX Channel) setiap menit untuk mendeteksi sinyal berita baru yang berpotensi memengaruhi harga saham.
-
-**Alur:**
-
-```
-RSS Trigger (8 sumber, poll tiap menit)
-  → Cek duplikat (/api/news-scrape, cegah proses berita yang sama 2x)
-  → Scrape isi artikel penuh (/api/scrape)
-  → Classify kategori & ticker (/api/classify — LLM, 6 kategori)
-  → Score urgensi/relevansi (/api/score)
-  → Decision gate: PASS (berita tidak cukup relevan/kuat → skip, notifikasi Telegram singkat)
-             atau GENERATE (lanjut ke enrichment & produksi konten)
-  → Enrich dengan Sectors REST API sesuai kategori (lihat tabel 6 kategori di bawah)
-  → Generate naskah (LLM) → Render HTML → Browserless → Upload gambar ke Supabase Storage (bucket sfyp-storage)
-  → Publish ke Repliz → Update status di Supabase → Laporan ke Telegram
-```
-
-<p align="center">
-  <img src="public/slides/newsmonitoring.png" alt="News Monitoring Reality Check & Warning" width="100%" />
-</p>
-
-Karena berbasis RSS multi-sumber + polling otomatis (bukan scraping satu situs saja), workflow ini lebih tahan terhadap downtime satu sumber berita dan tetap berjalan otonom mendeteksi sinyal kapan pun berita baru terbit — tanpa jadwal tetap, murni event-driven.
-
-
-
----
-
 ## 🌟 Fitur Utama
 
 - **Dashboard Terintegrasi** → Akses cepat untuk *Market Brief* harian dan pantauan *Stock Watchlist*.
 - **News Monitoring Real-Time** → Deteksi otomatis berita dari 8 sumber RSS, filter berdasarkan rentang waktu untuk merangkum berita terkini secara dinamis.
 - **Accounts Manager** → Manajemen akun sosial media terpusat (Instagram, Threads, Facebook, X, TikTok). Bisa menambah, menghapus, melihat preview link profil, serta *toggle* Active/Inactive yang tersinkronisasi langsung dengan *database* Supabase.
 - **Content Generator & Multi-Publishing** → Generate konten visual AI (Form Wizard) dan kemampuan **memilih beberapa target akun sosmed** sekaligus dalam satu kali klik — untuk kebutuhan konten manual/ad-hoc di luar dua workflow otomatis di atas.
-- **Full Automation Workflow (n8n)** → Dua pipeline otonom end-to-end (lihat bagian [Dua Workflow Otomatis](#-dua-workflow-otomatis-n8n)) dari deteksi sinyal → verifikasi data Sectors → generate → publish → laporan Telegram, tanpa intervensi manual per siklus.
+- **Full Automation Workflow (n8n)** → Dua pipeline otonom end-to-end (lihat bagian [Template Konten Postingan](#-template-konten-postingan)) dari deteksi sinyal → verifikasi data Sectors → generate → publish → laporan Telegram, tanpa intervensi manual per siklus.
 
 ---
 
@@ -243,34 +172,201 @@ Karena berbasis RSS multi-sumber + polling otomatis (bukan scraping satu situs s
   - **Browserless.io** digunakan oleh workflow n8n untuk mengubah skrip HTML (berisi data fundamental & berita) menjadi gambar beresolusi tinggi (JPEG 1080×1350).
   - Gambar hasil render diunggah langsung ke **Supabase Storage** (bucket `sfyp-storage`); URL publiknya dikumpulkan sebagai payload `imageUrls` yang diteruskan ke API publish Repliz, menjamin ketersediaan aset gambar tanpa risiko throttle atau blokir pihak ketiga.
 
-### 5. Template Konten & Klasifikasi Berita
+### 5. Supabase
 
-SahamFYP menggunakan **6 kategori utama konten** yang masing-masing memiliki struktur slide carousel **8 slide** yang konsisten.
+- **Fungsi**: Database utama, Single Source of Truth, dan Object Storage.
+- **Referensi**: https://supabase.com/
+- **Cara kerja**:
+  - **Tabel Utama**: `sector_trigger_news` (log eksekusi n8n & berita, jadi bukti unattended run), `social_accounts` (database akun sosmed & status aktif/inaktif), `automation_posts` (riwayat publish otomatis n8n), dan `generated_posts` (status posting).
+  - **Storage**: Menggunakan bucket publik `sfyp-storage` untuk menyimpan seluruh slide visual beresolusi tinggi yang dihasilkan pipeline otomatis.
 
-#### a. Klasifikasi Berita Otomatis
+### 6. Vercel
 
+- **Fungsi**:
+  - Hosting untuk aplikasi web (frontend React + Vite)
+  - Serverless functions (Vercel Functions) untuk API routes (`/api/*`)
+- **Referensi**: https://vercel.com/
+- **Cara kerja**:
+  - Setiap file di `api/` folder di-deploy sebagai Vercel Function
+  - Build command: `node scripts/sync-env.mjs && npm run build`
+  - Output directory: `dist`
+  - Config di `vercel.json` untuk routing & rewrites
+
+### 7. n8n
+
+- **Fungsi**: Workflow automation sebagai orchestrator utama untuk dua pipeline otonom (Daily Market Brief & News Monitoring) — menghubungkan Sectors REST API, LLM, storage, dan publish tanpa intervensi manual per siklus.
+- **Referensi**: https://n8n.io/
+- **Cara kerja**:
+  - Template workflow JSON siap pakai tersedia di folder [`n8n_workflows_template/`](n8n_workflows_template/) (token API dan kredensial sudah diset ke placeholder sebelum commit)
+  - Trigger: schedule (Daily Market Brief, 08:00 WIB) atau RSS event trigger (News Monitoring, tiap menit polling)
+  - Setiap step memanggil API SahamFYP atau service langsung
+
+### 8. Telegram Bot
+
+- **Fungsi**: Notifikasi status tiap sesi otomatis: berhasil / gagal / scheduled — sekaligus menjadi bukti unattended run (timestamp + hasil tiap eksekusi tanpa operator).
+- **Referensi**: https://core.telegram.org/bots
+- **Cara kerja**: Menggunakan Telegram Bot API untuk kirim notifikasi ke user/group yang diset.
+
+### 9. React + Vite
+
+- **Fungsi**: Web engine / dashboard / form wizard — UI untuk monitoring, manual post, dan form wizard
+- **Referensi**: https://vitejs.dev/ | https://react.dev/
+- **Plugin yang digunakan**:
+  - `@vitejs/plugin-react` — React Fast Refresh & JSX support
+  - `vite` (versi `^5.4.0`) — build tool & dev server
+  - `tailwindcss` (versi `^3.4.10`) — styling & design system
+- **Cara kerja**:
+  - Vite sebagai build tool & dev server
+  - React untuk component-based UI
+  - Build output ke `dist/` folder
+  - Deploy ke Vercel
+
+---
+
+## 📑 Template Konten Postingan
+
+SahamFYP mengotomatisasi produksi konten edukasi dan riset pasar modal melalui dua pipeline n8n: **Daily Market Brief** (terjadwal sebelum jam bursa) dan **Monitoring News** (event-driven real-time saat ada berita baru / keterbukaan informasi).
+
+---
+
+### 1. Daily Market Brief
+
+Workflow harian otomatis terjadwal yang dieksekusi setiap pagi pukul **08:00 WIB** sebelum pembukaan bursa saham Indonesia.
+
+#### a. Workflow Automasi (n8n)
+
+Dalam satu sesi eksekusi unattended, workflow ini memanggil serangkaian endpoint Sectors REST API untuk merangkum kondisi pasar, menyusun watchlist saham potensial, me-render visual carousel resolusi tinggi (JPEG 1080×1350) via Browserless, menyimpan aset ke Supabase Storage, menerbitkan ke berbagai media sosial melalui Repliz, dan mengirimkan laporan eksekusi lengkap ke Telegram.
+
+<p align="center">
+  <img src="n8n_workflows_template/screenshot_daily_market_brief.png" alt="Workflow n8n - Daily Market Brief" width="100%" />
+</p>
+
+- **Download / Import Workflow JSON**: 📄 [**`SahamFYP - Daily Market Brief.json`**](n8n_workflows_template/SahamFYP%20-%20Daily%20Market%20Brief.json)
+- **Konfigurasi Kredensial**: Seluruh API key dan token sensitif di dalam file JSON template ini telah disiapkan dengan placeholder `MASUKKAN KEY API ANDA DISINI` agar siap di-import langsung ke workspace n8n Anda (*Workflows > Import from File*).
+
+**Alur Eksekusi:**
+```
+Schedule Trigger (08:00 WIB)
+  → SectorTrigger/open (pilih watchlist saham hari ini, enrich Sectors API & generate naskah LLM)
+  → Split Out per Slide → Render HTML → Browserless.io (HTML → JPEG 1080×1350)
+  → Upload ke Supabase Storage (bucket sfyp-storage) → Collect All URLs
+  → Publish ke Repliz (multi-akun: Instagram, Facebook, Threads, X, TikTok)
+  → Simpan log riwayat post ke Supabase (/api/posts)
+  → Kirim broadcast laporan status & credits used ke Telegram
+```
+
+**Log Eksekusi Nyata Sectors API (Satu Sesi Trigger):**
+
+| Waktu | Endpoint Sectors API | Tipe | Status | Credits |
+|---|---|---|---|---|
+| 10:17 | `/v2/daily/INET.JK/` | Direct API | 200 | 1 |
+| 10:17 | `/v2/company/report/PTRO.JK/` | Direct API | 200 | 3 |
+| 10:17 | `/v2/company/report/BYAN.JK/` | Direct API | 200 | 3 |
+| 10:17 | `/v2/company/report/INET.JK/` | Direct API | 200 | 3 |
+| 10:17 | `/v2/daily/BYAN.JK/` | Direct API | 200 | 1 |
+| 10:17 | `/v2/daily/MBMA.JK/` | Direct API | 200 | 1 |
+| 10:17 | `/v2/daily/PTRO.JK/` | Direct API | 200 | 1 |
+| 10:17 | `/v2/company/report/MBMA.JK/` | Direct API | 200 | 3 |
+| 10:17 | `/v2/brokers/top/` | Direct API | 200 | 2 |
+| 10:17 | `/v2/companies/top-changes/` | Direct API | 200 | 2 |
+| 10:17 | `/v2/news/` | Direct API | 200 | 1 |
+| 10:17 | `/v2/filings/` | Direct API | 200 | 1 |
+| 10:17 | `/v2/index-daily/ihsg/` | Direct API | 200 | 1 |
+
+#### b. Template Konten Daily Brief
+
+<p align="center">
+  <img src="public/slides/dailymarketbrief.png" alt="Contoh Daily Market Brief SahamFYP" width="100%" />
+</p>
+
+##### 1) Market Open (08:00 WIB) — ✅ Live di Media Sosial
+Memberikan outlook pasar sebelum bursa buka dengan komposisi slide dinamis:
+
+| Slide | Fungsi | Keterangan |
+|-------|--------|------------|
+| 1 | **COVER** | Judul "Market Open" + Tanggal + Jumlah Watchlist |
+| 2 | **TLDR** | Ringkasan IHSG kemarin, Top Gainers/Losers, Foreign Flow, Berita Utama |
+| 3 | **KONDISI MARKET** | Data metrik market kemarin (IHSG, Foreign Flow, Gainers & Losers) |
+| 4...N | **STOCK SLIDES** | Bedah fundamental, teknikal, dan vibe check per saham watchlist (berulang per saham) |
+| N+1 | **MATRIX** | Kesimpulan posisi saham di Kuadran Fundamental × Teknikal |
+| N+2 | **KAMUS** | Penjelasan istilah saham ala Gen Z |
+| N+3 | **CTA** | Ajakan diskusi di komentar |
+
+##### 2) Market Close (17:00 WIB) — 🚧 Roadmap / Terencana
+Dirancang untuk merangkum pergerakan bursa pasca-penutupan pasar modal:
+
+| Slide | Fungsi | Keterangan |
+|-------|--------|------------|
+| 1 | **COVER** | Judul "Recap Market" + Tanggal |
+| 2 | **TLDR** | Ringkasan angka penutupan IHSG & Top Gainers/Losers |
+| 3 | **KRONOLOGI** | Narasi singkat pergerakan IHSG hari ini |
+| 4 | **DATA** | Angka detail Gainer, Loser & Volume |
+| 5 | **PROS** | Broker asing akumulasi terbesar & saham yang diborong |
+| 6 | **CONS** | Sektor yang underperform & perlu diwaspadai |
+| 7 | **KESIMPULAN** | Ringkasan netral dari pergerakan harga hari ini |
+| 8 | **CTA** | Ajakan diskusi & Disclaimer DYOR |
+
+---
+
+### 2. Monitoring News
+
+Pipeline otonom event-driven yang berjalan kontinu memantau **8 sumber RSS media ekonomi terkemuka** di Indonesia (Katadata, Kontan, Okezone, Liputan6, Detik, CNN Indonesia, CNBC Indonesia, IDX Channel).
+
+#### a. Workflow Automasi (n8n)
+
+Setiap menit, workflow memfilter berita baru, mengecek duplikasi URL, men-scrape teks artikel lengkap, mengklasifikasikan kategori & ticker saham, memberi skor urgensi, dan meneruskan berita berkatalis kuat ke tahap enrichment data Sectors API untuk diproduksi menjadi carousel visual.
+
+<p align="center">
+  <img src="n8n_workflows_template/screenshot_news_monitoring_workflow.png" alt="Workflow n8n - News Monitoring" width="100%" />
+</p>
+
+- **Download / Import Workflow JSON**: 📄 [**`SahamFYP - News Monitoring.json`**](n8n_workflows_template/SahamFYP%20-%20News%20Monitoring.json)
+- **Konfigurasi Kredensial**: Seluruh API key dan token sensitif di dalam file JSON template ini telah disiapkan dengan placeholder `MASUKKAN KEY API ANDA DISINI` sehingga aman dan siap pakai.
+
+**Alur Eksekusi:**
+```
+RSS Trigger (8 sumber media ekonomi, polling tiap menit)
+  → Cek duplikat (/api/news-scrape, cegah pemrosesan berita berulang)
+  → Scrape isi artikel penuh (/api/scrape)
+  → Classify kategori & ticker (/api/classify — LLM, 6 kategori)
+  → Score urgensi/relevansi (/api/score)
+  → Decision gate:
+      • PASS (berita kurang kuat/relevan → skip, log singkat ke Telegram)
+      • GENERATE (berita berkatalis kuat → lanjut ke pipeline produksi)
+  → Enrich dengan Sectors REST API sesuai kategori konten
+  → Generate naskah (LLM) → Render HTML Slide → Browserless.io (HTML → JPEG)
+  → Upload gambar ke Supabase Storage (bucket sfyp-storage)
+  → Publish ke Repliz (multi-platform) → Update status di Supabase → Broadcast laporan ke Telegram
+```
+
+#### b. Template Konten & Klasifikasi Berita
+
+<p align="center">
+  <img src="public/slides/newsmonitoring.png" alt="News Monitoring Reality Check & Warning" width="100%" />
+</p>
+
+##### 1) Klasifikasi Berita Otomatis
 - **Endpoint**: `POST /api/classify`
-- **Fungsi**: Mengklasifikasikan berita ke dalam 6 kategori utama dengan menentukan kategori terbaik dan ticker yang relevan (jika ada)
+- **Fungsi**: Mengklasifikasikan berita ke dalam salah satu dari 6 kategori utama dengan menentukan kategori terbaik dan ticker yang relevan
 - **Kategori**: `SINGLE_STOCK`, `MACRO_ECONOMY`, `SECTOR_ANALYSIS`, `CORPORATE_ACTION`, `IPO_RIGHTS_ISSUE`, `SUSPENSION_DELISTING`
 - **Output**: JSON berisi `{category, ticker?, confidence}`
 - **Model**: Sumopod `gemini/gemini-3.1-flash-lite` (OpenAI compatible, bisa diganti via `SUMOPOD_MODEL`)
 
-#### b. Struktur Konten per Kategori
-
-Semua kategori menggunakan **8 slide carousel** yang konsisten:
+##### 2) Struktur Konten 8 Slide Carousel
+Semua kategori berita menggunakan struktur **8 slide carousel** yang konsisten:
 
 | Slide | Fungsi | Keterangan |
 |-------|--------|------------|
 | 1 | **COVER** | Headline menarik + sub-judul |
 | 2 | **TLDR** | Ringkasan cepat dalam poin-poin |
 | 3 | **KRONOLOGI** | Konteks berita (apa, kapan, siapa) + sumber |
-| 4 | **Data Enrichment** | **Beda per kategori** (lihat tabel di bawah) — sumber: Sectors REST API |
-| 5 | **Point + Explanation** | **Beda per kategori** (lihat tabel di bawah) |
-| 6 | **Point + Explanation** | **Beda per kategori** (lihat tabel di bawah) |
+| 4 | **Data Enrichment** | **Beda per kategori** (lihat rincian di bawah) — sumber: Sectors REST API |
+| 5 | **Point + Explanation** | **Beda per kategori** (sisi positif / peluang) |
+| 6 | **Point + Explanation** | **Beda per kategori** (sisi risiko / warning) |
 | 7 | **KESIMPULAN** | Rangkuman edukatif netral |
 | 8 | **CTA_DYOR** | Diskusi + disclaimer DYOR |
 
-#### c. 6 Kategori & Perbedaan Slide 4–6
+##### 3) 6 Kategori & Spesialisasi Slide 4–6
 
 **1. SINGLE_STOCK — Analisis Emiten Tunggal**
 - Slide 4: `BEDAH_DATA` — PER, PBV, ROE, ROA, EPS TTM, Foreign Flow
@@ -314,107 +410,13 @@ Semua kategori menggunakan **8 slide carousel** yang konsisten:
 - Slide 6: `YANG_PERLU_DILAKUKAN` — Langkah yang bisa dilakukan investor
 - **Sectors REST API endpoints**: data suspensi + `/v2/company/report/{ticker}/` (sections: `overview`)
 
-#### d. Data Enrichment — Sumber
-
-- **Sectors REST API**: Data fundamental & pasar emiten (keuangan, dividen, valuation, ownership, foreign flow, broker activity, top movers, index harian, filings, berita pasar)
-- **RSS Multi-Sumber + Scrape**: Deteksi sinyal berita awal (8 outlet media ekonomi Indonesia) dan pengambilan teks lengkap artikel via `/api/scrape` — dipakai sebagai *trigger* dan konteks tambahan, sementara **verifikasi faktual tetap dari Sectors REST API**
-
-#### e. Panduan Konten (Standar Wajib)
-
+##### 4) Standar Wajib & Referensi Detail
 - Semua kategori **8 slide** — konsistensi pagination di tiap carousel
 - Slide 1, 2, 7, 8 **format relatif sama** di semua kategori (bisa reuse komponen)
 - Slide 3, 4, 5, 6 **berbeda per kategori** — masing-masing butuh komponen/template tersendiri
 - Format **point + explanation** pada slide 5 & 6 adalah **standar wajib** di semua kategori
 - Konten bersifat **edukatif & netral** — tidak mengajak beli/jual, melainkan memberi perspektif & data
-
-#### f. Referensi Detail
-
-Selengkapnya baca di: [`docs/Struktur_Konten_6_Kategori_SahamFYP.md`](docs/Struktur_Konten_6_Kategori_SahamFYP.md)
-
-
-
-### 6. Template Konten Daily Brief (Market Open, live — Market Close, planned)
-
-Selain konten berbasis berita, SahamFYP juga memiliki template dinamis untuk trigger terjadwal yang dirancang untuk merangkum kondisi IHSG.
-
-#### a. Market Open (08:00 WIB) — ✅ sudah live
-Digunakan untuk memberikan outlook pasar sebelum bursa buka, dilengkapi watchlist saham pilihan. Ini yang berjalan otomatis lewat workflow [Daily Market Brief](#1-daily-market-brief--trigger-terjadwal-tiap-0800-wib) di atas.
-
-<p align="center">
-  <img src="public/slides/dailymarketbrief.png" alt="Contoh Daily Market Brief SahamFYP" width="100%" />
-</p>
-
-| Slide | Fungsi | Keterangan |
-|-------|--------|------------|
-| 1 | **COVER** | Judul "Market Open" + Tanggal + Jumlah Watchlist |
-| 2 | **TLDR** | Ringkasan IHSG kemarin, Top Gainers/Losers, Foreign Flow, Berita Utama |
-| 3 | **KONDISI MARKET** | Data metrik market kemarin |
-| 4...N | **STOCK SLIDES** | Bedah fundamental, teknikal, dan vibe check per saham di watchlist (berulang per saham) |
-| N+1 | **MATRIX** | Kesimpulan posisi saham di Kuadran Fundamental × Teknikal |
-| N+2 | **KAMUS** | Penjelasan istilah saham ala Gen Z |
-| N+3 | **CTA** | Ajakan diskusi di komentar |
-
-#### b. Market Close (17:00 WIB) — 🚧 direncanakan, belum dibangun
-Template & struktur slide di bawah sudah dirancang untuk merangkum pergerakan bursa setelah tutup, tapi **workflow trigger-nya (`/api/sector-trigger/close`) belum diimplementasikan** — belum ada n8n schedule trigger yang menjalankannya secara otomatis. Ditulis di sini sebagai roadmap teknis, bukan fitur yang sudah live.
-| Slide | Fungsi | Keterangan |
-|-------|--------|------------|
-| 1 | **COVER** | Judul "Recap Market" + Tanggal |
-| 2 | **TLDR** | Ringkasan angka penutupan IHSG & Top Gainers/Losers |
-| 3 | **KRONOLOGI** | Narasi singkat pergerakan IHSG hari ini |
-| 4 | **DATA** | Angka detail Gainer, Loser & Volume |
-| 5 | **PROS** | Broker asing akumulasi terbesar & saham yang diborong |
-| 6 | **CONS** | Sektor yang underperform & perlu diwaspadai |
-| 7 | **KESIMPULAN** | Ringkasan netral dari pergerakan harga hari ini |
-| 8 | **CTA** | Ajakan diskusi & Disclaimer DYOR |
-
-### 7. Supabase
-
-- **Fungsi**: Database utama, Single Source of Truth, dan Object Storage.
-- **Referensi**: https://supabase.com/
-- **Cara kerja**:
-  - **Tabel Utama**: `sector_trigger_news` (log eksekusi n8n & berita, jadi bukti unattended run), `social_accounts` (database akun sosmed & status aktif/inaktif), dan `generated_posts` (status posting).
-  - **Storage**: Menggunakan bucket publik `sfyp-storage` untuk workflow Daily Market Brief.
-
-### 8. Vercel
-
-- **Fungsi**:
-  - Hosting untuk aplikasi web (frontend React + Vite)
-  - Serverless functions (Vercel Functions) untuk API routes (`/api/*`)
-- **Referensi**: https://vercel.com/
-- **Cara kerja**:
-  - Setiap file di `api/` folder di-deploy sebagai Vercel Function
-  - Build command: `node scripts/sync-env.mjs && npm run build`
-  - Output directory: `dist`
-  - Config di `vercel.json` untuk routing & rewrites
-
-### 9. n8n
-
-- **Fungsi**: Workflow automation sebagai orchestrator utama untuk dua pipeline otonom (Daily Market Brief & News Monitoring) — menghubungkan Sectors REST API, LLM, storage, dan publish tanpa intervensi manual per siklus.
-- **Referensi**: https://n8n.io/
-- **Cara kerja**:
-  - Workflow JSON bisa diimport ke n8n instance (lihat `docs/n8n-workflows/`, token API sudah dianonimkan sebelum commit)
-  - Trigger: schedule (Daily Market Brief, 08:00 WIB) atau RSS event trigger (News Monitoring, tiap menit polling)
-  - Setiap step memanggil API SahamFYP atau service langsung
-
-### 10. Telegram Bot
-
-- **Fungsi**: Notifikasi status tiap sesi otomatis: berhasil / gagal / scheduled — sekaligus menjadi bukti unattended run (timestamp + hasil tiap eksekusi tanpa operator).
-- **Referensi**: https://core.telegram.org/bots
-- **Cara kerja**: Menggunakan Telegram Bot API untuk kirim notifikasi ke user/group yang diset.
-
-### 11. React + Vite
-
-- **Fungsi**: Web engine / dashboard / form wizard — UI untuk monitoring, manual post, dan form wizard
-- **Referensi**: https://vitejs.dev/ | https://react.dev/
-- **Plugin yang digunakan**:
-  - `@vitejs/plugin-react` — React Fast Refresh & JSX support
-  - `vite` (versi `^5.4.0`) — build tool & dev server
-  - `tailwindcss` (versi `^3.4.10`) — styling & design system
-- **Cara kerja**:
-  - Vite sebagai build tool & dev server
-  - React untuk component-based UI
-  - Build output ke `dist/` folder
-  - Deploy ke Vercel
+- Selengkapnya baca di: [`docs/Struktur_Konten_6_Kategori_SahamFYP.md`](docs/Struktur_Konten_6_Kategori_SahamFYP.md)
 
 ---
 
