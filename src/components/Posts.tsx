@@ -4,6 +4,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { generatedPostsApi, automationPostsApi, type GeneratedPost, type AutomationPost } from '../services/supabase';
 import PostListRow from './PostListRow';
 import AutomationPostRow from './AutomationPostRow';
+import AutomationPostCard from './AutomationPostCard';
+import ManualPostCard from './ManualPostCard';
 import PostDetailView from './PostDetailView';
 
 function toLocalDateString(isoStr?: string): string {
@@ -42,13 +44,15 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
   } | null>(null);
 
   // Filter states
+  const [workflowFilter, setWorkflowFilter] = useState<'all' | 'news_monitoring' | 'daily_market_brief'>('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(10);
+  const [pageSize, setPageSize] = useState<number>(12);
 
   useEffect(() => {
     void fetchPosts();
@@ -57,7 +61,7 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
   // Reset pagination on filter or tab change
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeTab, startDate, endDate, searchQuery, pageSize]);
+  }, [activeTab, workflowFilter, startDate, endDate, searchQuery, pageSize]);
 
   async function fetchPosts() {
     setLoading(true);
@@ -96,18 +100,34 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
     }
   };
 
-  const isFilterActive = Boolean(startDate || endDate || searchQuery);
+  const isFilterActive = Boolean(startDate || endDate || searchQuery || workflowFilter !== 'all');
 
   const resetFilters = () => {
     setStartDate('');
     setEndDate('');
     setSearchQuery('');
+    setWorkflowFilter('all');
   };
+
+  // Counts by workflow type for quick badges
+  const newsMonitoringCount = useMemo(
+    () => autoPosts.filter((p) => p.workflow_type === 'news_monitoring').length,
+    [autoPosts]
+  );
+  const dailyBriefCount = useMemo(
+    () => autoPosts.filter((p) => p.workflow_type === 'daily_market_brief').length,
+    [autoPosts]
+  );
 
   // Filtered & sorted data
   const filteredAuto = useMemo(() => {
     return autoPosts
       .filter((post) => {
+        // Filter by workflow type
+        if (workflowFilter !== 'all' && post.workflow_type !== workflowFilter) {
+          return false;
+        }
+
         const postDate = toLocalDateString(post.created_at);
         if (startDate && postDate < startDate) return false;
         if (endDate && postDate > endDate) return false;
@@ -121,7 +141,7 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
         return true;
       })
       .sort((a, b) => b.created_at.localeCompare(a.created_at));
-  }, [autoPosts, startDate, endDate, searchQuery]);
+  }, [autoPosts, workflowFilter, startDate, endDate, searchQuery]);
 
   const filteredManual = useMemo(() => {
     return manualPosts
@@ -214,29 +234,98 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-4 border-b border-slate-200">
-        <button
-          onClick={() => setActiveTab('automation')}
-          className={`pb-3 px-2 text-sm font-bold border-b-2 transition ${
-            activeTab === 'automation'
-              ? 'border-amber-500 text-amber-600'
-              : 'border-transparent text-slate-500 hover:text-slate-700'
-          }`}
-        >
-          🤖 Auto Posts ({filteredAuto.length}{autoPosts.length !== filteredAuto.length ? ` / ${autoPosts.length}` : ''})
-        </button>
-        <button
-          onClick={() => setActiveTab('manual')}
-          className={`pb-3 px-2 text-sm font-bold border-b-2 transition ${
-            activeTab === 'manual'
-              ? 'border-amber-500 text-amber-600'
-              : 'border-transparent text-slate-500 hover:text-slate-700'
-          }`}
-        >
-          ✍️ Manual Generator ({filteredManual.length}{manualPosts.length !== filteredManual.length ? ` / ${manualPosts.length}` : ''})
-        </button>
+      {/* Tabs & View Mode Switcher */}
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-1">
+        <div className="flex gap-4">
+          <button
+            onClick={() => setActiveTab('automation')}
+            className={`pb-3 px-2 text-sm font-bold border-b-2 transition ${
+              activeTab === 'automation'
+                ? 'border-amber-500 text-amber-600'
+                : 'border-transparent text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            🤖 Auto Posts ({filteredAuto.length}{autoPosts.length !== filteredAuto.length ? ` / ${autoPosts.length}` : ''})
+          </button>
+          <button
+            onClick={() => setActiveTab('manual')}
+            className={`pb-3 px-2 text-sm font-bold border-b-2 transition ${
+              activeTab === 'manual'
+                ? 'border-amber-500 text-amber-600'
+                : 'border-transparent text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            ✍️ Manual Generator ({filteredManual.length}{manualPosts.length !== filteredManual.length ? ` / ${manualPosts.length}` : ''})
+          </button>
+        </div>
+
+        {/* View Mode Toggle (Grid Card 3 Kolom vs List) */}
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl mb-2">
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+              viewMode === 'grid'
+                ? 'bg-white text-amber-600 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+            title="Tampilan Card 3 Kolom"
+          >
+            <span>⊞</span>
+            <span>Card (3 Kolom)</span>
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+              viewMode === 'list'
+                ? 'bg-white text-amber-600 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+            title="Tampilan List Baris"
+          >
+            <span>☰</span>
+            <span>List</span>
+          </button>
+        </div>
       </div>
+
+      {/* Sub-Filter: News Monitoring vs Daily Brief (Khusus Auto Posts) */}
+      {activeTab === 'automation' && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-bold text-slate-600">Workflow:</span>
+          <button
+            onClick={() => setWorkflowFilter('all')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition border ${
+              workflowFilter === 'all'
+                ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
+                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+            }`}
+          >
+            Semua ({autoPosts.length})
+          </button>
+          <button
+            onClick={() => setWorkflowFilter('news_monitoring')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition border flex items-center gap-1.5 ${
+              workflowFilter === 'news_monitoring'
+                ? 'bg-amber-500 text-white border-amber-500 shadow-sm'
+                : 'bg-white text-slate-700 border-slate-200 hover:bg-amber-50/50 hover:border-amber-300'
+            }`}
+          >
+            <span>📡</span>
+            <span>News Monitoring ({newsMonitoringCount})</span>
+          </button>
+          <button
+            onClick={() => setWorkflowFilter('daily_market_brief')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition border flex items-center gap-1.5 ${
+              workflowFilter === 'daily_market_brief'
+                ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                : 'bg-white text-slate-700 border-slate-200 hover:bg-blue-50/50 hover:border-blue-300'
+            }`}
+          >
+            <span>📈</span>
+            <span>Daily Market Brief ({dailyBriefCount})</span>
+          </button>
+        </div>
+      )}
 
       {/* Date & Search Filter Card */}
       <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
@@ -357,6 +446,16 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
               Reset Filter
             </button>
           </div>
+        ) : viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {(paginatedList as AutomationPost[]).map((p) => (
+              <AutomationPostCard
+                key={p.id}
+                post={p}
+                onSelect={() => setSelectedPost({ post: p, type: 'automation' })}
+              />
+            ))}
+          </div>
         ) : (
           <div className="space-y-4">
             <div className="grid gap-4">
@@ -394,6 +493,16 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
               Reset Filter
             </button>
           </div>
+        ) : viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {(paginatedList as GeneratedPost[]).map((p) => (
+              <ManualPostCard
+                key={p.id}
+                post={p}
+                onSelect={() => setSelectedPost({ post: p, type: 'manual' })}
+              />
+            ))}
+          </div>
         ) : (
           <div className="space-y-4">
             <div className="grid gap-4">
@@ -426,10 +535,12 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
                 onChange={(e) => setPageSize(Number(e.target.value))}
                 className="px-2 py-1 border border-slate-200 rounded-md bg-white text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-amber-500"
               >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
+                <option value={6}>6</option>
+                <option value={9}>9</option>
+                <option value={12}>12</option>
+                <option value={18}>18</option>
+                <option value={30}>30</option>
+                <option value={60}>60</option>
               </select>
             </div>
           </div>
