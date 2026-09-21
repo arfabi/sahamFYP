@@ -244,7 +244,7 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
         dataSource="Data tersimpan di database Supabase (tabel automation_posts untuk alur n8n dan generated_posts untuk generator manual)."
         pipeline="Setiap postingan terhubung dengan Repliz API untuk distribusi otomatis ke platform Instagram, TikTok, Threads, FB, & Telegram, termasuk auto-check dan sinkronisasi status penerbitan."
         links={[
-          { label: 'Repliz Dashboard', url: 'https://app.repliz.com' },
+          { label: 'Repliz', url: 'https://repliz.com/' },
           { label: 'Supabase Database', url: 'https://supabase.com' }
         ]}
       />

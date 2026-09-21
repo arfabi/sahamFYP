@@ -215,7 +215,7 @@ export default function StockWatchlist() {
         dataSource="Hasil ekstraksi otomatis dari tabel Supabase sector_trigger_candidates yang dihitung pada setiap sesi Daily Market Brief."
         pipeline="Pipeline automasi menyaring emiten yang muncul di berita, menarik data fundamental real-time dari Sectors.app API, lalu mengevaluasi apakah emiten layak masuk watchlist."
         links={[
-          { label: 'Sectors.app Financials', url: 'https://sectors.app' }
+          { label: 'Sectors.app Financials API', url: 'https://sectors.app/api' }
         ]}
       />
 

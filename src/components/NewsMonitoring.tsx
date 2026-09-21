@@ -138,7 +138,7 @@ export default function NewsMonitoring() {
         dataSource="Hasil crawling otomatis dari berbagai portal berita bisnis & investasi terkemuka di Indonesia (Bisnis.com, Kontan, CNBC Indonesia, dll) serta integrasi Sectors.app News & Filing API."
         pipeline="Workflow n8n News Monitoring berjalan terjadwal secara periodik untuk menarik berita terbaru, memfilter duplikasi, men-tag emiten, dan menyimpan data ke tabel Supabase (sector_trigger_news)."
         links={[
-          { label: 'Sectors.app News API', url: 'https://sectors.app' },
+          { label: 'Sectors.app News API', url: 'https://sectors.app/api' },
           { label: 'IDX Keterbukaan Informasi', url: 'https://www.idx.co.id' }
         ]}
       />

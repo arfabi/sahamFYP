@@ -131,6 +131,35 @@ export default function Overview({ onNavigate }: OverviewProps) {
         </button>
       </div>
 
+      {/* Product Highlight Banner */}
+      <div className="bg-gradient-to-r from-amber-500/15 via-amber-400/10 to-slate-100 border border-amber-300/70 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+        <div className="flex items-start sm:items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-amber-500 text-white font-bold flex items-center justify-center text-xl shrink-0 shadow-sm">
+            💡
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-sm sm:text-base font-bold text-slate-800">
+                SahamFYP Engine — Make Market Data Make Sense
+              </h2>
+              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                Track 01 Sectors Hackathon
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 mt-0.5">
+              Pelajari latar belakang masalah Gen Z, sistem anti-FOMO, dan arsitektur Sectors REST API.
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={() => onNavigate('about')}
+          className="px-4 py-2 bg-white hover:bg-amber-50 border border-amber-300 text-amber-800 font-bold text-xs sm:text-sm rounded-xl transition shadow-xs shrink-0 inline-flex items-center gap-1.5 self-start sm:self-auto"
+        >
+          <span>Pelajari Selengkapnya</span>
+          <span>→</span>
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, i) => (
           <div

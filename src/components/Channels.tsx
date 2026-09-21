@@ -124,7 +124,7 @@ export default function Channels({ onNavigate }: { onNavigate?: (page: string) =
         dataSource="Disimpan secara aman di database Supabase pada tabel social_accounts."
         pipeline="Digunakan oleh alur Repliz API & bot Telegram untuk menentukan tujuan ke mana postingan berita dan market brief diterbitkan secara simultan."
         links={[
-          { label: 'Repliz Dashboard', url: 'https://app.repliz.com' }
+          { label: 'Repliz', url: 'https://repliz.com/' }
         ]}
       />
 

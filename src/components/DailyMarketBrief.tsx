@@ -189,7 +189,7 @@ export default function DailyMarketBrief() {
         dataSource="Data historis dan metrik finansial emiten ditarik dari Sectors.app Market & Financials API dan disimpan di tabel Supabase sector_trigger_logs."
         pipeline="Dijalankan secara terjadwal otomatis oleh workflow n8n / cron endpoint (/api/sector-trigger) untuk menghasilkan log komprehensif sebagai dasar pembuatan konten pasar."
         links={[
-          { label: 'Sectors.app API', url: 'https://sectors.app' }
+          { label: 'Sectors.app API', url: 'https://sectors.app/api' }
         ]}
       />
 

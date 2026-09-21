@@ -5,9 +5,10 @@ import { signIn, storeMasterSession, DEMO_CREDENTIALS, type AuthUser } from '../
 
 interface LoginPageProps {
   onLoginSuccess: (user: AuthUser) => void;
+  onBackToLanding?: () => void;
 }
 
-export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
+export default function LoginPage({ onLoginSuccess, onBackToLanding }: LoginPageProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -207,6 +208,17 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
             </button>
           </form>
 
+          {onBackToLanding && (
+            <div className="mt-6 pt-4 border-t border-slate-100 text-center">
+              <button
+                type="button"
+                onClick={onBackToLanding}
+                className="text-xs font-semibold text-slate-500 hover:text-amber-600 transition inline-flex items-center gap-1"
+              >
+                <span>← Kembali ke Halaman Utama (Tentang SahamFYP)</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Footer */}

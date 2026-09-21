@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import Dashboard from './components/Dashboard';
 import LoginPage from './components/LoginPage';
-import { getCurrentUser, signOut, clearMasterSession, type AuthUser } from './services/auth';
+import LandingPage from './components/LandingPage';
+import { getCurrentUser, signOut, clearMasterSession, storeMasterSession, DEMO_CREDENTIALS, type AuthUser } from './services/auth';
 
 export default function App() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authView, setAuthView] = useState<'landing' | 'login'>('landing');
 
   useEffect(() => {
     checkAuth();
@@ -26,6 +28,16 @@ export default function App() {
     setUser(authUser);
   };
 
+  const handleEnterDemo = () => {
+    const demoUser: AuthUser = {
+      id: 'admin-user-id',
+      email: DEMO_CREDENTIALS.email,
+      role: 'admin',
+    };
+    storeMasterSession(demoUser);
+    setUser(demoUser);
+  };
+
   const handleLogout = async () => {
     // Clear Supabase session (remote) if any
     try {
@@ -36,6 +48,7 @@ export default function App() {
     // Clear master/local session
     clearMasterSession();
     setUser(null);
+    setAuthView('landing');
   };
 
   if (loading) {
@@ -50,7 +63,20 @@ export default function App() {
   }
 
   if (!user) {
-    return <LoginPage onLoginSuccess={handleLoginSuccess} />;
+    if (authView === 'login') {
+      return (
+        <LoginPage
+          onLoginSuccess={handleLoginSuccess}
+          onBackToLanding={() => setAuthView('landing')}
+        />
+      );
+    }
+    return (
+      <LandingPage
+        onGoToLogin={() => setAuthView('login')}
+        onEnterDemo={handleEnterDemo}
+      />
+    );
   }
 
   return <Dashboard user={user} onLogout={handleLogout} />;
