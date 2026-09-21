@@ -27,6 +27,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // API key is only required for external requests (e.g., from n8n)
   const isSameOrigin = req.headers['origin']?.includes('saham-fyp.vercel.app') || 
                        req.headers['referer']?.includes('saham-fyp.vercel.app') ||
+                       req.headers['origin']?.includes('localhost') ||
+                       req.headers['referer']?.includes('localhost') ||
+                       req.headers['origin']?.includes('127.0.0.1') ||
+                       req.headers['referer']?.includes('127.0.0.1') ||
                        !req.headers['origin']; // No origin = same-origin request
   
   if (!isSameOrigin && !validateApiKey(req)) {
@@ -67,12 +71,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method === 'POST') {
       const body = parseBody<Record<string, any>>(req);
 
-      // ── Action: Sync Live Link or Details from Repliz ─────────────
+      // ── Action: Sync Status from Repliz Schedule API ─────────────
       if (body.action === 'sync-repliz' || body.action === 'get-repliz-details') {
         const scheduleId = body.scheduleId || body.schedule_id;
         const recordId = body.recordId || body.id;
         const postType = body.type || 'automation'; // 'automation' | 'manual'
-        const accountIdParam = body.accountId || body.account_id;
 
         if (!scheduleId) {
           return res.status(400).json({ error: 'scheduleId is required' });
@@ -82,13 +85,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const replizSecretKey = process.env.REPLIZ_SECRET_KEY || process.env.VITE_REPLIZ_SECRET_KEY || '';
 
         if (!replizAccessKey || !replizSecretKey) {
-          return res.status(500).json({ error: 'Repliz credentials (REPLIZ_ACCESS_KEY/REPLIZ_SECRET_KEY) not configured in Vercel environment' });
+          return res.status(500).json({ error: 'Repliz credentials (REPLIZ_ACCESS_KEY/REPLIZ_SECRET_KEY) not configured' });
         }
 
         const basicAuth = Buffer.from(`${replizAccessKey}:${replizSecretKey}`).toString('base64');
         const authHeader = `Basic ${basicAuth}`;
 
-        // Step 1: Get One Schedule
+        // Get schedule data from Repliz (/public/schedule/{scheduleId})
         const schedRes = await fetch(`https://api.repliz.com/public/schedule/${scheduleId}`, {
           headers: { 'Authorization': authHeader },
         });
@@ -105,77 +108,39 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         const scheduleData = await schedRes.json();
-        const schedStatus = scheduleData.status;
-        let targetAccountId = accountIdParam || scheduleData.accountId || scheduleData.account?._id || scheduleData.account?.id || process.env.REPLIZ_ACCOUNT_ID || process.env.VITE_REPLIZ_ACCOUNT_ID;
-
-        // If targetAccountId looks like a handle e.g. @sahamfyp.id or is missing, query social_accounts table
-        if (!targetAccountId || String(targetAccountId).startsWith('@')) {
-          try {
-            const { data: acc } = await supabaseServer
-              .from('social_accounts')
-              .select('account_id')
-              .eq('provider', 'repliz')
-              .limit(1)
-              .maybeSingle();
-            if (acc?.account_id) {
-              targetAccountId = acc.account_id;
-            }
-          } catch (e) {
-            console.warn('[sync-repliz] Could not fetch repliz account_id from DB:', e);
-          }
-        }
-
+        const schedStatus = (scheduleData.status || 'pending').toLowerCase();
+        const isPublished = schedStatus === 'success' || schedStatus === 'published' || schedStatus === 'completed';
+        const isFailed = schedStatus === 'failed' || schedStatus === 'error' || schedStatus === 'cancelled';
+        const dbStatus = isPublished ? 'success' : isFailed ? 'error' : 'pending';
         const medias = scheduleData.medias || [];
 
-        // Check for postId in schedule response (Repliz returns postId when published)
-        const contentPostId = scheduleData.postId 
-          || scheduleData.contentId 
-          || scheduleData.idPost 
-          || scheduleData.post_id 
-          || scheduleData.content_id 
-          || scheduleData.content?.id 
-          || scheduleData.post?.id
-          || scheduleData.result?.postId;
-
-        let liveUrl: string | null = null;
-        let contentData: any = null;
-
-        // Step 2: If we have contentPostId and accountId, call Get One Content
-        if (contentPostId && targetAccountId) {
-          try {
-            const contentRes = await fetch(`https://api.repliz.com/public/content/${contentPostId}?accountId=${targetAccountId}`, {
-              headers: { 'Authorization': authHeader },
-            });
-            if (contentRes.ok) {
-              contentData = await contentRes.json();
-              liveUrl = contentData.url || contentData.permalink || contentData.link || contentData.postUrl || null;
-            } else {
-              console.warn('[sync-repliz] content endpoint returned status:', contentRes.status);
-            }
-          } catch (e) {
-            console.warn('[sync-repliz] Error fetching content from Repliz:', e);
-          }
-        }
-
-        // Fallback: check if schedule metadata or result already includes URL
-        if (!liveUrl) {
-          liveUrl = scheduleData.url 
-            || scheduleData.permalink 
-            || scheduleData.meta?.url 
-            || scheduleData.meta?.permalink 
-            || scheduleData.result?.url 
-            || null;
-        }
-
-        // Step 3: If liveUrl is found and recordId is provided, persist to Supabase
-        if (liveUrl && recordId) {
-          try {
-            if (postType === 'automation') {
+        // Update status di Supabase
+        try {
+          if (postType === 'automation') {
+            if (recordId) {
               await supabaseServer
                 .from('automation_posts')
                 .update({
-                  post_link: liveUrl,
-                  status: 'success',
+                  status: dbStatus,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('id', recordId);
+            } else {
+              await supabaseServer
+                .from('automation_posts')
+                .update({
+                  status: dbStatus,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('post_id', scheduleId);
+            }
+          } else {
+            const igStatus = isPublished ? 'published' : isFailed ? 'failed' : 'scheduled';
+            if (recordId) {
+              await supabaseServer
+                .from('generated_posts')
+                .update({
+                  instagram_status: igStatus,
                   updated_at: new Date().toISOString(),
                 })
                 .eq('id', recordId);
@@ -183,33 +148,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               await supabaseServer
                 .from('generated_posts')
                 .update({
-                  permalink: liveUrl,
-                  permalink_ig: liveUrl,
-                  instagram_status: 'published',
+                  instagram_status: igStatus,
                   updated_at: new Date().toISOString(),
                 })
-                .eq('id', recordId);
+                .eq('schedule_id', scheduleId);
             }
-          } catch (dbErr) {
-            console.error('[sync-repliz] Failed to update DB with liveUrl:', dbErr);
           }
+        } catch (dbErr) {
+          console.error('[sync-repliz] Failed to update DB status:', dbErr);
         }
 
         return res.status(200).json({
           success: true,
+          status: schedStatus,
           scheduleStatus: schedStatus,
+          isPublished,
           scheduleId,
-          contentPostId,
-          accountId: targetAccountId,
-          liveUrl,
           medias,
           schedule: scheduleData,
-          content: contentData,
-          message: liveUrl
-            ? 'Live link berhasil disinkronkan!'
-            : (schedStatus === 'pending' || schedStatus === 'scheduled'
-                ? 'Postingan masih dalam proses di Repliz (~10 menit setelah publish).'
-                : 'Belum mendapatkan live link dari Repliz.'),
+          message: isPublished
+            ? `Postingan terverifikasi sudah terbit (STATUS: ${schedStatus.toUpperCase()})!`
+            : isFailed
+            ? `Status Repliz: ${schedStatus.toUpperCase()} (Gagal publish).`
+            : `Status Repliz: ${schedStatus.toUpperCase()} (Masih dalam antrean proses).`,
         });
       }
 

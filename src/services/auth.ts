@@ -7,33 +7,49 @@ export interface AuthUser {
   role: string;
 }
 
-// Master account credentials
+// Master & Demo account credentials
+export const DEMO_CREDENTIALS = {
+  email: 'demo@sahamfyp.id',
+  password: 'd3m0cu4n',
+};
+
 const MASTER_EMAIL = 'fadlirobbi@gmail.com';
-const MASTER_PASSWORD = '@Arfabi0707';
+const MASTER_PASSWORD = 'Admin@123';
+
+const FIXED_ACCOUNTS = [
+  { email: DEMO_CREDENTIALS.email, password: DEMO_CREDENTIALS.password, role: 'admin' },
+  { email: MASTER_EMAIL, password: MASTER_PASSWORD, role: 'admin' },
+];
 
 // Sign in with email and password
 export async function signIn(email: string, password: string) {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  // Check fixed accounts first for immediate access
+  const matchedAccount = FIXED_ACCOUNTS.find(
+    (acc) => acc.email.toLowerCase() === normalizedEmail && acc.password === password
+  );
+
+  if (matchedAccount) {
+    return {
+      user: {
+        id: `${matchedAccount.role}-user-id`,
+        email: matchedAccount.email,
+        role: matchedAccount.role,
+      },
+      session: null,
+    };
+  }
+
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
-  
+
   if (error) {
-    // Check if using master account
-    if (email === MASTER_EMAIL && password === MASTER_PASSWORD) {
-      // Return mock user for master account
-      return {
-        user: {
-          id: 'master-user-id',
-          email: MASTER_EMAIL,
-          role: 'admin',
-        },
-        session: null,
-      };
-    }
     throw error;
   }
-  
+
   return data;
 }
 
@@ -46,7 +62,7 @@ export async function signOut() {
 // Get current user
 export async function getCurrentUser(): Promise<AuthUser | null> {
   const { data: { session } } = await supabase.auth.getSession();
-  
+
   if (session?.user) {
     return {
       id: session.user.id,
@@ -54,7 +70,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
       role: session.user.role || 'user',
     };
   }
-  
+
   // Check for stored master session
   const storedSession = localStorage.getItem('sahamfyp_session');
   if (storedSession) {
@@ -64,7 +80,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
       return null;
     }
   }
-  
+
   return null;
 }
 
@@ -90,7 +106,7 @@ export async function signUp(email: string, password: string) {
     email,
     password,
   });
-  
+
   if (error) throw error;
   return data;
 }

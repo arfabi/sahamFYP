@@ -24,13 +24,55 @@ interface PostDetailViewProps {
   onPostUpdated?: () => void;
 }
 
+const SOCIAL_CHANNELS = [
+  {
+    name: 'Instagram',
+    handle: '@sahamfyp.id',
+    url: 'https://www.instagram.com/sahamfyp.id/',
+    icon: '📸',
+    badgeColor: 'text-pink-700 bg-pink-50 border-pink-200 hover:bg-pink-100',
+  },
+  {
+    name: 'TikTok',
+    handle: '@sahamfyp.id',
+    url: 'https://www.tiktok.com/@sahamfyp.id',
+    icon: '🎵',
+    badgeColor: 'text-slate-800 bg-slate-50 border-slate-200 hover:bg-slate-100',
+  },
+  {
+    name: 'Facebook',
+    handle: 'sahamfyp.id',
+    url: 'https://www.facebook.com/116968125335221',
+    icon: '👥',
+    badgeColor: 'text-blue-700 bg-blue-50 border-blue-200 hover:bg-blue-100',
+  },
+  {
+    name: 'Threads',
+    handle: '@sahamfyp.id',
+    url: 'https://www.threads.net/@sahamfyp.id',
+    icon: '🧵',
+    badgeColor: 'text-zinc-800 bg-zinc-50 border-zinc-200 hover:bg-zinc-100',
+  },
+  {
+    name: 'Telegram',
+    handle: '@sahamfyp',
+    url: 'https://t.me/sahamfyp',
+    icon: '✈️',
+    badgeColor: 'text-sky-700 bg-sky-50 border-sky-200 hover:bg-sky-100',
+  },
+];
+
 export default function PostDetailView({ post, type, onBack, onPostUpdated }: PostDetailViewProps) {
   // Common properties
   const isAutomation = type === 'automation';
   const autoPost = isAutomation ? (post as AutomationPost) : null;
   const manualPost = !isAutomation ? (post as GeneratedPost) : null;
 
-  // State: Live Link & Repliz Status
+  // State: Status & Repliz Status
+  const initialStatus = isAutomation
+    ? autoPost?.status || 'pending'
+    : manualPost?.instagram_status || 'scheduled';
+  const [currentStatus, setCurrentStatus] = useState<string>(initialStatus);
   const initialLiveLink = isAutomation
     ? autoPost?.post_link || ''
     : manualPost?.permalink || manualPost?.permalink_ig || manualPost?.permalink_tiktok || '';
@@ -171,7 +213,7 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
     };
   }, [post.id, isAutomation]);
 
-  // ─── 3. Sync Repliz Live Link Action ──────────────────────
+  // ─── 3. Sync Repliz Schedule Status Action ───────────────
   const handleSyncRepliz = async () => {
     if (!scheduleId) {
       setSyncMessage({
@@ -194,23 +236,34 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
       if (res.success === false) {
         setSyncMessage({
           type: 'error',
-          text: res.message || res.error || 'Gagal sinkronisasi dari Repliz.',
+          text: res.message || res.error || 'Gagal sinkronisasi status dari Repliz.',
         });
         return;
       }
 
-      if (res.liveUrl) {
-        setLiveLink(res.liveUrl);
+      const st = (res.status || res.scheduleStatus || '').toLowerCase();
+      const isSuccess = st === 'success' || st === 'published' || st === 'completed';
+      const isFailed = st === 'failed' || st === 'error' || st === 'cancelled';
+
+      if (isSuccess) {
+        setCurrentStatus('success');
         setSyncMessage({
           type: 'success',
-          text: `Berhasil mendapatkan Live Link: ${res.liveUrl}`,
+          text: res.message || 'Postingan terverifikasi sudah terbit (STATUS: SUCCESS)! Silakan cek langsung di profil akun sosial media di bawah.',
+        });
+        if (onPostUpdated) onPostUpdated();
+      } else if (isFailed) {
+        setCurrentStatus('error');
+        setSyncMessage({
+          type: 'error',
+          text: res.message || `Postingan gagal terbit di Repliz (STATUS: ${st.toUpperCase()}).`,
         });
         if (onPostUpdated) onPostUpdated();
       } else {
-        const schedStatus = res.scheduleStatus || 'scheduled';
+        setCurrentStatus('pending');
         setSyncMessage({
           type: 'info',
-          text: res.message || `Status di Repliz saat ini: "${schedStatus.toUpperCase()}". Biasanya diperlukan waktu ~10 menit hingga live link terbit dari platform sosmed. Silakan cek berkala.`,
+          text: res.message || `Status di Repliz saat ini: "${st.toUpperCase()}". Postingan masih dalam proses antrean (~10 menit). Silakan cek berkala.`,
         });
       }
 
@@ -420,103 +473,128 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
 
         {/* ── RIGHT COLUMN: Catalyst, Social Media Status & Repliz ── */}
         <div className="lg:col-span-6 space-y-6">
-          {/* 1. Status Publikasi & Live Link Card */}
+          {/* 1. Status Publikasi & Cek Profil Sosial Media Card */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
                 <span className="text-xl">🚀</span>
                 <div>
-                  <h3 className="font-bold text-slate-800 text-base">Status Publikasi & Live Link</h3>
+                  <h3 className="font-bold text-slate-800 text-base">Status Publikasi Repliz</h3>
                   <p className="text-xs text-slate-400">Akun: {accountName}</p>
                 </div>
               </div>
               <span
                 className={`px-3 py-1 text-xs font-bold rounded-full ${
-                  liveLink
+                  (currentStatus === 'success' || currentStatus === 'published' || currentStatus === 'completed')
                     ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                    : (currentStatus === 'failed' || currentStatus === 'error' || currentStatus === 'cancelled')
+                    ? 'bg-red-100 text-red-700 border border-red-200'
                     : 'bg-amber-100 text-amber-700 border border-amber-200'
                 }`}
               >
-                {liveLink ? 'PUBLISHED (LIVE)' : 'SCHEDULED / PROSES'}
+                {(currentStatus === 'success' || currentStatus === 'published' || currentStatus === 'completed')
+                  ? 'PUBLISHED (TERBIT)'
+                  : (currentStatus === 'failed' || currentStatus === 'error' || currentStatus === 'cancelled')
+                  ? 'FAILED (GAGAL)'
+                  : 'SCHEDULED / PROSES'}
               </span>
             </div>
 
-            {/* Live Link Section */}
-            {liveLink ? (
-              <div className="p-4 bg-emerald-50/80 border border-emerald-200 rounded-xl space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-emerald-800 font-bold text-sm">
-                    <span>✅</span>
-                    <span>Postingan Sudah Live di Sosial Media</span>
-                  </div>
-                  <span className="text-[11px] font-medium text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
-                    Terverifikasi
+            {/* Status Information Box */}
+            <div className={`p-4 rounded-xl border space-y-2 ${
+              (currentStatus === 'success' || currentStatus === 'published' || currentStatus === 'completed')
+                ? 'bg-emerald-50/80 border-emerald-200'
+                : (currentStatus === 'failed' || currentStatus === 'error' || currentStatus === 'cancelled')
+                ? 'bg-red-50/80 border-red-200'
+                : 'bg-amber-50/80 border-amber-200'
+            }`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm font-bold">
+                  <span>{(currentStatus === 'success' || currentStatus === 'published' || currentStatus === 'completed') ? '✅' : (currentStatus === 'failed' || currentStatus === 'error' || currentStatus === 'cancelled') ? '❌' : '⏳'}</span>
+                  <span className={(currentStatus === 'success' || currentStatus === 'published' || currentStatus === 'completed') ? 'text-emerald-900' : (currentStatus === 'failed' || currentStatus === 'error' || currentStatus === 'cancelled') ? 'text-red-900' : 'text-amber-900'}>
+                    {(currentStatus === 'success' || currentStatus === 'published' || currentStatus === 'completed')
+                      ? 'Postingan Terkonfirmasi Terbit'
+                      : (currentStatus === 'failed' || currentStatus === 'error' || currentStatus === 'cancelled')
+                      ? 'Postingan Gagal Terbit di Repliz'
+                      : 'Postingan Sedang Diproses di Repliz'}
                   </span>
                 </div>
+                <span className={`text-[11px] font-semibold px-2 py-0.5 rounded uppercase ${
+                  (currentStatus === 'success' || currentStatus === 'published' || currentStatus === 'completed')
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : (currentStatus === 'failed' || currentStatus === 'error' || currentStatus === 'cancelled')
+                    ? 'bg-red-100 text-red-800'
+                    : 'bg-amber-100 text-amber-800'
+                }`}>
+                  {currentStatus}
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                {(currentStatus === 'success' || currentStatus === 'published' || currentStatus === 'completed')
+                  ? 'Status postingan di Repliz telah SUCCESS. Silakan klik tombol akun media sosial di bawah untuk melihat postingan langsung di profil Anda.'
+                  : 'Sistem Repliz membutuhkan waktu antrean sekitar ~10 menit hingga postingan otomatis terbit di media sosial.'}
+              </p>
 
-                <div className="bg-white p-2.5 rounded-lg border border-emerald-200 flex items-center justify-between gap-2">
+              {scheduleId && (
+                <div className="text-[11px] text-slate-500 bg-white/90 p-2 rounded-lg border border-slate-200/80 font-mono mt-1 flex items-center justify-between">
+                  <span>Schedule ID: <strong className="text-slate-800">{scheduleId}</strong></span>
+                </div>
+              )}
+            </div>
+
+            {/* Tombol Cek Profil Sosial Media */}
+            <div className="space-y-2 pt-1">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Cek Langsung di Profil Akun Sosmed:
+                </h4>
+                <span className="text-[11px] text-slate-400">Buka di tab baru ↗</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {SOCIAL_CHANNELS.map((ch) => (
                   <a
-                    href={liveLink}
+                    key={ch.name}
+                    href={ch.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-xs font-medium text-emerald-700 hover:text-emerald-900 underline truncate flex-1"
-                    title={liveLink}
+                    className={`flex items-center justify-between p-2.5 bg-white hover:bg-slate-50 border rounded-xl transition group shadow-2xs ${ch.badgeColor}`}
                   >
-                    {liveLink}
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="text-lg flex-shrink-0">{ch.icon}</span>
+                      <div className="min-w-0 text-left">
+                        <div className="text-xs font-bold text-slate-900 group-hover:text-amber-600 transition">
+                          {ch.name}
+                        </div>
+                        <div className="text-[11px] text-slate-500 truncate">
+                          {ch.handle}
+                        </div>
+                      </div>
+                    </div>
+                    <span className="text-xs font-bold opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition flex-shrink-0">
+                      ↗
+                    </span>
                   </a>
-                  <button
-                    onClick={() => copyToClipboard(liveLink, 'link')}
-                    className="px-2.5 py-1 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 rounded font-medium transition flex-shrink-0"
-                  >
-                    {copiedLink ? 'Tersalin! ✓' : 'Salin'}
-                  </button>
-                </div>
-
-                <a
-                  href={liveLink}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm transition"
-                >
-                  <span>Buka Postingan Live di Instagram / Sosmed ↗</span>
-                </a>
+                ))}
               </div>
-            ) : (
-              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
-                <div className="flex items-start gap-2.5">
-                  <span className="text-lg">⏳</span>
-                  <div className="text-xs text-slate-600 space-y-1">
-                    <p className="font-bold text-slate-800">Live Link Belum Terdeteksi</p>
-                    <p>
-                      Ketika post dikirim ke Repliz, dibutuhkan waktu antrean sekitar ~10 menit hingga terbit di Instagram.
-                    </p>
-                  </div>
-                </div>
-
-                {scheduleId && (
-                  <div className="text-[11px] text-slate-500 bg-white p-2 rounded border border-slate-200 font-mono">
-                    Schedule ID: <span className="font-semibold text-slate-700">{scheduleId}</span>
-                  </div>
-                )}
-              </div>
-            )}
+            </div>
 
             {/* Sync Button & Feedback */}
             <div className="pt-1">
               <button
                 onClick={handleSyncRepliz}
                 disabled={syncing || !scheduleId}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-amber-500 hover:bg-amber-600 disabled:bg-slate-200 disabled:text-slate-400 text-slate-950 font-bold text-xs rounded-xl shadow-sm transition"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-amber-500 hover:bg-amber-600 disabled:bg-slate-200 disabled:text-slate-400 text-slate-950 font-bold text-xs rounded-xl shadow-sm transition cursor-pointer"
               >
                 {syncing ? (
                   <>
                     <div className="w-4 h-4 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
-                    <span>Mengecek ke API Repliz...</span>
+                    <span>Mengecek status ke Repliz...</span>
                   </>
                 ) : (
                   <>
                     <span>🔄</span>
-                    <span>Cek & Sinkronkan Live Link dari Repliz</span>
+                    <span>Cek & Sinkronkan Status dari Repliz</span>
                   </>
                 )}
               </button>

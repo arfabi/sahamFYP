@@ -1,6 +1,7 @@
 // Login Page Component
 import React, { useState } from 'react';
-import { signIn, storeMasterSession, type AuthUser } from '../services/auth';
+import { Copy, Check, Sparkles } from 'lucide-react';
+import { signIn, storeMasterSession, DEMO_CREDENTIALS, type AuthUser } from '../services/auth';
 
 interface LoginPageProps {
   onLoginSuccess: (user: AuthUser) => void;
@@ -11,6 +12,31 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [copiedField, setCopiedField] = useState<'email' | 'password' | null>(null);
+
+  const handleCopy = async (text: string, field: 'email' | 'password') => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
+    } catch {
+      // Fallback if clipboard API is blocked
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
+    }
+  };
+
+  const handleUseDemo = () => {
+    setEmail(DEMO_CREDENTIALS.email);
+    setPassword(DEMO_CREDENTIALS.password);
+    setError('');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +53,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
           role: result.user.role || 'admin',
         };
         
-        // Store master session
+        // Store master/demo session
         storeMasterSession(authUser);
         
         // Call success callback
@@ -54,6 +80,81 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
         {/* Login Card */}
         <div className="bg-white rounded-2xl shadow-2xl p-8">
           <h2 className="text-2xl font-bold text-slate-800 mb-6 text-center">Login</h2>
+
+          {/* Demo Account Info Box */}
+          <div className="mb-6 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4 text-slate-800">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-1.5 font-semibold text-amber-900 text-xs sm:text-sm">
+                <Sparkles className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                <span>Akun Demo Pengujian</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleUseDemo}
+                className="text-xs bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-medium px-2.5 py-1 rounded-md transition shadow-sm"
+              >
+                Gunakan Demo
+              </button>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              {/* Email Row */}
+              <div className="flex items-center justify-between bg-white/90 px-3 py-2 rounded-lg border border-amber-100 shadow-2xs">
+                <span className="text-slate-500 font-medium">Email:</span>
+                <div className="flex items-center gap-2">
+                  <code className="font-mono text-slate-800 font-semibold select-all">
+                    {DEMO_CREDENTIALS.email}
+                  </code>
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(DEMO_CREDENTIALS.email, 'email')}
+                    title="Salin Email"
+                    className="p-1 text-slate-500 hover:text-amber-600 hover:bg-amber-100/50 rounded transition flex items-center gap-1 text-[11px]"
+                  >
+                    {copiedField === 'email' ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        <span className="text-emerald-600 font-medium">Tersalin</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Salin</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Password Row */}
+              <div className="flex items-center justify-between bg-white/90 px-3 py-2 rounded-lg border border-amber-100 shadow-2xs">
+                <span className="text-slate-500 font-medium">Password:</span>
+                <div className="flex items-center gap-2">
+                  <code className="font-mono text-slate-800 font-semibold select-all">
+                    {DEMO_CREDENTIALS.password}
+                  </code>
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(DEMO_CREDENTIALS.password, 'password')}
+                    title="Salin Password"
+                    className="p-1 text-slate-500 hover:text-amber-600 hover:bg-amber-100/50 rounded transition flex items-center gap-1 text-[11px]"
+                  >
+                    {copiedField === 'password' ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        <span className="text-emerald-600 font-medium">Tersalin</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Salin</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
@@ -93,7 +194,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-amber-500 hover:bg-amber-600 disabled:bg-amber-300 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+              className="w-full py-3 bg-amber-500 hover:bg-amber-600 disabled:bg-amber-300 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2 cursor-pointer"
             >
               {loading ? (
                 <>
@@ -106,7 +207,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
             </button>
           </form>
 
-          </div>
+        </div>
 
         {/* Footer */}
         <p className="text-center text-slate-500 text-sm mt-6">

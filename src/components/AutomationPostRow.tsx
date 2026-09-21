@@ -73,12 +73,17 @@ export default function AutomationPostRow({
           <button
             onClick={onSelect}
             className="px-3 py-1.5 bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-800 text-xs font-semibold rounded-lg transition"
-            title="Cek link di halaman detail"
+            title="Cek status publikasi di halaman detail"
           >
-            Cek Link ↗
+            Cek Status ↗
           </button>
         ) : (
-          <span className="text-xs text-slate-400">No Link</span>
+          <button
+            onClick={onSelect}
+            className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-500 text-xs rounded-lg transition"
+          >
+            Detail ↗
+          </button>
         )}
 
         <button
