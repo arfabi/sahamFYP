@@ -284,6 +284,76 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
     }
   };
 
+  // ─── 4. Auto-check Repliz Schedule Status on Mount ────────
+  useEffect(() => {
+    let isMounted = true;
+
+    // Jika tidak ada scheduleId, skip
+    if (!scheduleId) return;
+
+    // Jika di database statusnya belum success/published, langsung cek otomatis ke Repliz
+    const isAlreadySuccess = currentStatus === 'success' || currentStatus === 'published' || currentStatus === 'completed';
+    if (isAlreadySuccess) return;
+
+    async function autoCheckStatus() {
+      try {
+        setSyncing(true);
+        const res = await syncReplizLiveLink({
+          scheduleId: scheduleId as string,
+          recordId: post.id,
+          type: isAutomation ? 'automation' : 'manual',
+        });
+
+        if (!isMounted) return;
+
+        if (res.success) {
+          const st = (res.status || res.scheduleStatus || '').toLowerCase();
+          const isSuccess = st === 'success' || st === 'published' || st === 'completed';
+          const isFailed = st === 'failed' || st === 'error' || st === 'cancelled';
+
+          if (isSuccess) {
+            setCurrentStatus('success');
+            setSyncMessage({
+              type: 'success',
+              text: res.message || 'Postingan terverifikasi sudah terbit (STATUS: SUCCESS)!',
+            });
+            if (onPostUpdated) onPostUpdated();
+          } else if (isFailed) {
+            setCurrentStatus('error');
+            setSyncMessage({
+              type: 'error',
+              text: res.message || `Postingan gagal terbit di Repliz (STATUS: ${st.toUpperCase()}).`,
+            });
+            if (onPostUpdated) onPostUpdated();
+          } else {
+            setCurrentStatus('pending');
+            setSyncMessage({
+              type: 'info',
+              text: res.message || `Status di Repliz: "${st.toUpperCase()}" (Masih dalam proses).`,
+            });
+          }
+
+          if (res.medias && res.medias.length > 0) {
+            const freshUrls = res.medias.map((m) => m.url || m.thumbnail).filter(Boolean) as string[];
+            if (freshUrls.length > 0) {
+              setSlides(freshUrls);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('[PostDetailView] Auto-check Repliz error:', err);
+      } finally {
+        if (isMounted) setSyncing(false);
+      }
+    }
+
+    void autoCheckStatus();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [scheduleId, post.id, isAutomation]);
+
   // Copy helper
   const copyToClipboard = (text: string, copyType: 'caption' | 'link') => {
     if (!text) return;
