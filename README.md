@@ -28,6 +28,7 @@
 | **Who it's for** | **End-User: Gen Z & Retail Investors** (yang butuh panduan pasar kredibel tapi ringan dicerna), serta **Financial Educators / Sekuritas** (yang butuh pipeline otomatis untuk menjangkau investor muda tanpa kehilangan akurasi data). |
 | **Core Innovation** | **Anti-FOMO Reality Check Engine**: Bukan sekadar ikut-ikutan tren viral, AI membedah 3W (*What, Why, Impact*) dari berita/filings, lalu memvalidasinya dengan data fundamental & teknikal Sectors API. Jika saham sedang ramai dibicarakan tapi fundamentalnya boncos atau utangnya bengkak, SahamFYP memberikan **Warning & Red Flag** secara transparan. |
 | **Live Proof** | Akun publik **[@sahamfyp.id](https://instagram.com/sahamfyp.id)** berjalan 100% otomatis (unattended) di Instagram, TikTok, Threads, Facebook, dan Telegram Channel — [contoh postingan live](https://www.instagram.com/p/Dda3y6UiQwy/). |
+| **Live Dashboard** | **[saham-fyp.vercel.app](https://saham-fyp.vercel.app/)** (Vercel Hosting + Supabase Backend/Auth). Akun Demo: `demo@sahamfyp.id` / `d3m0cu4n` |
 
 > **Catatan penting soal core data source**: SahamFYP menggunakan **Sectors REST API** di setiap tahap alur — deteksi ticker, enrichment laporan keuangan & valuasi, ranking top movers berkapitalisasi wajar, hingga foreign flow dan kalkulasi teknikal Moving Average. **Kalau data Sectors.app dicabut, produk ini kehilangan fungsi intinya**: slide 4–6 di semua template konten bergantung penuh pada data tersebut untuk verifikasi faktual. Tanpa Sectors API, sistem hanya jadi rewrite berita tanpa nilai tambah — persis kebalikan dari misi produk ini.
 
@@ -37,6 +38,7 @@
 - [📌 Apa Itu SahamFYP?](#-apa-itu-sahamfyp)
 - [🎯 Latar Belakang & Masalah Gen Z](#-latar-belakang--masalah-gen-z)
 - [🌟 Fitur Utama](#-fitur-utama)
+- [🖥️ Dashboard Monitoring & Live Demo](#️-dashboard-monitoring--live-demo)
 - [🛠️ Tech Stack](#️-tech-stack)
 - [📑 Template Konten Postingan](#-template-konten-postingan)
 - [📦 Cara Duplikasi / Clone Content Engine](#-cara-duplikasi--clone-content-engine)
@@ -140,6 +142,68 @@ SahamFYP mengambil **kedalaman data riset sekuritas** dan memformatnya menjadi *
 
 ---
 
+## 🖥️ Dashboard Monitoring & Live Demo
+
+SahamFYP dilengkapi dengan **Web Dashboard Monitoring** interaktif yang dideploy pada **Vercel Hosting** dengan database, autentikasi, serta asset storage real-time berbasis **Supabase**. Dashboard ini berfungsi sebagai pusat kontrol pemantauan pipeline berita, verifikasi data fundamental Sectors API, manajemen multi-akun media sosial, serta log posting otomatis.
+
+### 🌐 Akses Live Demo Dashboard
+
+| Komponen | Keterangan / Kredensial |
+|---|---|
+| **URL Live Web** | [https://saham-fyp.vercel.app/](https://saham-fyp.vercel.app/) |
+| **Hosting Platform** | **Vercel** (Frontend React 18 + Vite & Serverless API Routes) |
+| **Database & Auth** | **Supabase** (PostgreSQL Database, Auth Session, Storage bucket `sfyp-storage`) |
+| **Email Demo** | `demo@sahamfyp.id` |
+| **Password Demo** | `d3m0cu4n` |
+
+### 🧭 Modul Utama Dashboard:
+
+1. **Dashboard Overview (`/`)**
+   - Ringkasan metrik pipeline automasi, total postingan, dan status kesehatan koneksi service (Sectors API, Sumopod LLM, Repliz, Supabase).
+2. **News Monitoring Real-Time (`/news-monitoring`)**
+   - Memantau 8 feed RSS media ekonomi nasional secara kontinu (Katadata, Kontan, Okezone, Liputan6, Detik, CNN Indonesia, CNBC Indonesia, IDX Channel).
+   - Menampilkan artikel hasil scrape, klasifikasi 6 kategori berita oleh LLM, serta scoring urgensi otomatis sebelum diproduksi.
+3. **Daily Market Brief (`/daily-market-brief`)**
+   - Tinjauan outlook pembukaan pasar harian (08:00 WIB), pergerakan IHSG, top movers (gainers/losers), dan net foreign flow.
+   - Daftar saham watchlist terseleksi beserta log konsumsi kredit Sectors API per sesi.
+4. **Stock Watchlist (`/stock-watchlist`)**
+   - Eksplorasi emiten yang diperkaya (*enriched*) dengan metrik fundamental resmi Sectors API (PER, PBV, ROE, DER) dan teknikal (Moving Average, Volume).
+5. **Channels & Accounts Manager (`/accounts`)**
+   - Manajemen terpusat akun media sosial (Instagram, TikTok, Threads, Facebook, Telegram) via Repliz & Telegram Bot.
+   - Switch toggle status aktif/inaktif yang tersinkronisasi langsung dengan tabel `social_accounts` di Supabase.
+6. **Posts Management & History (`/posts`)**
+   - Riwayat seluruh postingan otomatis n8n dan manual generator.
+   - Preview visual slide resolusi tinggi yang diunggah ke Supabase Storage, tautan post live, serta metrik interaksi.
+
+### 📸 Preview Dashboard Monitoring (Interactive Showcase)
+
+<p align="center">
+  <img src="public/slides/dashboard-preview.gif" alt="SahamFYP Dashboard Monitoring Preview Animation" width="100%" />
+</p>
+
+<details open>
+  <summary><b>🖼️ Tangkapan Layar 1: Dashboard Overview (Main View)</b></summary>
+  <p align="center">
+    <img src="public/slides/dashboard-main.png" alt="Dashboard Main Overview" width="100%" />
+  </p>
+</details>
+
+<details>
+  <summary><b>🖼️ Tangkapan Layar 2: Daily Market Brief Monitoring & Session Logs</b></summary>
+  <p align="center">
+    <img src="public/slides/dashboard-dailybrief.png" alt="Dashboard Daily Market Brief" width="100%" />
+  </p>
+</details>
+
+<details>
+  <summary><b>🖼️ Tangkapan Layar 3: Posts Management & Social Publishing</b></summary>
+  <p align="center">
+    <img src="public/slides/dashboard-post.png" alt="Dashboard Posts History" width="100%" />
+  </p>
+</details>
+
+---
+
 ## 🛠️ Tech Stack
 
 ### 1. Sectors.app — REST API (Core Data Source)
@@ -179,6 +243,10 @@ SahamFYP mengambil **kedalaman data riset sekuritas** dan memformatnya menjadi *
 - **Cara kerja**:
   - **Tabel Utama**: `sector_trigger_news` (log eksekusi n8n & berita, jadi bukti unattended run), `social_accounts` (database akun sosmed & status aktif/inaktif), `automation_posts` (riwayat publish otomatis n8n), dan `generated_posts` (status posting).
   - **Storage**: Menggunakan bucket publik `sfyp-storage` untuk menyimpan seluruh slide visual beresolusi tinggi yang dihasilkan pipeline otomatis.
+
+<p align="center">
+  <img src="public/slides/supabasetable.png" alt="Supabase Database Management - SahamFYP" width="100%" />
+</p>
 
 ### 6. Vercel
 
@@ -512,6 +580,13 @@ TELEGRAM_CHAT_ID=your_telegram_chat_id_optional
 Struktur database SahamFYP dapat diinisialisasi melalui **Supabase SQL Editor**.
 - **File Migrasi DDL**: Tersedia lengkap dan terurut di folder [`supabase/migrations/`](supabase/migrations/)
 - **File Data Row / Seed**: Tersedia di folder [`supabase/table/`](supabase/table/)
+
+<details open>
+  <summary><b>📸 Preview Tabel Database Supabase (Live View)</b></summary>
+  <p align="center">
+    <img src="public/slides/supabasetable.png" alt="Supabase Table View - SahamFYP" width="100%" />
+  </p>
+</details>
 
 #### Urutan Eksekusi Seed / Import Data yang Benar:
 Karena adanya relasi Foreign Key antar tabel, eksekusi file row/seed di Supabase SQL Editor **wajib berurutan** sebagai berikut:
@@ -1031,7 +1106,10 @@ sahamFYP/
 
 ## 🔗 Quick Links & Resources
 
-- **Dashboard Web**: https://saham-fyp.vercel.app/
+- **Dashboard Web (Live Demo)**: https://saham-fyp.vercel.app/
+  - **Email**: `demo@sahamfyp.id`
+  - **Password**: `d3m0cu4n`
+  - **Infrastruktur**: Vercel Hosting + Supabase (Database, Auth, & Storage)
 - **API Health**: https://saham-fyp.vercel.app/api/health
 - **Akun live**: [@sahamfyp](https://instagram.com/sahamfyp) di Instagram, Facebook, Threads, X, TikTok
 - **API Sector Trigger**: `POST /api/sector-trigger/open`
