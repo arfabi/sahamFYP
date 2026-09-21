@@ -33,9 +33,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(401).json({ error: 'Invalid or missing API key' });
   }
 
-  const supabaseUrl = process.env.SUPABASE_URL || '';
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-  const supabaseKey = supabaseServiceKey || process.env.SUPABASE_ANON_KEY || '';
+  const supabaseKey = supabaseServiceKey || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
 
   if (!supabaseUrl || !supabaseKey) {
     return res.status(500).json({ error: 'Supabase not configured' });
@@ -64,6 +64,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ posts: data, count: data?.length || 0 });
     }
 
+    if (req.method === 'POST') {
+      const body = parseBody<Record<string, any>>(req);
+
       // ── Action: Sync Live Link or Details from Repliz ─────────────
       if (body.action === 'sync-repliz' || body.action === 'get-repliz-details') {
         const scheduleId = body.scheduleId || body.schedule_id;
@@ -91,20 +94,48 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
 
         if (!schedRes.ok) {
-          const errText = await schedRes.text();
-          return res.status(schedRes.status).json({
-            error: `Failed to fetch schedule from Repliz: ${errText}`,
+          const errText = await schedRes.text().catch(() => '');
+          return res.status(200).json({
+            success: false,
             scheduleStatus: 'not_found',
+            scheduleId,
+            error: `Repliz schedule not found or error (${schedRes.status}): ${errText}`,
+            message: `Schedule ID (${scheduleId}) tidak ditemukan di Repliz atau belum terdaftar.`,
           });
         }
 
         const scheduleData = await schedRes.json();
         const schedStatus = scheduleData.status;
-        const targetAccountId = accountIdParam || scheduleData.accountId || scheduleData.account?._id || scheduleData.account?.id;
+        let targetAccountId = accountIdParam || scheduleData.accountId || scheduleData.account?._id || scheduleData.account?.id || process.env.REPLIZ_ACCOUNT_ID || process.env.VITE_REPLIZ_ACCOUNT_ID;
+
+        // If targetAccountId looks like a handle e.g. @sahamfyp.id or is missing, query social_accounts table
+        if (!targetAccountId || String(targetAccountId).startsWith('@')) {
+          try {
+            const { data: acc } = await supabaseServer
+              .from('social_accounts')
+              .select('account_id')
+              .eq('provider', 'repliz')
+              .limit(1)
+              .maybeSingle();
+            if (acc?.account_id) {
+              targetAccountId = acc.account_id;
+            }
+          } catch (e) {
+            console.warn('[sync-repliz] Could not fetch repliz account_id from DB:', e);
+          }
+        }
+
         const medias = scheduleData.medias || [];
 
         // Check for postId in schedule response (Repliz returns postId when published)
-        const contentPostId = scheduleData.postId || scheduleData.contentId || scheduleData.idPost || scheduleData.post_id;
+        const contentPostId = scheduleData.postId 
+          || scheduleData.contentId 
+          || scheduleData.idPost 
+          || scheduleData.post_id 
+          || scheduleData.content_id 
+          || scheduleData.content?.id 
+          || scheduleData.post?.id
+          || scheduleData.result?.postId;
 
         let liveUrl: string | null = null;
         let contentData: any = null;
@@ -117,16 +148,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             });
             if (contentRes.ok) {
               contentData = await contentRes.json();
-              liveUrl = contentData.url || null;
+              liveUrl = contentData.url || contentData.permalink || contentData.link || contentData.postUrl || null;
+            } else {
+              console.warn('[sync-repliz] content endpoint returned status:', contentRes.status);
             }
           } catch (e) {
             console.warn('[sync-repliz] Error fetching content from Repliz:', e);
           }
         }
 
-        // Fallback: check if schedule metadata already includes URL
-        if (!liveUrl && scheduleData.meta?.url) {
-          liveUrl = scheduleData.meta.url;
+        // Fallback: check if schedule metadata or result already includes URL
+        if (!liveUrl) {
+          liveUrl = scheduleData.url 
+            || scheduleData.permalink 
+            || scheduleData.meta?.url 
+            || scheduleData.meta?.permalink 
+            || scheduleData.result?.url 
+            || null;
         }
 
         // Step 3: If liveUrl is found and recordId is provided, persist to Supabase

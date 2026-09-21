@@ -191,6 +191,14 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
         type: isAutomation ? 'automation' : 'manual',
       });
 
+      if (res.success === false) {
+        setSyncMessage({
+          type: 'error',
+          text: res.message || res.error || 'Gagal sinkronisasi dari Repliz.',
+        });
+        return;
+      }
+
       if (res.liveUrl) {
         setLiveLink(res.liveUrl);
         setSyncMessage({
@@ -202,7 +210,7 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
         const schedStatus = res.scheduleStatus || 'scheduled';
         setSyncMessage({
           type: 'info',
-          text: `Status di Repliz saat ini: "${schedStatus.toUpperCase()}". Biasanya diperlukan waktu ~10 menit hingga live link terbit dari platform sosmed. Silakan cek berkala.`,
+          text: res.message || `Status di Repliz saat ini: "${schedStatus.toUpperCase()}". Biasanya diperlukan waktu ~10 menit hingga live link terbit dari platform sosmed. Silakan cek berkala.`,
         });
       }
 

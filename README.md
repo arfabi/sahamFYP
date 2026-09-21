@@ -507,85 +507,112 @@ TELEGRAM_BOT_TOKEN=your_telegram_bot_token_optional
 TELEGRAM_CHAT_ID=your_telegram_chat_id_optional
 ```
 
-### Database Schema (Supabase)
+### Database Schema & Seed (Supabase)
 
-Struktur database SahamFYP dapat dieksekusi melalui **Supabase SQL Editor**.
-- **File Migrasi DDL**: Tersedia di folder [`supabase/migrations/`](supabase/migrations/)
-- **File Data Row / Seed**: Tersedia di folder [`supabase/table/`](supabase/table/) (`automation_posts_rows.sql`, `generated_posts_rows.sql`, `post_images_rows.sql`, `sector_trigger_candidates_rows.sql`, `sector_trigger_logs_rows.sql`, `sector_trigger_movers_rows.sql`, `sector_trigger_news_rows.sql`, `sector_trigger_skipped_rows.sql`, `social_accounts_rows.sql`).
+Struktur database SahamFYP dapat diinisialisasi melalui **Supabase SQL Editor**.
+- **File Migrasi DDL**: Tersedia lengkap dan terurut di folder [`supabase/migrations/`](supabase/migrations/)
+- **File Data Row / Seed**: Tersedia di folder [`supabase/table/`](supabase/table/)
 
-Berikut DDL lengkap untuk inisialisasi tabel:
+#### Urutan Eksekusi Seed / Import Data yang Benar:
+Karena adanya relasi Foreign Key antar tabel, eksekusi file row/seed di Supabase SQL Editor **wajib berurutan** sebagai berikut:
+1. `social_accounts_rows.sql` *(Akun sosmed tujuan publikasi)*
+2. `automation_posts_rows.sql` *(Riwayat postingan workflow otonom)*
+3. `sector_trigger_logs_rows.sql` *(Tabel induk log trigger harian — WAJIB sebelum tabel trigger di bawahnya)*
+4. `sector_trigger_news_rows.sql` *(Berita & katalis harian, relasi ke logs)*
+5. `sector_trigger_candidates_rows.sql` *(Kandidat saham terpilih & analisa fundamental, relasi ke logs)*
+6. `sector_trigger_movers_rows.sql` *(Top gainer & loser harian, relasi ke logs)*
+7. `sector_trigger_skipped_rows.sql` *(Emiten yang diskip AI & alasannya, relasi ke logs)*
+8. `generated_posts_rows.sql` *(Data postingan naskah carousel & status repliz)*
+9. `post_images_rows.sql` *(Daftar URL gambar slide postingan)*
+
+#### Schema DDL Lengkap (Idempotent):
 
 ```sql
 -- 1. Tabel social_accounts (Manajemen akun sosial media multi-platform)
-CREATE TABLE IF NOT EXISTS social_accounts (
+CREATE TABLE IF NOT EXISTS public.social_accounts (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  platform TEXT NOT NULL,
-  account_name TEXT NOT NULL,
-  account_id TEXT NOT NULL,
-  avatar_url TEXT,
-  profile_url TEXT,
+  platform TEXT NOT NULL, -- 'instagram', 'telegram', 'tiktok', 'facebook', 'threads', 'twitter', 'linkedin'
+  provider TEXT NOT NULL, -- 'repliz', 'telegram'
+  account_id TEXT NOT NULL, -- ID Akun Repliz atau Chat ID Telegram
+  account_name TEXT NOT NULL, -- e.g. '@sahamfyp'
   is_active BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now())
 );
 
 -- 2. Tabel automation_posts (Riwayat postingan otomatis dari workflow n8n)
-CREATE TABLE IF NOT EXISTS automation_posts (
+CREATE TABLE IF NOT EXISTS public.automation_posts (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  workflow_type TEXT NOT NULL DEFAULT 'daily_market_brief',
-  account_id TEXT NOT NULL,
+  workflow_type VARCHAR(50) NOT NULL, -- 'news_monitoring' atau 'daily_market_brief'
+  account_id VARCHAR(100),
   caption TEXT,
   thumbnail_url TEXT,
   post_link TEXT,
-  post_id TEXT,
-  status TEXT DEFAULT 'success',
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  post_id VARCHAR(100),
+  status VARCHAR(50) DEFAULT 'success',
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 3. Tabel generated_posts (Generator naskah & status publish wizard)
-CREATE TABLE IF NOT EXISTS generated_posts (
+-- 3. Tabel content_logs (Log analisis berita, scraping, & scoring naskah)
+CREATE TABLE IF NOT EXISTS public.content_logs (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  log_id UUID,
-  handle TEXT,
-  badge_text TEXT,
-  badge_bg_color TEXT,
-  badge_text_color TEXT,
-  slides_json JSONB,
-  total_slides INTEGER,
-  instagram_status TEXT DEFAULT 'generated',
-  tiktok_status TEXT DEFAULT 'generated',
-  schedule_id TEXT,
-  tiktok_schedule_id TEXT,
+  url TEXT NOT NULL,
+  title TEXT,
+  content TEXT,
+  scraped_at TIMESTAMPTZ,
+  category VARCHAR(50),
+  ticker VARCHAR(50),
+  sector VARCHAR(100),
+  confidence NUMERIC,
+  reason TEXT,
+  sectors_data JSONB,
+  status VARCHAR(50) DEFAULT 'pending',
+  error_message TEXT,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 4. Tabel generated_posts (Generator naskah & status publish wizard)
+CREATE TABLE IF NOT EXISTS public.generated_posts (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  log_id UUID REFERENCES public.content_logs(id) ON DELETE SET NULL,
+  handle VARCHAR(100) DEFAULT '@sahamfyp',
+  badge_text VARCHAR(100) NOT NULL DEFAULT 'SAHAMFYP',
+  badge_bg_color VARCHAR(50),
+  badge_text_color VARCHAR(50),
+  slides_json JSONB NOT NULL DEFAULT '[]'::jsonb,
+  total_slides INTEGER DEFAULT 8,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+  instagram_status VARCHAR(50) DEFAULT 'generated',
+  tiktok_status VARCHAR(50) DEFAULT 'generated',
+  schedule_id VARCHAR(100),
+  tiktok_schedule_id VARCHAR(100),
   permalink TEXT,
   permalink_ig TEXT,
   permalink_tiktok TEXT,
   likes INTEGER DEFAULT 0,
   comments INTEGER DEFAULT 0,
   shares INTEGER DEFAULT 0,
-  reach INTEGER DEFAULT 0,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  reach INTEGER DEFAULT 0
 );
 
--- 4. Tabel post_images (Penyimpanan aset slide gambar)
-CREATE TABLE IF NOT EXISTS post_images (
+-- 5. Tabel post_images (Penyimpanan aset URL slide gambar)
+CREATE TABLE IF NOT EXISTS public.post_images (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  post_id UUID REFERENCES generated_posts(id) ON DELETE CASCADE,
-  url TEXT,
+  post_id UUID REFERENCES public.generated_posts(id) ON DELETE CASCADE,
+  slide_number INTEGER NOT NULL,
+  template_type VARCHAR(50),
   cloudinary_url TEXT,
-  thumbnail_url TEXT,
-  alt TEXT,
-  slide_number INTEGER,
-  template_type TEXT,
+  cloudinary_public_id TEXT,
   width INTEGER,
   height INTEGER,
   file_size BIGINT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 5. Tabel sector_trigger_logs (Log sesi eksekusi Daily Market Brief)
-CREATE TABLE IF NOT EXISTS sector_trigger_logs (
+-- 6. Tabel sector_trigger_logs (Log sesi eksekusi Daily Market Brief)
+CREATE TABLE IF NOT EXISTS public.sector_trigger_logs (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   session TEXT NOT NULL CHECK (session IN ('open', 'close')),
   trigger_date DATE NOT NULL,
@@ -601,29 +628,38 @@ CREATE TABLE IF NOT EXISTS sector_trigger_logs (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 6. Tabel sector_trigger_news (Koleksi berita pasar & keterbukaan informasi)
-CREATE TABLE IF NOT EXISTS sector_trigger_news (
+-- 7. Tabel sector_trigger_news (Koleksi berita pasar, keterbukaan informasi, & scoring)
+CREATE TABLE IF NOT EXISTS public.sector_trigger_news (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  log_id UUID REFERENCES sector_trigger_logs(id) ON DELETE CASCADE,
+  log_id UUID REFERENCES public.sector_trigger_logs(id) ON DELETE CASCADE,
   news_index INTEGER,
   title TEXT,
+  body TEXT,
   tags TEXT[],
   symbols TEXT[],
   sector TEXT,
+  sub_sectors TEXT[],
+  dimensions JSONB,
   source_url TEXT,
+  thumbnail_url TEXT,
+  timestamp TIMESTAMPTZ,
   published_at TIMESTAMPTZ,
+  raw JSONB,
   is_selected BOOLEAN DEFAULT FALSE,
   category TEXT,
-  ticker TEXT,
-  urgency_score INTEGER,
-  raw_content TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  description TEXT,
+  sitename TEXT,
+  score INTEGER DEFAULT 0,
+  decision TEXT DEFAULT 'PASS',
+  reason TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 7. Tabel sector_trigger_candidates (Kandidat saham terpilih + enrichment Sectors API)
-CREATE TABLE IF NOT EXISTS sector_trigger_candidates (
+-- 8. Tabel sector_trigger_candidates (Kandidat saham terpilih + enrichment Sectors API)
+CREATE TABLE IF NOT EXISTS public.sector_trigger_candidates (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  log_id UUID REFERENCES sector_trigger_logs(id) ON DELETE CASCADE,
+  log_id UUID REFERENCES public.sector_trigger_logs(id) ON DELETE CASCADE,
   ticker TEXT NOT NULL,
   company_name TEXT,
   sector TEXT,
@@ -638,40 +674,38 @@ CREATE TABLE IF NOT EXISTS sector_trigger_candidates (
   der NUMERIC,
   revenue NUMERIC,
   net_income NUMERIC,
-  pe_sector_avg NUMERIC,
-  pb_sector_avg NUMERIC,
-  roe_sector_avg NUMERIC,
-  der_sector_avg NUMERIC,
+  avg_sector_pe NUMERIC,
+  avg_sector_pbv NUMERIC,
+  avg_sector_roe NUMERIC,
+  avg_sector_der NUMERIC,
   pe_signal TEXT,
-  pb_signal TEXT,
+  pbv_signal TEXT,
   roe_signal TEXT,
   der_signal TEXT,
-  quadrant TEXT,
-  fundamental_summary TEXT,
-  technical_summary JSONB,
+  enrichment_json JSONB,
+  technical_json JSONB,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 8. Tabel sector_trigger_movers (Top gainers & top losers harian)
-CREATE TABLE IF NOT EXISTS sector_trigger_movers (
+-- 9. Tabel sector_trigger_movers (Top gainers & top losers harian)
+CREATE TABLE IF NOT EXISTS public.sector_trigger_movers (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  log_id UUID REFERENCES sector_trigger_logs(id) ON DELETE CASCADE,
-  mover_type TEXT NOT NULL CHECK (mover_type IN ('gainers', 'losers')),
-  rank INTEGER NOT NULL,
-  ticker TEXT NOT NULL,
+  log_id UUID REFERENCES public.sector_trigger_logs(id) ON DELETE CASCADE,
+  classification TEXT CHECK (classification IN ('top_gainers', 'top_losers')),
+  symbol TEXT NOT NULL,
   company_name TEXT,
-  price NUMERIC,
-  change_pct NUMERIC,
+  price_change NUMERIC,
+  last_price NUMERIC,
+  point_change NUMERIC,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 9. Tabel sector_trigger_skipped (Saham yang dilewati beserta alasannya)
-CREATE TABLE IF NOT EXISTS sector_trigger_skipped (
+-- 10. Tabel sector_trigger_skipped (Saham yang diskip AI beserta alasannya)
+CREATE TABLE IF NOT EXISTS public.sector_trigger_skipped (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  log_id UUID REFERENCES sector_trigger_logs(id) ON DELETE CASCADE,
+  log_id UUID REFERENCES public.sector_trigger_logs(id) ON DELETE CASCADE,
   ticker TEXT NOT NULL,
-  reason TEXT NOT NULL,
-  market_cap NUMERIC,
+  reason TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
