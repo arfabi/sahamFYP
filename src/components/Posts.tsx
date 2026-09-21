@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { generatedPostsApi, automationPostsApi, type GeneratedPost, type AutomationPost } from '../services/supabase';
 import PostListRow from './PostListRow';
 import AutomationPostRow from './AutomationPostRow';
+import PostDetailView from './PostDetailView';
 
 function toLocalDateString(isoStr?: string): string {
   if (!isoStr) return '';
@@ -35,6 +36,10 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
   const [autoPosts, setAutoPosts] = useState<AutomationPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'automation' | 'manual'>('automation');
+  const [selectedPost, setSelectedPost] = useState<{
+    post: AutomationPost | GeneratedPost;
+    type: 'automation' | 'manual';
+  } | null>(null);
 
   // Filter states
   const [startDate, setStartDate] = useState<string>('');
@@ -160,6 +165,22 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
     }
     return pages;
   };
+
+  if (selectedPost) {
+    return (
+      <PostDetailView
+        post={selectedPost.post}
+        type={selectedPost.type}
+        onBack={() => {
+          setSelectedPost(null);
+          void fetchPosts();
+        }}
+        onPostUpdated={() => {
+          void fetchPosts();
+        }}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -340,7 +361,11 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
           <div className="space-y-4">
             <div className="grid gap-4">
               {(paginatedList as AutomationPost[]).map((p) => (
-                <AutomationPostRow key={p.id} post={p} />
+                <AutomationPostRow
+                  key={p.id}
+                  post={p}
+                  onSelect={() => setSelectedPost({ post: p, type: 'automation' })}
+                />
               ))}
             </div>
           </div>
@@ -373,7 +398,11 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
           <div className="space-y-4">
             <div className="grid gap-4">
               {(paginatedList as GeneratedPost[]).map((p) => (
-                <PostListRow key={p.id} post={p} />
+                <PostListRow
+                  key={p.id}
+                  post={p}
+                  onSelect={() => setSelectedPost({ post: p, type: 'manual' })}
+                />
               ))}
             </div>
           </div>

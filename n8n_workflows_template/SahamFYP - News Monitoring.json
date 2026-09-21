@@ -13,7 +13,7 @@
           "conditions": [
             {
               "id": "check-decision",
-              "leftValue": "={{ $json.decision }}",
+              "leftValue": "={{ $('Score').item.json.decision }}",
               "rightValue": "GENERATE",
               "operator": {
                 "type": "string",
@@ -30,32 +30,32 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -832,
-        176
+        -3648,
+        -1152
       ]
     },
     {
       "parameters": {
-        "jsCode": "const data = $input.item.json;\nconst now = new Date();\n\n// Format waktu Indonesia\nconst options = { \n  weekday: 'long', \n  year: 'numeric', \n  month: '2-digit', \n  day: '2-digit', \n  hour: '2-digit', \n  minute: '2-digit',\n  timeZone: 'Asia/Jakarta'\n};\nconst waktu = now.toLocaleString('id-ID', options).replace(/\\//g, '/');\n\nlet message = `📰 *SahamFYP - News Update*\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `🕐 Waktu : ${waktu} WIB\\n`;\nmessage += `📌 Judul : ${$('Scrape').first().json.title  || 'N/A'}\\n`;\nmessage += `🌐 Media : ${$('Scrape').first().json.siteName || 'N/A'}\\n`;\nmessage += `🔗 Link : ${ $('Scrape').first().json.url || 'N/A'}\\n`;\nmessage += `📊 Status : ${$input.first().json.data.decision} ❌\\n`;\nmessage += `📝 Alasan : ${ $input.first().json.data.reason|| 'Tidak ada alasan'}\\n`;\nmessage += `📊 Score : ${$input.first().json.data.score} \\n\\n\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `_Tidak di-generate karena score < 9_`;\n\nreturn { json: { message } };\n"
+        "jsCode": "const data = $input.item.json;\nconst now = new Date();\n\n// Format waktu Indonesia\nconst options = { \n  weekday: 'long', \n  year: 'numeric', \n  month: '2-digit', \n  day: '2-digit', \n  hour: '2-digit', \n  minute: '2-digit',\n  timeZone: 'Asia/Jakarta'\n};\nconst waktu = now.toLocaleString('id-ID', options).replace(/\\//g, '/');\n\nlet message = `📰 *SahamFYP - News Update*\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `🕐 Waktu : ${waktu} WIB\\n`;\nmessage += `📌 Judul : ${$('Scrape').first().json.title  || 'N/A'}\\n`;\nmessage += `🌐 Media : ${$('Scrape').first().json.siteName || 'N/A'}\\n`;\nmessage += `🔗 Link : ${ $('Scrape').first().json.url || 'N/A'}\\n`;\nmessage += `📊 Status : ${ $('Score').first().json.decision } ❌\\n`;\nmessage += `📝 Alasan : ${ $('Score').first().json.reason || 'Tidak ada alasan'}\\n`;\nmessage += `📊 Score : ${ $('Score').first().json.score } \\n\\n\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `_Tidak di-generate karena score < 9_`;\n\nreturn { json: { message } };\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -608,
-        272
+        -3424,
+        -1056
       ],
       "id": "1c5ec1e5-acc1-4650-a56c-77e283b76fda",
       "name": "Chat Generator - PASS"
     },
     {
       "parameters": {
-        "jsCode": "const data = $input.item.json;\nconst now = new Date();\n\n// Format waktu Indonesia\nconst options = { \n  weekday: 'long', \n  year: 'numeric', \n  month: '2-digit', \n  day: '2-digit', \n  hour: '2-digit', \n  minute: '2-digit',\n  timeZone: 'Asia/Jakarta'\n};\nconst waktu = now.toLocaleString('id-ID', options).replace(/\\//g, '/');\n\nlet message = `📰 *SahamFYP - News Update*\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `🕐 Waktu : ${waktu} WIB\\n`;\nmessage += `📌 Judul : ${$('Scrape').first().json.title  || 'N/A'}\\n`;\nmessage += `🌐 Media : ${$('Scrape').first().json.siteName || 'N/A'}\\n`;\nmessage += `🔗 Link : ${ $('Scrape').first().json.url || 'N/A'}\\n`;\nmessage += `📊 Status : ${$input.first().json.data.decision} ❌\\n`;\nmessage += `📝 Alasan : ${ $input.first().json.data.reason|| 'Tidak ada alasan'}\\n`;\nmessage += `📊 Score : ${$input.first().json.data.score} \\n\\n\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `_Tidak di-generate karena score < 9_`;\n\nreturn { json: { message } };\n"
+        "jsCode": "const data = $input.item.json;\nconst now = new Date();\n\n// Format waktu Indonesia\nconst options = { \n  weekday: 'long', \n  year: 'numeric', \n  month: '2-digit', \n  day: '2-digit', \n  hour: '2-digit', \n  minute: '2-digit',\n  timeZone: 'Asia/Jakarta'\n};\nconst waktu = now.toLocaleString('id-ID', options).replace(/\\//g, '/');\n\nlet message = `📰 *SahamFYP - News Update*\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `🕐 Waktu : ${waktu} WIB\\n`;\nmessage += `📌 Judul : ${$('Scrape').first().json.title  || 'N/A'}\\n`;\nmessage += `🌐 Media : ${$('Scrape').first().json.siteName || 'N/A'}\\n`;\nmessage += `🔗 Link : ${ $('Scrape').first().json.url || 'N/A'}\\n`;\nmessage += `📊 Status : ${ $('Score').first().json.decision } ✅\\n`;\nmessage += `📝 Alasan : ${ $('Score').first().json.reason || 'Tidak ada alasan'}\\n`;\nmessage += `📊 Score : ${ $('Score').first().json.score } \\n\\n\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `_Berita di Generate karena Score > 8 _`;\n\nreturn { json: { message } };\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -608,
-        80
+        -3424,
+        -1248
       ],
       "id": "3761ddcc-9c87-4b29-895e-98499bb125ea",
       "name": "Chat Generator - GENERATE"
@@ -69,8 +69,8 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        -384,
-        80
+        -3200,
+        -1248
       ],
       "id": "9c633f7d-431f-4ba8-b8a8-003df1153729",
       "name": "BROADCAST - GENERATE",
@@ -91,8 +91,8 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        -384,
-        272
+        -3200,
+        -1056
       ],
       "id": "cc03dca7-1967-4d1e-b205-4fb573639147",
       "name": "BROADCAST - PASS",
@@ -103,223 +103,6 @@
           "name": "Telegram account"
         }
       }
-    },
-    {
-      "parameters": {
-        "content": "RSS TRIGGER\n\nDETEKSI SINYAL BERITA-BERITA EKONOMI/INVESTASI YANG MEMPENGARUHI HARGA SAHAM",
-        "width": 480
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -1776,
-        -160
-      ],
-      "id": "51f801a7-4ee4-4293-bd2e-ede7ef3536a5",
-      "name": "Sticky Note"
-    },
-    {
-      "parameters": {
-        "fieldToSplitOut": "naskah.slides",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.splitOut",
-      "typeVersion": 1,
-      "position": [
-        -1696,
-        944
-      ],
-      "id": "ba092a5e-3b36-4fb2-a9b8-3a58bd6cba7f",
-      "name": "Split Out"
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "type": "n8n-nodes-base.splitInBatches",
-      "typeVersion": 3,
-      "position": [
-        -1472,
-        944
-      ],
-      "id": "b6646bd9-d9f5-45eb-ad8f-62745d3b0cbf",
-      "name": "Loop Over Items1"
-    },
-    {
-      "parameters": {
-        "jsCode": "const slide = $input.item.json;\nconst image = $('Generate Naskah').first().json.image;\n\nfunction buildSlideHtml(slide, image) {\n  const accent = slide.accent || '#F2A93B';\n  let iconSvg = '';\n  \n  if (slide.template === 'cta') {\n    iconSvg = '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"80\" height=\"80\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"' + accent + '\" stroke-width=\"2\"><path d=\"M7.9 20A9 9 0 1 0 4 16.1L2 22Z\"/></svg>';\n  } else if (slide.template === 'pros') {\n    iconSvg = '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"32\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#4CAF7D\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m9 12 2 2 4-4\"/></svg>';\n  } else if (slide.template === 'cons') {\n    iconSvg = '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"32\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#E4572E\" stroke-width=\"2\"><path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z\"/></svg>';\n  } else {\n    iconSvg = '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"80\" height=\"80\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"' + accent + '\" stroke-width=\"2\"><polyline points=\"22 7 13.5 15.5 8.5 10.5 2 17\"/><polyline points=\"16 7 22 7 22 13\"/></svg>';\n  }\n\n  let content = '';\n  \n  if (slide.template === 'cover') {\n    content = '<div class=\"slide\" style=\"background:linear-gradient(135deg,#14182B 0%,#1E2A4A 100%)\">' +\n      (image ? '<img class=\"illustration\" src=\"' + image + '\" alt=\"\">' : '') +\n      '<h1 class=\"title\" style=\"color:' + accent + '\">' + (slide.title || '') + '</h1>' +\n      '<p class=\"description\">' + (slide.description || '') + '</p>' +\n      '</div>';\n  } else if (slide.template === 'cta') {\n    content = '<div class=\"slide\">' +\n      '<div class=\"icon-container\">' + iconSvg + '</div>' +\n      '<h1 class=\"title\" style=\"color:' + accent + '\">' + (slide.title || '') + '</h1>' +\n      '<p class=\"description\">' + (slide.description || '') + '</p>' +\n      (slide.disclaimer ? '<div class=\"disclaimer\">' + slide.disclaimer + '</div>' : '') +\n      '</div>';\n  } else {\n    content = '<div class=\"slide\">' +\n      '<div class=\"icon-container\">' + iconSvg + '</div>' +\n      '<h1 class=\"title\" style=\"color:' + accent + '\">' + (slide.title || '') + '</h1>' +\n      '<p class=\"description\">' + (slide.description || '') + '</p>' +\n      '</div>';\n  }\n\n  return '<!DOCTYPE html><html><head><style>' +\n    '*{margin:0;padding:0;box-sizing:border-box}' +\n    'body{width:1080px;height:1080px;font-family:Arial,sans-serif;background:#14182B;color:#FFF;overflow:hidden}' +\n    '.slide{width:1080px;height:1080px;padding:60px;display:flex;flex-direction:column;justify-content:center}' +\n    '.title{font-size:56px;font-weight:800;line-height:1.2;margin-bottom:24px}' +\n    '.description{font-size:32px;line-height:1.5;opacity:.9}' +\n    '.icon-container{position:absolute;top:60px;right:60px}' +\n    '.illustration{width:100%;height:400px;object-fit:cover;border-radius:16px;margin-bottom:32px}' +\n    '.disclaimer{font-size:20px;opacity:.7;margin-top:24px;padding:16px 24px;background:rgba(255,255,255,.1);border-radius:12px}' +\n    '</style></head><body>' + content + '</body></html>';\n}\n\nreturn {\n  json: {\n    html: buildSlideHtml(slide, image),\n    slideIndex: $item.index,\n    template: slide.template,\n  }\n};\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -1248,
-        944
-      ],
-      "id": "213e765b-6093-475d-819a-24236ab1a8ce",
-      "name": "Code in JavaScript"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "=https://chrome.browserless.io/screenshot?token={{ $env.BROWSERLESS_IO_KEY }}",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"url\": \"data:text/html,{{ $json.html }}\",\n  \"options\": {\n    \"type\": \"png\",\n    \"fullPage\": true\n  },\n  \"viewport\": {\n    \"width\": 1080,\n    \"height\": 1080\n  }\n}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.5,
-      "position": [
-        -1024,
-        944
-      ],
-      "id": "d07bee5e-c980-4528-9bcb-5092d679882f",
-      "name": "Browserless.io1"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "=https://api.cloudinary.com/v1_1/{{ $env.CLOUDINARY_CLOUD_NAME }}/image/upload",
-        "sendBody": true,
-        "contentType": "multipart-form-data",
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "file",
-              "value": "={{ $binary.data }}"
-            },
-            {
-              "name": "upload_preset",
-              "value": "sahamfyp"
-            },
-            {
-              "name": "public_id",
-              "value": "=sector-{{ $('Open API').first().json.session }}-{{ $item.index }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.5,
-      "position": [
-        -800,
-        1024
-      ],
-      "id": "cd8e77be-2c78-4373-a523-8eee05656d5c",
-      "name": "Cloudinary1"
-    },
-    {
-      "parameters": {
-        "jsCode": "const allItems = $input.all();\nconst cloudinaryUrls = allItems.map(item => item.json.secure_url);\n\nreturn {\n  json: {\n    cloudinaryUrls: cloudinaryUrls,\n  }\n};\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -1248,
-        752
-      ],
-      "id": "09428498-78d7-47be-bf44-261d0f140343",
-      "name": "Collect All URLs1"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://saham-fyp.vercel.app/api/publish",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "X-API-Key",
-              "value": "={{ $env.N8N_API_KEY }}"
-            }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"postId\": \"{{ $('Open API').first().json.postId }}\",\n  \"cloudinaryUrls\": {{ $json.cloudinaryUrls }},\n  \"caption\": \"{{ $('Open API').first().json.naskah.caption.instagram }}\",\n  \"platform\": \"instagram\"\n}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.5,
-      "position": [
-        -800,
-        752
-      ],
-      "id": "93006cea-80de-4e03-a9fa-62ac2355ed83",
-      "name": "Publish - Repliz1"
-    },
-    {
-      "parameters": {
-        "chatId": "294594761",
-        "text": "={{ $json.message }}",
-        "additionalFields": {}
-      },
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [
-        -352,
-        752
-      ],
-      "id": "c235aee2-1024-4b1b-8ee9-a72d788276e1",
-      "name": "Broadcast - Reports1",
-      "webhookId": "b594caaf-5815-4711-b36d-1109c9b4b87c",
-      "credentials": {
-        "telegramApi": {
-          "id": "7nKsmDhD828CPjdX",
-          "name": "Telegram account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "const data = $input.item.json;\nconst now = new Date();\n\n// Format waktu Indonesia\nconst options = { \n  weekday: 'long', \n  year: 'numeric', \n  month: '2-digit', \n  day: '2-digit', \n  hour: '2-digit', \n  minute: '2-digit',\n  timeZone: 'Asia/Jakarta'\n};\nconst waktu = now.toLocaleString('id-ID', options).replace(/\\//g, '/');\n\nlet message = `📰 *SahamFYP - News Update*\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `🕐 Waktu : ${waktu} WIB\\n`;\nmessage += `📌 Judul : ${$('Scrape').first().json.title  || 'N/A'}\\n`;\nmessage += `🌐 Media : ${$('Scrape').first().json.siteName || 'N/A'}\\n`;\nmessage += `🔗 Link : ${ $('Scrape').first().json.url || 'N/A'}\\n`;\nmessage += `📊 Status : ${$input.first().json.decision} ❌\\n`;\nmessage += `📝 Alasan : ${ $input.first().json.reason|| 'Tidak ada alasan'}\\n`;\nmessage += `📊 Score : ${$input.first().json.score} \\n\\n\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `_Tidak di-generate karena score < 9_`;\n\nreturn { json: { message } };\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -576,
-        752
-      ],
-      "id": "efa53e1c-8c4d-4089-bf44-99893610fa19",
-      "name": "Chat Generator - Reports1"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://saham-fyp.vercel.app/api/posts",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "X-API-Key",
-              "value": "={{ $env.N8N_API_KEY }}"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "id",
-              "value": "={{ $('Open API').first().json.postId }}"
-            },
-            {
-              "name": "cloudinaryUrls",
-              "value": "={{ $json.cloudinaryUrls }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.5,
-      "position": [
-        -1024,
-        752
-      ],
-      "id": "cc370c60-acab-4788-ae0c-366129c8cbaf",
-      "name": "Update Post"
     },
     {
       "parameters": {
@@ -348,8 +131,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -2400,
-        176
+        -4544,
+        -1152
       ],
       "id": "35db6438-f83f-4769-8513-f94cc481a1a5",
       "name": "IF Exists?"
@@ -383,8 +166,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -2176,
-        176
+        -4320,
+        -1152
       ]
     },
     {
@@ -405,11 +188,11 @@
           "parameters": [
             {
               "name": "title",
-              "value": "={{ $json.data.title }}"
+              "value": "={{ $('Scrape').item.json.title }}"
             },
             {
               "name": "content",
-              "value": "={{ $json.data.content }}"
+              "value": "={{ $('Scrape').item.json.content }}"
             }
           ]
         },
@@ -420,8 +203,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -1728,
-        176
+        -4096,
+        -1152
       ]
     },
     {
@@ -450,15 +233,15 @@
             },
             {
               "name": "category",
-              "value": "={{ $json.data.category }}"
+              "value": "={{ $json.category }}"
             },
             {
               "name": "ticker",
-              "value": "={{ $json.data.ticker }}"
+              "value": "={{ $json.ticker }}"
             },
             {
               "name": "reason",
-              "value": "={{ $json.data.reason }}"
+              "value": "={{ $json.reason }}"
             }
           ]
         },
@@ -469,9 +252,169 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -1280,
-        176
+        -3872,
+        -1152
       ]
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "feedUrl": "https://katadata.co.id/rss"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -4992,
+        -480
+      ],
+      "id": "58f61ae0-26f8-4be7-ad10-a65573935bdb",
+      "name": "Katadata"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "feedUrl": "https://keuangan.kontan.co.id/rss"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -4992,
+        -672
+      ],
+      "id": "b2b78984-c069-4e61-b2e2-a532bc488aae",
+      "name": "Kontan"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "feedUrl": "https://sindikasi.okezone.com/index.php/rss/11/RSS2.0"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -4992,
+        -864
+      ],
+      "id": "e6866e66-4963-4669-ac42-6f49497afa52",
+      "name": "OKEZONE"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "feedUrl": "https://feed.liputan6.com/rss/saham"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -4992,
+        -1056
+      ],
+      "id": "4541c7da-c665-4244-9345-f07aea5a5d3b",
+      "name": "Liputan6"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "feedUrl": "https://finance.detik.com/rss"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -4992,
+        -1248
+      ],
+      "id": "bbd7d5ca-6afb-4bbf-9263-bdac37986676",
+      "name": "Detik"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "feedUrl": "https://www.cnnindonesia.com/ekonomi/rss"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -4992,
+        -1440
+      ],
+      "id": "01112342-9751-449a-845f-ffe20e6092b1",
+      "name": "CNN"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "feedUrl": "https://www.cnbcindonesia.com/market/rss"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -4992,
+        -1824
+      ],
+      "id": "069f8be6-c9de-4bce-b0d5-2820c3fe31fe",
+      "name": "CNBC"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "feedUrl": "https://www.idxchannel.com/rss"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -4992,
+        -1632
+      ],
+      "id": "85cfbdc8-119e-411c-a3ec-858b1f3b5095",
+      "name": "IDX Channel"
     },
     {
       "parameters": {
@@ -495,14 +438,140 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        -2624,
-        176
+        -4768,
+        -1152
       ],
-      "id": "500c39f7-8328-43d3-9519-5e69183040ee",
+      "id": "74592686-a7db-4b0c-bda6-182ede58584c",
       "name": "Check Exists?"
     },
     {
       "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -2304,
+        -1248
+      ],
+      "id": "5685d9c6-b8ec-49a4-9f56-e7b3995acd90",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://chrome.browserless.io/screenshot?token=2VEwVdb9hWKYbvoe74f8dd268e526e79608c5d9d5c23154ac",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"url\": \"data:text/html;charset=utf-8,{{ encodeURIComponent($json.html) }}\",\n  \"options\": {\n    \"type\": \"jpeg\",\n    \"fullPage\": true\n  },\n  \"viewport\": {\n    \"width\": 1080,\n    \"height\": 1350\n  }\n}\n",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -1856,
+        -1216
+      ],
+      "id": "4e4cf354-5aa1-4b80-b2d3-8542c8ca5b3a",
+      "name": "Browserless.io"
+    },
+    {
+      "parameters": {
+        "jsCode": "const allItems = $input.all();\nconst imageUrls = allItems.map(item => {\n  // item.json.Key berisi \"sfyp-storage/slide-xxx.jpg\" dari respon Supabase\n  return \"https://xgqsrttpdxiiqknuulwl.supabase.co/storage/v1/object/public/\" + item.json.Key;\n});\n\nreturn {\n  json: {\n    imageUrls: imageUrls\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2080,
+        -1408
+      ],
+      "id": "1b0da4b8-75a4-439a-9c8d-6b565f410fd5",
+      "name": "Collect All URLs"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://saham-fyp.vercel.app/api/publish",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmMzAyMDViMi1hMzY1LTQyZDUtODE0ZS0yYzRiYjJkNDQyYmIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiNDdmMGMwYjktMTQ1MC00NjcwLTk3ZjktZjA1ZDU2Y2EzM2ViIiwiaWF0IjoxNzg4OTM1MDA2fQ.PVtFSytgbdeoVO_86oOpYZPMmNbYOYEV9MCaUSVVGos"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n  JSON.stringify({\n    imageUrls: $('Collect All URLs').first().json.imageUrls,\n    workflowType: \"news_monitoring\",\n    caption: $('Generate Naskah Slides').item.json.naskah.caption.instagram || \"Market Brief SahamFYP Hari Ini\"\n  })\n}}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -1632,
+        -1408
+      ],
+      "id": "18ca69b8-9705-4231-b068-8346111315ea",
+      "name": "Publish - Repliz"
+    },
+    {
+      "parameters": {
+        "chatId": "294594761",
+        "text": "={{ $json.message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1184,
+        -1408
+      ],
+      "id": "b8823818-6142-400d-bf2d-b1f1c2fff359",
+      "name": "Broadcast - Reports",
+      "webhookId": "6b2464cd-a7fb-405f-92e6-b6aa9ba85f5b",
+      "credentials": {
+        "telegramApi": {
+          "id": "7nKsmDhD828CPjdX",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Mengambil data hasil generate (sesuaikan nama node 'Generate' jika berbeda)\nconst generateData = $('Generate Naskah Slides').first().json || {};\nconst classification = generateData.classification || {};\nconst naskah = generateData.naskah || {};\nconst slides = naskah.slides || [];\n\n// Mengambil data hasil publish dari node sebelumnya\nconst publishData = $('Publish - Repliz').first().json || {};\nconst publishResults = publishData.results || [];\n\nconst now = new Date();\n\n// Format waktu Indonesia (WIB)\nconst options = { \n  weekday: 'long', \n  year: 'numeric', \n  month: '2-digit', \n  day: '2-digit', \n  hour: '2-digit', \n  minute: '2-digit',\n  timeZone: 'Asia/Jakarta'\n};\nconst waktu = now.toLocaleString('id-ID', options).replace(/\\//g, '/');\n\n// Helper untuk generate URL profil berdasarkan platform\nfunction getProfileUrl(platform, name) {\n  const cleanName = (name || '').replace('@', '');\n  if (!cleanName) return '#';\n  switch (platform.toLowerCase()) {\n    case 'instagram': return `https://instagram.com/${cleanName}`;\n    case 'twitter': return `https://x.com/${cleanName}`;\n    case 'tiktok': return `https://tiktok.com/@${cleanName}`;\n    case 'facebook': return `https://facebook.com/${cleanName}`;\n    case 'threads': return `https://threads.net/@${cleanName}`;\n    case 'telegram': return `https://t.me/${cleanName}`;\n    case 'linkedin': return `https://linkedin.com/company/${cleanName}`;\n    default: return '#';\n  }\n}\n\n// Membangun daftar platform yang sukses\nlet publishList = publishResults\n  .filter(r => r.status === 'success')\n  .map(r => {\n    // Membuat huruf pertama platform menjadi kapital\n    const platformName = r.platform.charAt(0).toUpperCase() + r.platform.slice(1);\n    const link = getProfileUrl(r.platform, r.accountName);\n    return `• ${platformName} : ${link}`;\n  })\n  .join('\\n');\n\nif (!publishList) {\n  publishList = \"_Tidak ada publikasi yang sukses_\";\n}\n\n// Data dari News Monitoring\nconst title = slides[0]?.title || generateData.title || 'Berita Saham Terbaru';\nconst ticker = classification.ticker || 'N/A';\nconst category = (classification.category || 'N/A').replace(/_/g, ' ');\nconst source = generateData.siteName || 'Sistem Auto-Scrape';\n\n// Menyusun pesan Telegram\nlet message = `📰 *SahamFYP - News Monitoring*\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `🕐 *Waktu* : ${waktu} WIB\\n`;\nmessage += `📌 *Judul* : ${title}\\n`;\nmessage += `🏢 *Emiten* : ${ticker}\\n`;\nmessage += `🏷️ *Kategori* : ${category}\\n`;\nmessage += `🌐 *Sumber* : ${source}\\n\\n`;\n\nmessage += `📝 *Alasan Klasifikasi*:\\n`;\nmessage += `_${classification.reason || 'Katalis berita terbaru terdeteksi.'}_\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `✨ *Berhasil terbit ke ${publishData.success_count || 0} akun*:\\n`;\nmessage += `${publishList}`;\n\nreturn { json: { message } };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1408,
+        -1408
+      ],
+      "id": "c16d3424-31a3-4d6d-bac4-7d9426b2e62f",
+      "name": "Chat Generator - Reports"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "naskah.slides",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -2528,
+        -1248
+      ],
+      "id": "81f9584c-9f46-4678-ab05-d38da0658ba1",
+      "name": "Split Out - Slide by slide"
+    },
+    {
+      "parameters": {
         "method": "POST",
         "url": "https://saham-fyp.vercel.app/api/news-scrape",
         "sendBody": true,
@@ -510,67 +579,51 @@
           "parameters": [
             {
               "name": "url",
-              "value": "={{ $json.url }}"
+              "value": "={{ $('Scrape').item.json.url }}"
             },
             {
               "name": "title",
-              "value": "={{ $json.title }}"
+              "value": "={{ $('Scrape').item.json.title }}"
             },
             {
               "name": "content",
-              "value": "={{ $json.content }}"
+              "value": "={{ $('Scrape').item.json.content }}"
             },
             {
               "name": "description",
-              "value": "={{ $json.description }}"
+              "value": "={{ $('Scrape').item.json.description }}"
             },
             {
               "name": "image",
-              "value": "={{ $json.image }}"
+              "value": "={{ $('Scrape').item.json.image }}"
             },
             {
               "name": "sitename",
-              "value": "={{ $json.siteName }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.5,
-      "position": [
-        -1952,
-        176
-      ],
-      "id": "a7093502-3043-4802-b033-ae67205e39fe",
-      "name": "Save Scraped - DB"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://saham-fyp.vercel.app/api/news-scrape",
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "action",
-              "value": "update"
-            },
-            {
-              "name": "url",
-              "value": "={{ $('Scrape').item.json.url }}"
+              "value": "={{ $('Scrape').item.json.siteName }}"
             },
             {
               "name": "category",
-              "value": "={{ $json.category }}"
+              "value": "={{ $('Classify').item.json.category }}"
             },
             {
               "name": "ticker",
-              "value": "={{ $json.ticker }}"
+              "value": "={{ $('Classify').item.json.ticker }}"
+            },
+            {
+              "name": "score",
+              "value": "={{ $('Score').item.json.score }}"
+            },
+            {
+              "name": "decision",
+              "value": "={{ $('Score').item.json.decision }}"
+            },
+            {
+              "name": "reason",
+              "value": "={{ $('Score').item.json.reason }}"
             },
             {
               "name": "tags",
-              "value": "={{ $json.tags }}"
+              "value": "={{ $('Classify').item.json.tags }}"
             }
           ]
         },
@@ -579,38 +632,84 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        -1504,
-        176
+        -2976,
+        -1248
       ],
-      "id": "3851ec13-5b28-48f0-84f8-eadf5b3b1050",
-      "name": "Update Category - DB"
+      "id": "a7093502-3043-4802-b033-ae67205e39fe",
+      "name": "Save - News - Supabase"
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "https://saham-fyp.vercel.app/api/news-scrape",
+        "url": "https://saham-fyp.vercel.app/api/posts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmMzAyMDViMi1hMzY1LTQyZDUtODE0ZS0yYzRiYjJkNDQyYmIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiNDdmMGMwYjktMTQ1MC00NjcwLTk3ZjktZjA1ZDU2Y2EzM2ViIiwiaWF0IjoxNzg4OTM1MDA2fQ.PVtFSytgbdeoVO_86oOpYZPMmNbYOYEV9MCaUSVVGos"
+            }
+          ]
+        },
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
             {
-              "name": "action",
-              "value": "update"
+              "name": "imageUrls",
+              "value": "={{ $json.imageUrls }}"
             },
+            {
+              "name": "naskah",
+              "value": "={{ $('Generate Naskah Slides').item.json.naskah }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -1856,
+        -1408
+      ],
+      "id": "397d16fe-66c2-4f29-9f6f-9a8a85031e8e",
+      "name": "Save - Post - Supabase"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://saham-fyp.vercel.app/api/generate",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmMzAyMDViMi1hMzY1LTQyZDUtODE0ZS0yYzRiYjJkNDQyYmIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiNDdmMGMwYjktMTQ1MC00NjcwLTk3ZjktZjA1ZDU2Y2EzM2ViIiwiaWF0IjoxNzg4OTM1MDA2fQ.PVtFSytgbdeoVO_86oOpYZPMmNbYOYEV9MCaUSVVGos"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
             {
               "name": "url",
               "value": "={{ $('Scrape').item.json.url }}"
             },
             {
-              "name": "score",
-              "value": "={{ $json.score }}"
+              "name": "ticker",
+              "value": "={{ $('Classify').item.json.ticker }}"
             },
             {
-              "name": "decision",
-              "value": "={{ $json.decision }}"
+              "name": "skipClassify",
+              "value": "=true"
+            },
+            {
+              "name": "category",
+              "value": "={{ $('Classify').item.json.category }}"
             },
             {
               "name": "reason",
-              "value": "={{ $json.reason }}"
+              "value": "={{ $('Classify').item.json.reason }}"
             }
           ]
         },
@@ -619,179 +718,64 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        -1056,
-        176
+        -2752,
+        -1248
       ],
-      "id": "32287d3f-a449-4366-8352-9d6786c2a755",
-      "name": "Update Score - DB"
+      "id": "986ce95e-b103-4110-b19b-0164bb953915",
+      "name": "Generate Naskah Slides"
     },
     {
       "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "mode": "everyMinute"
-            }
-          ]
-        },
-        "feedUrl": "https://katadata.co.id/rss"
+        "mode": "runOnceForEachItem",
+        "jsCode": "// ============================================================\n// n8n Code Node — Generate Slide HTML (Berdasarkan generate.ts)\n// Mode: Run Once for Each Item\n// Input: Setiap item adalah 1 objek slide + data global (badgeText, handle, dll)\n// Output: { html: string, index: number }\n// ============================================================\n\nconst s = $json;\n\n// ── Global Meta ─────────────────────────────────────────────\nconst slideIndex = s.slideIndex !== undefined ? s.slideIndex : $itemIndex;\nconst totalCount = s.totalSlides || 8;\n\n// Mengambil Ticker/Badge dari node 'Generate' secara dinamis\nlet badgeText = 'SAHAMFYP';\ntry { badgeText = $('Generate Naskah Slides').first().json.classification.ticker || $('Generate Naskah Slides').first().json.naskah.badgeText; } catch(e) {}\nif (s.badgeText) badgeText = s.badgeText;\n\nconst handle     = s.handle || '@sahamfyp';\nconst template   = String(s.template || '').toLowerCase().trim();\n\n// Palette sesuai Templates.tsx\nconst PALETTE = {\n  navy: \"#14182B\",\n  amber: \"#F2A93B\",\n  sage: \"#4CAF7D\",\n  brick: \"#E4572E\",\n  cream: \"#F5F1E7\",\n  card: \"#EDE6D8\",\n};\n\n// ── Helpers ─────────────────────────────────────────────────\n// Render Markdown Bold (**teks**) jadi <strong>\nfunction renderBold(text) {\n  if (!text) return '';\n  return text.replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>');\n}\n\n// Skala ukuran font berdasarkan panjang teks (mencegah overflow)\nfunction getFontSize(text, max, min, threshold = 28) {\n  const len = (text || \"\").trim().length;\n  if (!len) return max;\n  if (len <= threshold) return max;\n  const ratio = Math.min((len - threshold) / threshold, 1);\n  return Math.max(Math.round(max - (max - min) * ratio), min);\n}\n\n// ── CSS Base Styles ─────────────────────────────────────────\nfunction buildBaseStyles() {\n  return `<style>\n    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800;900&family=Inter:wght@400;500;600&display=swap');\n    \n    * { box-sizing: border-box; margin: 0; padding: 0; }\n    strong { font-weight: 800; }\n    \n    body {\n      width: 1080px; height: 1350px;\n      background: #F8F6F0;\n      font-family: 'Inter', sans-serif;\n      color: ${PALETTE.navy};\n      overflow: hidden;\n      display: flex;\n      justify-content: center;\n      align-items: center;\n    }\n    \n    .shell {\n      background-color: ${PALETTE.cream};\n      color: ${PALETTE.navy};\n      width: 1080px; \n      height: 1350px;\n      display: flex; \n      flex-direction: column; \n      position: relative;\n      padding: 60px 80px;\n    }\n    \n    /* Header */\n    .header {\n      display: flex; justify-content: space-between; align-items: center;\n      flex-shrink: 0;\n    }\n    .handle { font-weight: 600; font-size: 28px; display: flex; align-items: center; gap: 12px;}\n    .badge {\n      background-color: ${PALETTE.navy};\n      color: #FFFFFF;\n      padding: 10px 32px;\n      border-radius: 40px;\n      font-weight: 800;\n      font-size: 24px;\n      letter-spacing: 1px;\n    }\n    \n    /* Footer Pagination */\n    .footer {\n      display: flex; justify-content: space-between; align-items: center;\n      flex-shrink: 0; padding-top: 30px;\n    }\n    .dots { display: flex; gap: 12px; align-items: center; }\n    .dot { border-radius: 50%; display: inline-block; }\n    .dot.active { background-color: ${PALETTE.amber}; width: 24px; height: 24px; }\n    .dot.inactive { border: 3px solid ${PALETTE.navy}; opacity: 0.45; width: 18px; height: 18px; }\n    .swipe-text { display: flex; items-center; gap: 8px; font-weight: 600; font-size: 24px; }\n    \n    /* Content Layout */\n    .content {\n      flex: 1; display: flex; flex-direction: column;\n      padding-top: 60px;\n    }\n    \n    .title { font-family: 'Outfit', sans-serif; font-weight: 800; line-height: 1.1; letter-spacing: -1px; }\n    .desc { font-weight: 500; opacity: 0.85; line-height: 1.5; margin-top: 16px; }\n    .source { font-size: 20px; font-style: italic; opacity: 0.6; margin-top: auto; }\n    \n    /* TLDR & Lists */\n    .card-list { display: flex; flex-direction: column; gap: 24px; margin-top: 40px; }\n    .tldr-card {\n      background-color: ${PALETTE.card};\n      border-radius: 28px;\n      padding: 28px 36px;\n      display: flex; align-items: center; gap: 24px;\n    }\n    .tldr-num {\n      background-color: ${PALETTE.amber}; color: ${PALETTE.cream};\n      min-width: 64px; height: 64px; border-radius: 20px;\n      display: flex; align-items: center; justify-content: center;\n      font-weight: 800; font-size: 28px;\n    }\n    \n    /* Metrics */\n    .metrics-grid { display: flex; flex-direction: column; gap: 24px; margin-top: 40px; }\n    .metric-card {\n      background-color: ${PALETTE.card};\n      border-radius: 28px; border-left: 12px solid ${PALETTE.amber};\n      padding: 28px 36px;\n    }\n    .metric-header { display: flex; justify-content: space-between; align-items: center; opacity: 0.7; font-weight: 600; font-size: 22px; text-transform: uppercase; letter-spacing: 1px; }\n    .metric-val { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 64px; margin-top: 8px; margin-bottom: 8px; }\n    .metric-cap { font-weight: 500; font-size: 26px; line-height: 1.4; opacity: 0.9;}\n    \n    /* Pros/Cons */\n    .bullet-card {\n      background-color: ${PALETTE.card};\n      border-radius: 28px; padding: 24px 32px;\n      display: flex; align-items: flex-start; gap: 24px;\n    }\n    .bullet-icon {\n      width: 56px; height: 56px; border-radius: 50%;\n      display: flex; align-items: center; justify-content: center;\n      flex-shrink: 0; color: #FFF; margin-top: 4px;\n    }\n  </style>`;\n}\n\n// Render footer / pagination\nfunction renderPagination() {\n  const isLast = slideIndex >= (totalCount - 1);\n  return `\n    <div class=\"footer\">\n      <div class=\"dots\">\n        <!-- Progress bar / dots dihapus sesuai permintaan -->\n      </div>\n      <div class=\"swipe-text\">\n        ${isLast ? '<i data-lucide=\"rotate-ccw\" width=\"32\" height=\"32\"></i>' : '<span>Geser</span> <i data-lucide=\"arrow-right\" width=\"32\" height=\"32\"></i>'}\n      </div>\n    </div>\n  `;\n}\n\n// Header\nfunction renderHeader() {\n  return `\n    <div class=\"header\">\n      <span class=\"handle\">${handle}</span>\n      <span class=\"badge\">${badgeText}</span>\n    </div>\n  `;\n}\n\n// ── Template Builder ─────────────────────────────────────────\nlet bodyContent = '';\n\nswitch (template) {\n  case 'cover': {\n    const tSize = getFontSize(s.title, 86, 60, 40);\n    const dSize = getFontSize(s.description, 40, 32, 50);\n    bodyContent = `\n      <div class=\"content\" style=\"text-align: left;\">\n        <h2 class=\"title\" style=\"font-size: ${tSize}px;\">${renderBold(s.title)}</h2>\n        ${s.description ? `<p class=\"desc\" style=\"font-size: ${dSize}px;\">${renderBold(s.description)}</p>` : ''}\n        \n        <div style=\"flex:1; margin-top:40px; border-radius:32px; overflow:hidden; position:relative; background-color:${PALETTE.card}; display:flex; align-items:center; justify-content:center;\">\n          ${s.illustrationUrl \n            ? `<img src=\"${s.illustrationUrl}\" style=\"width:100%; height:100%; object-fit:cover;\">` \n            : `<i data-lucide=\"${s.visualIcon || 'trending-up'}\" width=\"200\" height=\"200\" color=\"${PALETTE.amber}\"></i>`\n          }\n        </div>\n      </div>`;\n    break;\n  }\n\n  case 'tldr': {\n    const tSize = getFontSize(s.title, 76, 60);\n    const cardsHtml = (s.tldrCards || []).map((card, idx) => {\n      const cSize = getFontSize(card.text, 36, 28, 50);\n      return `\n        <div class=\"tldr-card\">\n          <div class=\"tldr-num\">${idx + 1}</div>\n          <p style=\"font-size: ${cSize}px; font-weight: 500;\">${renderBold(card.text)}</p>\n        </div>`;\n    }).join('');\n    \n    bodyContent = `\n      <div class=\"content\" style=\"text-align: center;\">\n        <h2 class=\"title\" style=\"font-size: ${tSize}px;\">${renderBold(s.title)}</h2>\n        <div class=\"card-list\" style=\"text-align: left;\">${cardsHtml}</div>\n      </div>`;\n    break;\n  }\n\n  case 'kronologi': {\n    const tSize = getFontSize(s.title, 76, 50);\n    const dSize = getFontSize(s.description, 36, 28, 50);\n    bodyContent = `\n      <div class=\"content\" style=\"text-align: center; align-items: center;\">\n        <h2 class=\"title\" style=\"font-size: ${tSize}px; margin-bottom: 30px;\">${renderBold(s.title)}</h2>\n        \n        <div style=\"flex:1; width:100%; max-height:450px; border-radius:32px; overflow:hidden; background-color:${PALETTE.card}; display:flex; align-items:center; justify-content:center;\">\n          ${s.illustrationUrl \n            ? `<img src=\"${s.illustrationUrl}\" style=\"width:100%; height:100%; object-fit:cover;\">` \n            : `<span style=\"font-size:32px; color:#94A3B8;\">Foto Kronologi</span>`\n          }\n        </div>\n        \n        <p class=\"desc\" style=\"font-size: ${dSize}px; margin-top: 30px; max-width: 900px;\">${renderBold(s.description)}</p>\n        ${s.source ? `<div class=\"source\" style=\"margin-top:40px;\">Sumber: ${s.source}</div>` : ''}\n      </div>`;\n    break;\n  }\n\n  case 'data': {\n    const tSize = getFontSize(s.title, 76, 60);\n    const metricsHtml = (s.metrics || []).slice(0, 4).map(m => {\n      const toneColor = m.tone === 'sage' ? PALETTE.sage : PALETTE.amber;\n      return `\n        <div class=\"metric-card\" style=\"border-color: ${toneColor};\">\n          <div class=\"metric-header\" style=\"color: ${toneColor};\">\n            <span>${m.label}</span>\n            <i data-lucide=\"${m.icon || 'bar-chart-3'}\" width=\"36\" height=\"36\"></i>\n          </div>\n          <div class=\"metric-val\" style=\"color: ${toneColor};\">${m.value}</div>\n          <div class=\"metric-cap\">${renderBold(m.caption)}</div>\n        </div>`;\n    }).join('');\n\n    bodyContent = `\n      <div class=\"content\" style=\"text-align: center;\">\n        <h2 class=\"title\" style=\"font-size: ${tSize}px;\">${renderBold(s.title)}</h2>\n        <div class=\"metrics-grid\" style=\"text-align: left;\">${metricsHtml}</div>\n      </div>`;\n    break;\n  }\n\n  case 'pros':\n  case 'cons': {\n    const tSize = getFontSize(s.title, 76, 60);\n    const isPros = template === 'pros';\n    const bgColor = isPros ? PALETTE.sage : PALETTE.brick;\n    const mainIcon = isPros ? 'check-circle-2' : 'x-circle';\n    \n    const bulletsHtml = (s.bullets || []).map(b => {\n      const cSize = getFontSize(b.text, 36, 28, 50);\n      return `\n        <div class=\"bullet-card\">\n          <div class=\"bullet-icon\" style=\"background-color: ${bgColor};\">\n            <i data-lucide=\"${mainIcon}\" width=\"32\" height=\"32\"></i>\n          </div>\n          <p style=\"font-size: ${cSize}px; font-weight: 500;\">${renderBold(b.text)}</p>\n        </div>`;\n    }).join('');\n\n    bodyContent = `\n      <div class=\"content\" style=\"text-align: center;\">\n        <h2 class=\"title\" style=\"font-size: ${tSize}px;\">${renderBold(s.title)}</h2>\n        <div style=\"margin: 30px auto; width: 120px; height: 120px; background-color: ${bgColor}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;\">\n          <i data-lucide=\"${mainIcon}\" width=\"64\" height=\"64\"></i>\n        </div>\n        <div class=\"card-list\" style=\"text-align: left; margin-top:20px;\">${bulletsHtml}</div>\n      </div>`;\n    break;\n  }\n\n  case 'standar': {\n    const tSize = getFontSize(s.title, 86, 60);\n    const dSize = getFontSize(s.description, 42, 32, 60);\n    bodyContent = `\n      <div class=\"content\" style=\"text-align: center; align-items: center;\">\n        <h2 class=\"title\" style=\"font-size: ${tSize}px;\">${renderBold(s.title)}</h2>\n        \n        <div style=\"margin: 60px 0;\">\n          <i data-lucide=\"${s.visualIcon || 'info'}\" width=\"240\" height=\"240\" color=\"${PALETTE.amber}\"></i>\n        </div>\n        \n        <p class=\"desc\" style=\"font-size: ${dSize}px; max-width: 900px;\">${renderBold(s.description)}</p>\n      </div>`;\n    break;\n  }\n\n  case 'cta': {\n    const tSize = getFontSize(s.title, 86, 60);\n    const dSize = getFontSize(s.description, 46, 36, 50);\n    bodyContent = `\n      <div class=\"content\" style=\"text-align: center; align-items: center; justify-content: center;\">\n        <h2 class=\"title\" style=\"font-size: ${tSize}px;\">${renderBold(s.title)}</h2>\n        \n        <div style=\"margin: 60px 0;\">\n          <i data-lucide=\"${s.visualIcon || 'message-circle'}\" width=\"280\" height=\"280\" color=\"${PALETTE.amber}\"></i>\n        </div>\n        \n        <p class=\"desc\" style=\"font-size: ${dSize}px; max-width: 900px;\">${renderBold(s.description)}</p>\n        \n        ${s.disclaimer ? `\n          <div style=\"margin-top: 60px; background-color: ${PALETTE.amber}; padding: 16px 48px; border-radius: 50px; font-weight: 800; font-size: 24px; color: ${PALETTE.navy};\">\n            ${s.disclaimer}\n          </div>\n        ` : ''}\n      </div>`;\n    break;\n  }\n\n  default: {\n    bodyContent = `\n      <div class=\"content\">\n        <h2 class=\"title\">${s.title || ''}</h2>\n        <p class=\"desc\">${s.description || ''}</p>\n      </div>`;\n  }\n}\n\n// ── HTML Wrapper ─────────────────────────────────────────────\nconst html = `<!DOCTYPE html>\n<html lang=\"id\">\n<head>\n  <meta charset=\"utf-8\">\n  <script src=\"https://unpkg.com/lucide@latest\"></script>\n  ${buildBaseStyles()}\n</head>\n<body>\n  <div class=\"shell\">\n    ${renderHeader()}\n    ${bodyContent}\n    ${renderPagination()}\n  </div>\n  \n  <script>\n    // Initialize Lucide icons\n    lucide.createIcons();\n  </script>\n</body>\n</html>`;\n\nreturn { html, index: slideIndex, name: `slide_${slideIndex + 1}.jpg` };\n"
       },
-      "type": "n8n-nodes-base.rssFeedReadTrigger",
-      "typeVersion": 1,
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
-        -2848,
-        848
+        -2080,
+        -1216
       ],
-      "id": "f4e374dc-8ccf-4d6b-ab18-09aa26502f5d",
-      "name": "Katadata",
-      "disabled": true
+      "id": "c99a20dd-c0d2-45e8-a840-7cd1aed39a61",
+      "name": "Slides HTML to Image"
     },
     {
       "parameters": {
-        "pollTimes": {
-          "item": [
+        "method": "POST",
+        "url": "=https://xgqsrttpdxiiqknuulwl.supabase.co/storage/v1/object/sfyp-storage/slide-{{$execution.id}}-{{$runIndex}}.jpg",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
             {
-              "mode": "everyMinute"
+              "name": "Content-Type",
+              "value": "image/jpeg"
+            },
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhncXNydHRwZHhpaXFrbnV1bHdsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODg0NzQzNSwiZXhwIjoyMTA0NDIzNDM1fQ.9ph-hVC34GmTDucS6PzwVri66YgOZGBknWtgxx9mbp8"
             }
           ]
         },
-        "feedUrl": "https://keuangan.kontan.co.id/rss"
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "=data",
+        "options": {}
       },
-      "type": "n8n-nodes-base.rssFeedReadTrigger",
-      "typeVersion": 1,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
       "position": [
-        -2848,
-        656
+        -1632,
+        -1152
       ],
-      "id": "a93b3bf6-d7de-4db3-9d2e-2abd7eb75db2",
-      "name": "Kontan",
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "mode": "everyMinute"
-            }
-          ]
-        },
-        "feedUrl": "https://sindikasi.okezone.com/index.php/rss/11/RSS2.0"
-      },
-      "type": "n8n-nodes-base.rssFeedReadTrigger",
-      "typeVersion": 1,
-      "position": [
-        -2848,
-        464
-      ],
-      "id": "8bc58db2-c195-4ba5-9052-91a926371142",
-      "name": "OKEZONE",
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "mode": "everyMinute"
-            }
-          ]
-        },
-        "feedUrl": "https://feed.liputan6.com/rss/saham"
-      },
-      "type": "n8n-nodes-base.rssFeedReadTrigger",
-      "typeVersion": 1,
-      "position": [
-        -2848,
-        272
-      ],
-      "id": "b5a0c125-5d2d-4053-89a5-f20882815828",
-      "name": "Liputan6",
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "mode": "everyMinute"
-            }
-          ]
-        },
-        "feedUrl": "https://finance.detik.com/rss"
-      },
-      "type": "n8n-nodes-base.rssFeedReadTrigger",
-      "typeVersion": 1,
-      "position": [
-        -2848,
-        80
-      ],
-      "id": "571e83d0-9b1b-4db8-aa5d-c077e62c22d5",
-      "name": "Detik",
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "mode": "everyMinute"
-            }
-          ]
-        },
-        "feedUrl": "https://www.cnnindonesia.com/ekonomi/rss"
-      },
-      "type": "n8n-nodes-base.rssFeedReadTrigger",
-      "typeVersion": 1,
-      "position": [
-        -2848,
-        -112
-      ],
-      "id": "2fa7cdd2-68a2-4fd9-843b-5c4214d428fe",
-      "name": "CNN",
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "mode": "everyMinute"
-            }
-          ]
-        },
-        "feedUrl": "https://www.cnbcindonesia.com/market/rss"
-      },
-      "type": "n8n-nodes-base.rssFeedReadTrigger",
-      "typeVersion": 1,
-      "position": [
-        -2848,
-        -496
-      ],
-      "id": "55cff7da-14e0-4e6f-bdc1-4c930878426e",
-      "name": "CNBC",
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "mode": "everyMinute"
-            }
-          ]
-        },
-        "feedUrl": "https://www.idxchannel.com/rss"
-      },
-      "type": "n8n-nodes-base.rssFeedReadTrigger",
-      "typeVersion": 1,
-      "position": [
-        -2848,
-        -304
-      ],
-      "id": "39d5e545-4d5d-4074-8a04-eccb197f3b8e",
-      "name": "IDX Channel",
-      "disabled": true
+      "id": "3ef4e239-e053-431a-be8f-7cf26cd4976d",
+      "name": "Save Image - Bucket Supabase",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "fvjDamOUe1YBbbBo",
+          "name": "Bearer Auth account"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -841,112 +825,6 @@
         []
       ]
     },
-    "Split Out": {
-      "main": [
-        [
-          {
-            "node": "Loop Over Items1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Loop Over Items1": {
-      "main": [
-        [
-          {
-            "node": "Collect All URLs1",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Code in JavaScript",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Code in JavaScript": {
-      "main": [
-        [
-          {
-            "node": "Browserless.io1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Browserless.io1": {
-      "main": [
-        [
-          {
-            "node": "Cloudinary1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Cloudinary1": {
-      "main": [
-        [
-          {
-            "node": "Loop Over Items1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Publish - Repliz1": {
-      "main": [
-        [
-          {
-            "node": "Chat Generator - Reports1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Chat Generator - Reports1": {
-      "main": [
-        [
-          {
-            "node": "Broadcast - Reports1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Collect All URLs1": {
-      "main": [
-        [
-          {
-            "node": "Update Post",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Update Post": {
-      "main": [
-        [
-          {
-            "node": "Publish - Repliz1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "IF Exists?": {
       "main": [
         [],
@@ -963,7 +841,7 @@
       "main": [
         [
           {
-            "node": "Save Scraped - DB",
+            "node": "Classify",
             "type": "main",
             "index": 0
           }
@@ -974,7 +852,7 @@
       "main": [
         [
           {
-            "node": "Update Category - DB",
+            "node": "Score",
             "type": "main",
             "index": 0
           }
@@ -985,7 +863,7 @@
       "main": [
         [
           {
-            "node": "Update Score - DB",
+            "node": "4. Decision?",
             "type": "main",
             "index": 0
           }
@@ -994,47 +872,9 @@
     },
     "BROADCAST - GENERATE": {
       "main": [
-        []
-      ]
-    },
-    "Check Exists?": {
-      "main": [
         [
           {
-            "node": "IF Exists?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Save Scraped - DB": {
-      "main": [
-        [
-          {
-            "node": "Classify",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Update Category - DB": {
-      "main": [
-        [
-          {
-            "node": "Score",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Update Score - DB": {
-      "main": [
-        [
-          {
-            "node": "4. Decision?",
+            "node": "Save - News - Supabase",
             "type": "main",
             "index": 0
           }
@@ -1128,9 +968,148 @@
           }
         ]
       ]
+    },
+    "Check Exists?": {
+      "main": [
+        [
+          {
+            "node": "IF Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Collect All URLs",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slides HTML to Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Browserless.io": {
+      "main": [
+        [
+          {
+            "node": "Save Image - Bucket Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect All URLs": {
+      "main": [
+        [
+          {
+            "node": "Save - Post - Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish - Repliz": {
+      "main": [
+        [
+          {
+            "node": "Chat Generator - Reports",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Generator - Reports": {
+      "main": [
+        [
+          {
+            "node": "Broadcast - Reports",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out - Slide by slide": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save - News - Supabase": {
+      "main": [
+        [
+          {
+            "node": "Generate Naskah Slides",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save - Post - Supabase": {
+      "main": [
+        [
+          {
+            "node": "Publish - Repliz",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Naskah Slides": {
+      "main": [
+        [
+          {
+            "node": "Split Out - Slide by slide",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slides HTML to Image": {
+      "main": [
+        [
+          {
+            "node": "Browserless.io",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Image - Bucket Supabase": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
@@ -1139,7 +1118,7 @@
     "availableInMCP": false,
     "timeSavedPerExecution": 5
   },
-  "versionId": "8d9d20cf-181e-4863-82f1-db7b905b5c89",
+  "versionId": "8493ac78-d698-4d22-9237-76451f0b9523",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "dc96f10ae7dc95d3c138575ba243a0a167923dbcb524841d451aadf9135d5fb3"

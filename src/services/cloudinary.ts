@@ -61,39 +61,3 @@ export async function uploadMultipleImages(
   return results;
 }
 
-// Delete image from Cloudinary (requires API key, not recommended for client-side)
-export async function deleteFromCloudinary(publicId: string): Promise<void> {
-  console.warn('Delete operation requires API key. Not recommended for client-side.');
-  // Implementation would require server-side proxy
-}
-
-// Upload generated carousel images to Cloudinary and save to Supabase
-export async function uploadCarouselToCloudinary(
-  images: Array<{ dataUrl: string; slideIndex: number; templateType: string }>,
-  postId: string,
-  onProgress?: (current: number, total: number) => void
-): Promise<Array<{ public_id: string; secure_url: string; slide_number: number }>> {
-  const results = [];
-  
-  for (let i = 0; i < images.length; i++) {
-    const img = images[i];
-    onProgress?.(i + 1, images.length);
-    
-    const fileName = `${postId}-slide-${img.slideIndex + 1}`;
-    const result = await uploadToCloudinary(img.dataUrl, fileName, 'sahamfyp/carousel');
-    
-    results.push({
-      public_id: result.public_id,
-      secure_url: result.secure_url,
-      slide_number: img.slideIndex + 1,
-    });
-  }
-  
-  return results;
-}
-
-// Get Cloudinary URL with transformations
-export function getCloudinaryUrl(publicId: string, options: { width?: number; height?: number; quality?: number } = {}): string {
-  const { width = 400, height = 500, quality = 80 } = options;
-  return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_${width},h_${height},q_${quality}/${publicId}`;
-}

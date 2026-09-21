@@ -285,6 +285,109 @@ export const automationPostsApi = {
 };
 
 // ============================================================
+// Repliz Live Link & Schedule Synchronization Helper
+// ============================================================
+export interface ReplizSyncResult {
+  success: boolean;
+  scheduleStatus?: string;
+  scheduleId?: string;
+  contentPostId?: string;
+  accountId?: string;
+  liveUrl?: string | null;
+  medias?: Array<{ url: string; thumbnail?: string; type?: string }>;
+  message?: string;
+  schedule?: any;
+  content?: any;
+}
+
+export async function syncReplizLiveLink(params: {
+  scheduleId: string;
+  recordId?: string;
+  type: 'automation' | 'manual';
+  accountId?: string;
+}): Promise<ReplizSyncResult> {
+  const isServer = typeof window === 'undefined';
+  const endpoint = isServer
+    ? 'http://localhost:3000/api/posts'
+    : '/api/posts';
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': import.meta.env.VITE_N8N_API_KEY || '',
+    },
+    body: JSON.stringify({
+      action: 'sync-repliz',
+      ...params,
+    }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
+    throw new Error(err.message || err.error || `HTTP ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function getReplizScheduleDetails(scheduleId: string): Promise<ReplizSyncResult> {
+  const isServer = typeof window === 'undefined';
+  const endpoint = isServer
+    ? 'http://localhost:3000/api/posts'
+    : '/api/posts';
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': import.meta.env.VITE_N8N_API_KEY || '',
+    },
+    body: JSON.stringify({
+      action: 'get-repliz-details',
+      scheduleId,
+    }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
+    throw new Error(err.message || err.error || `HTTP ${response.status}`);
+  }
+
+  return response.json();
+}
+
+// Sector Trigger News API helper for finding catalyst/article details
+export const sectorTriggerNewsApi = {
+  async getRecent(limit = 20) {
+    const { data, error } = await supabase
+      .from('sector_trigger_news')
+      .select('*')
+      .order('published_at', { ascending: false })
+      .limit(limit);
+    if (error) {
+      console.warn('[sectorTriggerNewsApi] getRecent error:', error);
+      return [];
+    }
+    return data || [];
+  },
+
+  async findByKeyword(keyword: string) {
+    if (!keyword) return [];
+    const { data, error } = await supabase
+      .from('sector_trigger_news')
+      .select('*')
+      .ilike('title', `%${keyword}%`)
+      .limit(5);
+    if (error) {
+      console.warn('[sectorTriggerNewsApi] findByKeyword error:', error);
+      return [];
+    }
+    return data || [];
+  },
+};
+
+// ============================================================
 // News Scrape — Untuk tracking berita yang sudah di-scrape
 // ============================================================
 
