@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   TrendingUp,
   ShieldAlert,
@@ -21,6 +21,10 @@ import {
   AtSign,
   Cpu,
   Sparkles,
+  Smartphone,
+  ChevronLeft,
+  ChevronRight,
+  Check,
 } from 'lucide-react';
 
 interface LandingPageProps {
@@ -30,12 +34,106 @@ interface LandingPageProps {
   onBackToOverview?: () => void;
 }
 
+interface CaseStudy {
+  id: string;
+  ticker: string;
+  name: string;
+  category: 'green' | 'red' | 'catalyst';
+  badge: string;
+  badgeBg: string;
+  title: string;
+  summary: string;
+  slidesPrefix: string;
+  totalSlides: number;
+  slideLabels: { title: string; desc: string }[];
+}
+
+const CASE_STUDIES: CaseStudy[] = [
+  {
+    id: 'bbca',
+    ticker: 'BBCA',
+    name: 'PT Bank Central Asia Tbk',
+    category: 'green',
+    badge: 'Fundamental Solid • Green Light',
+    badgeBg: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+    title: 'Laba Tembus Rp 29,5T — Primadona Portofolio?',
+    summary:
+      'Laporan keuangan Semester I-2026 diverifikasi langsung ke Sectors API. ROE konsisten di atas 20% dengan NPL sehat, memvalidasi katalis laba secara objektif.',
+    slidesPrefix:
+      'https://xgqsrttpdxiiqknuulwl.supabase.co/storage/v1/object/public/sfyp-storage/slide-3938-',
+    totalSlides: 8,
+    slideLabels: [
+      { title: 'Hook Gen Z', desc: 'Membuka atensi dengan pertanyaan kritis laba Rp 29,5T' },
+      { title: 'What: Peristiwa Nyata', desc: 'Rincian pertumbuhan laba bersih Semester I' },
+      { title: 'Why: Pendorong Kinerja', desc: 'Ekspansi kredit dan pendapatan bunga bersih' },
+      { title: 'Sectors API Grounding', desc: 'Metrik resmi: PER vs Sektor, PBV, dan ROE' },
+      { title: 'Asset Quality Check', desc: 'Verifikasi NPL rendah dan pencadangan modal' },
+      { title: 'Market Sentiment', desc: 'Arus dana asing (foreign flow) & akumulasi broker' },
+      { title: 'Kalkulasi Kewajaran', desc: 'Analisis premi valuasi vs risiko perlambatan' },
+      { title: 'Takeaway & DYOR', desc: 'Kesimpulan objektif tanpa janji cuan instan' },
+    ],
+  },
+  {
+    id: 'smra',
+    ticker: 'SMRA',
+    name: 'PT Summarecon Agung Tbk',
+    category: 'red',
+    badge: 'Anti-FOMO Guard • Red Flag',
+    badgeBg: 'bg-red-500/15 text-red-300 border-red-500/30',
+    title: 'Geger Penggeledahan KPK — Ambil atau Hindari?',
+    summary:
+      'Sistem mendeteksi sentimen hukum berisiko tinggi. Data Sectors API mengungkap leverage utang (DER) dan arus kas, mengaktifkan peringatan Anti-FOMO Red Flag.',
+    slidesPrefix:
+      'https://xgqsrttpdxiiqknuulwl.supabase.co/storage/v1/object/public/sfyp-storage/slide-3972-',
+    totalSlides: 8,
+    slideLabels: [
+      { title: 'Hook Peristiwa Geger', desc: 'Isu hukum viral di medsos yang memicu kepanikan' },
+      { title: 'Kronologi Kasus Nyata', desc: 'Fakta keterbukaan informasi kasus suap HGB' },
+      { title: 'Dampak Sektor Properti', desc: 'Sentimen ke proyek berjalan dan kepercayaan pasar' },
+      { title: 'Sectors API Debt Check', desc: 'Verifikasi Debt-to-Equity (DER) & beban bunga' },
+      { title: 'Anti-FOMO Warning', desc: 'Peringatan keras agar tidak menangkap pisau jatuh' },
+      { title: 'Sinyal Moving Average', desc: 'Indikator teknikal MA harian & level support' },
+      { title: 'Strategi Proteksi Modal', desc: 'Panduan evaluasi risiko bagi investor pemula' },
+      { title: 'Edukasi Kepatuhan', desc: 'Prinsip money management & disclaimer resmi' },
+    ],
+  },
+  {
+    id: 'ammn',
+    ticker: 'AMMN',
+    name: 'PT Amman Mineral Internasional Tbk',
+    category: 'catalyst',
+    badge: 'Katalis Turnaround • Special Event',
+    badgeBg: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
+    title: 'Dari Rugi Jadi Laba Rp 8,6T — Efisiensi Gahar',
+    summary:
+      'Lonjakan laba spektakuler berkat operasional smelter tembaga. Sectors API membedah apakah lonjakan ini berkelanjutan atau sudah terdiskon di harga saat ini.',
+    slidesPrefix:
+      'https://xgqsrttpdxiiqknuulwl.supabase.co/storage/v1/object/public/sfyp-storage/slide-3994-',
+    totalSlides: 8,
+    slideLabels: [
+      { title: 'Hook Pembalikan Arah', desc: 'Dulu rugi, sekarang mencetak laba Rp 8,6 Triliun' },
+      { title: 'Fakta Laporan Keuangan', desc: 'Angka konkret perbaikan margin operasional' },
+      { title: 'Progres Smelter Tembaga', desc: 'Katalis hilirisasi komoditas dan target ekspor' },
+      { title: 'Sectors API Financials', desc: 'Rasio profitabilitas dan perbandingan industri tambang' },
+      { title: 'Reality Check Valuasi', desc: 'Harga saham sudah reli tinggi: evaluasi risiko bubble' },
+      { title: 'Volatilitas Komoditas', desc: 'Dampak pergerakan harga tembaga & emas global' },
+      { title: 'Skenario Bullish vs Bearish', desc: 'Dua sudut pandang objektif untuk investor' },
+      { title: 'Checklist Sebelum Beli', desc: 'Pentingnya analisis risiko sebelum transaksi' },
+    ],
+  },
+];
+
 export default function LandingPage({
   onGoToLogin,
   onEnterDemo,
   inDashboard = false,
   onBackToOverview,
 }: LandingPageProps) {
+  const [activeCaseIndex, setActiveCaseIndex] = useState(0);
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+
+  const currentCase = CASE_STUDIES[activeCaseIndex];
+
   const handleLoginClick = () => {
     if (onGoToLogin) {
       onGoToLogin();
@@ -44,12 +142,20 @@ export default function LandingPage({
     }
   };
 
-  const scrollToSocialAccounts = (e: React.MouseEvent) => {
+  const scrollToSection = (e: React.MouseEvent, sectionId: string) => {
     e.preventDefault();
-    const el = document.getElementById('social-accounts');
+    const el = document.getElementById(sectionId);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  const handlePrevSlide = () => {
+    setActiveSlideIndex((prev) => (prev > 0 ? prev - 1 : currentCase.totalSlides - 1));
+  };
+
+  const handleNextSlide = () => {
+    setActiveSlideIndex((prev) => (prev < currentCase.totalSlides - 1 ? prev + 1 : 0));
   };
 
   return (
@@ -149,7 +255,7 @@ export default function LandingPage({
         </div>
       </header>
 
-      {/* ─── 1. Hero Section ─────────────────────────────────── */}
+      {/* ─── 1. Hero Section (Hook & Janji Produk) ───────────── */}
       <section className="relative overflow-hidden pt-14 pb-20 md:pt-24 md:pb-28 border-b border-[#251323]">
         {/* Ambient background glow */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[32rem] h-[32rem] bg-rose-500/12 rounded-full blur-3xl pointer-events-none" />
@@ -158,7 +264,7 @@ export default function LandingPage({
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#170c18] border border-[#33182f] text-rose-300 text-xs font-semibold mb-6 shadow-inner">
             <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-            <span>AI Market Brief & Anti-FOMO Watchlist</span>
+            <span>Autonomous Financial Media • Powered by Sectors REST API</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-tight leading-[1.15]">
@@ -172,15 +278,15 @@ export default function LandingPage({
             Mentransformasi riset sekuritas 25+ lembar dan laporan keuangan tebal menjadi visual watchlist harian berbasis <strong>Sectors REST API</strong>, lengkap dengan bedah katalis 3W dan sistem peringatan risiko (warning) objektif untuk <strong>54,4% investor Gen Z</strong> di Indonesia.
           </p>
 
-          {/* Call to Actions (Primary: Akun Publik, Secondary: Dashboard Operator) */}
+          {/* Call to Actions (Primary: Lihat Produk Carousel, Secondary: Dashboard Operator) */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
             <a
-              href="#social-accounts"
-              onClick={scrollToSocialAccounts}
+              href="#product-showcase"
+              onClick={(e) => scrollToSection(e, 'product-showcase')}
               className="px-6 py-3.5 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 hover:opacity-95 text-white font-extrabold rounded-xl text-sm sm:text-base transition shadow-xl shadow-rose-500/30 flex items-center gap-2 active:scale-95 group"
             >
-              <Sparkles className="w-4 h-4 text-amber-200" />
-              <span>Lihat Akun Publik Media Sosial</span>
+              <Smartphone className="w-4 h-4 text-amber-200" />
+              <span>📱 Lihat Produk Nyata (Interactive Carousel)</span>
               <span className="text-amber-200 group-hover:translate-y-0.5 transition-transform">↓</span>
             </a>
 
@@ -218,8 +324,422 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* ─── 2. Bukti Produk Nyata (Akun Media Sosial Otonom) ─── */}
-      <section id="social-accounts" className="py-16 md:py-24 border-b border-[#251323] scroll-mt-10 bg-[#0e0711]/40">
+      {/* ─── 2. Dilema Gen Z (Masalah Nyata) ──────────────────── */}
+      <section className="py-16 md:py-24 border-b border-[#251323]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <span className="text-xs font-bold uppercase tracking-wider text-rose-400">
+              Latar Belakang & Masalah
+            </span>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-white mt-2">
+              Dilema Gen Z: Beli Saham Modal FOMO vs Riset Sekuritas Kaku
+            </h2>
+            <p className="text-sm sm:text-base text-slate-400 mt-3">
+              Berdasarkan data KSEI, 54,4% investor pasar modal adalah generasi muda. Namun mereka terperangkap di antara dua kutub yang sama-sama merugikan:
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+            {/* Box 1: Pom-Pom Sosmed with Screenshot */}
+            <div className="bg-[#140b17]/90 border border-red-500/30 rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between group">
+              <div>
+                <div className="w-10 h-10 rounded-xl bg-red-500/10 text-red-400 flex items-center justify-center mb-4">
+                  <ShieldAlert className="w-5 h-5" />
+                </div>
+                <h3 className="text-lg font-bold text-red-400">1. Realita: Pom-Pom & FOMO Medsos</h3>
+                <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                  <strong>70% Gen Z</strong> menelan info investasi mentah-mentah dari konten TikTok, Reels, dan grup Telegram pom-pom yang menjanjikan cuan instan <em>"To The Moon"</em>.
+                </p>
+
+                {/* Screenshot Bukti FOMO Medsos */}
+                <div className="mt-4 rounded-xl overflow-hidden border border-red-900/40 bg-black/40 shadow-inner group-hover:border-red-500/50 transition">
+                  <img
+                    src="/slides/fomo-sosmed.png"
+                    alt="Bukti Fenomena Pom-Pom dan FOMO Medsos"
+                    className="w-full h-44 object-cover object-top transition-transform duration-300 group-hover:scale-105"
+                  />
+                </div>
+
+                <div className="mt-4 p-3 bg-red-950/40 rounded-xl border border-red-900/50 text-[11px] text-red-300">
+                  ⚠️ <strong>Dampak:</strong> Rata-rata hold saham hanya 1–3 bulan. Sering beli di pucuk harga dan berakhir jadi <em>exit liquidity</em> spekulan.
+                </div>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-[#291426] flex items-center gap-2 text-xs text-slate-500 font-mono">
+                <span>Status: Cepat tapi Boncos</span>
+              </div>
+            </div>
+
+            {/* Box 2: Riset Sekuritas Kaku with Screenshot */}
+            <div className="bg-[#140b17]/90 border border-[#31192e] rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between group">
+              <div>
+                <div className="w-10 h-10 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center mb-4">
+                  <Newspaper className="w-5 h-5" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-200">2. Dilema: Riset Sekuritas Kaku</h3>
+                <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                  Riset sekuritas dan keterbukaan informasi BEI sebetulnya akurat dan resmi. Namun disajikan dalam dokumen PDF 20–30+ lembar dengan tabel abu-abu dan istilah rumit.
+                </p>
+
+                {/* Screenshot Bukti Riset Sekuritas */}
+                <div className="mt-4 rounded-xl overflow-hidden border border-slate-800 bg-black/40 shadow-inner group-hover:border-slate-600 transition">
+                  <img
+                    src="/slides/risetsekuritas.png"
+                    alt="Bukti Dokumen Riset Sekuritas Kaku 25+ Halaman"
+                    className="w-full h-44 object-cover object-top transition-transform duration-300 group-hover:scale-105"
+                  />
+                </div>
+
+                <div className="mt-4 p-3 bg-slate-800/60 rounded-xl border border-slate-700 text-[11px] text-slate-300">
+                  ℹ️ <strong>Dampak:</strong> <strong>60%+ investor pemula</strong> tidak membaca riset fundamental karena pusing dan tidak ramah bagi generasi <em>mobile-first</em>.
+                </div>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-[#291426] flex items-center gap-2 text-xs text-slate-500 font-mono">
+                <span>Status: Akurat tapi Kaku</span>
+              </div>
+            </div>
+
+            {/* Box 3: Solusi Jembatan SahamFYP */}
+            <div className="bg-gradient-to-b from-rose-950/40 via-[#180d1b] to-[#120815] border border-rose-500/40 rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between shadow-lg shadow-rose-500/10">
+              <div>
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 to-orange-500 text-white flex items-center justify-center mb-4 shadow-md shadow-rose-500/20">
+                  <Zap className="w-5 h-5" />
+                </div>
+                <h3 className="text-lg font-bold text-rose-300">3. Solusi: Jembatan SahamFYP</h3>
+                <p className="text-xs text-slate-300 mt-2 leading-relaxed">
+                  Mengambil <strong>kedalaman data riset Sectors API</strong> dan memformatnya menjadi <strong>daya cerna visual media sosial</strong> dengan analogi sehari-hari tanpa mengorbankan akurasi.
+                </p>
+
+                {/* Solusi Preview Box */}
+                <div className="mt-4 p-4 rounded-xl bg-[#120814] border border-rose-500/30 text-xs space-y-2">
+                  <div className="flex items-center gap-2 text-emerald-400 font-bold">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Visual Watchlist 8 Slide</span>
+                  </div>
+                  <p className="text-[11px] text-slate-300">
+                    Format carousel 4:5 yang mudah di-swipe di Instagram, TikTok, Threads, dan Facebook.
+                  </p>
+                  <div className="flex items-center gap-2 text-rose-400 font-bold pt-1">
+                    <AlertTriangle className="w-4 h-4" />
+                    <span>Anti-FOMO Reality Check</span>
+                  </div>
+                  <p className="text-[11px] text-slate-300">
+                    Jika emiten viral tapi rugi atau utang menumpuk, sistem langsung menyalakan <strong>Red Flag Warning</strong>!
+                  </p>
+                </div>
+
+                <div className="mt-4 p-3 bg-rose-950/60 rounded-xl border border-rose-500/30 text-[11px] text-rose-200">
+                  ✨ <strong>Hasil:</strong> Edukasi data-driven yang menyenangkan, objektif, dan melindungi portofolio Gen Z.
+                </div>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-rose-500/20 flex items-center gap-2 text-xs text-rose-300 font-mono font-bold">
+                <span>Status: Valid, Edukatif, Siap Tayang</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── 3. Konsep & Arsitektur (Solusi Ringkas) ─────────── */}
+      <section className="py-16 md:py-24 border-b border-[#251323] bg-[#0e0711]/60">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-10">
+            <span className="text-xs font-bold uppercase tracking-wider text-rose-400">
+              Konsep & Arsitektur
+            </span>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-white mt-2">
+              Data + Otomasi + Kontrol = Konten Finansial Berkualitas
+            </h2>
+            <p className="text-sm sm:text-base text-slate-400 mt-3">
+              Diagram alur kerja otonom SahamFYP: menghubungkan LLM AI, Sectors.app REST API, dan n8n orchestrator langsung ke multi-kanal media sosial publik.
+            </p>
+          </div>
+
+          {/* Architecture Diagram Card */}
+          <div className="bg-[#140c17] border border-[#31172f] rounded-3xl p-4 sm:p-8 shadow-2xl overflow-hidden relative group">
+            <div className="absolute inset-0 bg-gradient-to-r from-rose-500/5 via-orange-500/5 to-amber-500/5 pointer-events-none" />
+
+            <div className="relative rounded-2xl overflow-hidden border border-[#3b1c38] shadow-xl bg-white">
+              <img
+                src="/slides/sahamfyp-concept.png"
+                alt="Konsep & Arsitektur Sistem SahamFYP"
+                className="w-full h-auto object-contain mx-auto transition-transform duration-300 hover:scale-[1.01]"
+              />
+            </div>
+
+            {/* 4 Pillars Summary */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+              <div className="bg-[#1a0e1e]/90 p-4 rounded-2xl border border-[#361a33]">
+                <div className="flex items-center gap-2 text-rose-400 font-bold text-xs">
+                  <Cpu className="w-4 h-4" />
+                  <span>1. AI & Reasoning</span>
+                </div>
+                <p className="text-xs text-slate-300 mt-1.5 leading-relaxed">
+                  Sumopod / Gemini LLM untuk riset berita, klasifikasi emiten, dan generator naskah edukatif.
+                </p>
+              </div>
+
+              <div className="bg-[#1a0e1e]/90 p-4 rounded-2xl border border-[#361a33]">
+                <div className="flex items-center gap-2 text-orange-400 font-bold text-xs">
+                  <Database className="w-4 h-4" />
+                  <span>2. Sectors.app API</span>
+                </div>
+                <p className="text-xs text-slate-300 mt-1.5 leading-relaxed">
+                  Pasokan data resmi sektor, valuasi fundamental (PER, PBV, ROE, DER), serta top changes pasar.
+                </p>
+              </div>
+
+              <div className="bg-[#1a0e1e]/90 p-4 rounded-2xl border border-[#361a33]">
+                <div className="flex items-center gap-2 text-amber-400 font-bold text-xs">
+                  <Workflow className="w-4 h-4" />
+                  <span>3. n8n Orchestration</span>
+                </div>
+                <p className="text-xs text-slate-300 mt-1.5 leading-relaxed">
+                  Automasi alur kerja harian tanpa operator: trigger sesi open/close, render gambar, dan logging.
+                </p>
+              </div>
+
+              <div className="bg-[#1a0e1e]/90 p-4 rounded-2xl border border-[#361a33]">
+                <div className="flex items-center gap-2 text-pink-400 font-bold text-xs">
+                  <Share2 className="w-4 h-4" />
+                  <span>4. Multi-Publishing</span>
+                </div>
+                <p className="text-xs text-slate-300 mt-1.5 leading-relaxed">
+                  Distribusi otomatis via Repliz API ke Instagram, TikTok, Threads, Facebook, dan Telegram.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── 4. INTERACTIVE CAROUSEL SHOWCASE (PRODUK UTAMA) ──── */}
+      <section
+        id="product-showcase"
+        className="py-16 md:py-24 border-b border-[#251323] bg-gradient-to-b from-[#120716] via-[#16091b] to-[#0d0610] scroll-mt-12"
+      >
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-semibold mb-3">
+              <Sparkles className="w-3.5 h-3.5 text-rose-400" />
+              <span>Showcase Produk Utama • Live Rendered Pipeline</span>
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-white">
+              Wujud Nyata Postingan yang Dihasilkan Sistem
+            </h2>
+            <p className="text-sm sm:text-base text-slate-300 mt-3 leading-relaxed">
+              Ini adalah aset visual asli beresolusi tinggi (rasio 4:5 / 1080×1350) yang di-generate oleh engine SahamFYP dan diterbitkan secara otonom ke akun media sosial. Klik slide untuk melihat anatomi data:
+            </p>
+
+            {/* Case Study Switcher Tabs */}
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+              {CASE_STUDIES.map((item, idx) => {
+                const isActive = activeCaseIndex === idx;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setActiveCaseIndex(idx);
+                      setActiveSlideIndex(0);
+                    }}
+                    className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 ${
+                      isActive
+                        ? 'bg-gradient-to-r from-rose-500 to-orange-500 text-white shadow-lg shadow-rose-500/25 scale-[1.02]'
+                        : 'bg-[#180b1b] hover:bg-[#25112a] text-slate-300 border border-[#331730]'
+                    }`}
+                  >
+                    <span>
+                      {item.category === 'green' && '🟢'}
+                      {item.category === 'red' && '🔴'}
+                      {item.category === 'catalyst' && '⚡'}
+                    </span>
+                    <span>${item.ticker}</span>
+                    <span className="opacity-80 text-[11px] hidden sm:inline">
+                      ({item.category === 'green' ? 'Fundamental Solid' : item.category === 'red' ? 'Red Flag Warning' : 'Turnaround'})
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Interactive Player Grid (Smartphone Mockup + Anatomy Breakdown) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mt-6">
+            {/* Left Column: Smartphone Mockup Frame */}
+            <div className="lg:col-span-6 flex justify-center">
+              <div className="w-full max-w-[340px] sm:max-w-[380px] bg-[#0c050e] border-[5px] border-[#361a34] rounded-[2.8rem] p-3 shadow-2xl shadow-rose-950/40 relative">
+                {/* Smartphone Dynamic Island Notch */}
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 w-28 h-4 bg-[#1e0d20] rounded-full z-20 flex items-center justify-center">
+                  <span className="w-2.5 h-2.5 rounded-full bg-slate-900 border border-slate-700 mr-2" />
+                  <span className="w-2 h-2 rounded-full bg-rose-500/50" />
+                </div>
+
+                {/* Phone Screen Container */}
+                <div className="bg-[#120815] rounded-[2.3rem] overflow-hidden pt-6 pb-3 border border-[#2b1328]">
+                  {/* Mockup Instagram Feed Header */}
+                  <div className="px-4 py-2 flex items-center justify-between border-b border-[#241122]">
+                    <div className="flex items-center gap-2">
+                      <img
+                        src="/logo-sahamfyp.png"
+                        alt="SahamFYP"
+                        className="w-7 h-7 rounded-full border border-rose-500/40"
+                      />
+                      <div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs font-bold text-white">sahamfyp.id</span>
+                          <span className="w-3 h-3 rounded-full bg-rose-500 text-[8px] flex items-center justify-center font-bold text-white">✓</span>
+                        </div>
+                        <p className="text-[9px] text-slate-400 -mt-0.5">Sectors API Verified</p>
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-rose-300 font-mono bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">
+                      {activeSlideIndex + 1}/{currentCase.totalSlides}
+                    </span>
+                  </div>
+
+                  {/* Main Slide Image Display */}
+                  <div className="relative aspect-[4/5] bg-black overflow-hidden group">
+                    <img
+                      src={`${currentCase.slidesPrefix}${activeSlideIndex}.jpg`}
+                      alt={`${currentCase.ticker} - Slide ${activeSlideIndex + 1}`}
+                      className="w-full h-full object-cover transition-opacity duration-200"
+                    />
+
+                    {/* Left/Right Floating Navigation Arrows */}
+                    <button
+                      onClick={handlePrevSlide}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-sm transition border border-white/20 active:scale-95"
+                      title="Slide Sebelumnya"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={handleNextSlide}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-sm transition border border-white/20 active:scale-95"
+                      title="Slide Selanjutnya"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+
+                    {/* Bottom Slide Indicator overlay */}
+                    <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10">
+                      {Array.from({ length: currentCase.totalSlides }).map((_, dotIdx) => (
+                        <button
+                          key={dotIdx}
+                          onClick={() => setActiveSlideIndex(dotIdx)}
+                          className={`h-1.5 rounded-full transition-all ${
+                            activeSlideIndex === dotIdx ? 'w-4 bg-rose-400' : 'w-1.5 bg-white/40'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Mockup Instagram Feed Caption footer */}
+                  <div className="px-4 pt-2.5 pb-1">
+                    <div className="flex items-center justify-between text-xs text-slate-300 mb-1.5">
+                      <div className="flex items-center gap-3">
+                        <span className="hover:text-rose-400 cursor-pointer">❤️ Suka</span>
+                        <span className="hover:text-rose-400 cursor-pointer">💬 Komentar</span>
+                        <span className="hover:text-rose-400 cursor-pointer">↗️ Bagikan</span>
+                      </div>
+                      <span className="text-[10px] text-slate-400">100% Otonom</span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-snug line-clamp-2">
+                      <strong className="text-white">sahamfyp.id</strong> {currentCase.title} — {currentCase.summary}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Case Details & 8-Slide Interactive Anatomy */}
+            <div className="lg:col-span-6 space-y-5">
+              <div className="bg-[#150a18] p-5 rounded-3xl border border-[#351833]">
+                <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
+                  <span className={`text-xs uppercase font-extrabold tracking-wider px-3 py-1 rounded-full border ${currentCase.badgeBg}`}>
+                    {currentCase.badge}
+                  </span>
+                  <span className="text-xs font-mono text-slate-400">
+                    Format: 1080×1350 Carousel
+                  </span>
+                </div>
+
+                <h3 className="text-xl sm:text-2xl font-bold text-white mt-1">
+                  ${currentCase.ticker} — {currentCase.name}
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-300 mt-2 leading-relaxed">
+                  {currentCase.summary}
+                </p>
+              </div>
+
+              {/* Anatomy Slide Selector (Click to navigate slide) */}
+              <div className="bg-[#140b17] p-4 sm:p-5 rounded-3xl border border-[#2e152d]">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-xs font-bold text-rose-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <Database className="w-3.5 h-3.5" />
+                    <span>Anatomi 8 Slide (Klik untuk Pratinjau):</span>
+                  </h4>
+                  <span className="text-[11px] text-slate-400">
+                    Slide {activeSlideIndex + 1} aktif
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {currentCase.slideLabels.map((lbl, idx) => {
+                    const isSelected = activeSlideIndex === idx;
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => setActiveSlideIndex(idx)}
+                        className={`text-left p-2.5 rounded-xl border text-xs transition flex items-start gap-2.5 ${
+                          isSelected
+                            ? 'bg-rose-500/20 border-rose-500/60 text-white shadow-sm'
+                            : 'bg-[#100713] hover:bg-[#1a0c1b] border-[#291327] text-slate-300'
+                        }`}
+                      >
+                        <span
+                          className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 ${
+                            isSelected ? 'bg-rose-500 text-white' : 'bg-slate-800 text-slate-300'
+                          }`}
+                        >
+                          {idx + 1}
+                        </span>
+                        <div>
+                          <p className="font-bold leading-tight">{lbl.title}</p>
+                          <p className="text-[10px] text-slate-400 mt-0.5 leading-snug line-clamp-1">
+                            {lbl.desc}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-[#291427] flex items-center justify-between text-xs">
+                  <span className="text-[11px] text-slate-400">
+                    Terhubung otomatis ke Instagram, Threads, TikTok & Telegram
+                  </span>
+                  <a
+                    href="https://instagram.com/sahamfyp.id"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-rose-400 hover:text-rose-300 font-semibold"
+                  >
+                    <span>Cek di Instagram</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── 5. Akun Publik 100% Otonom (Bukti Eksekusi) ─────── */}
+      <section id="social-accounts" className="py-16 md:py-24 border-b border-[#251323] scroll-mt-10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-14">
             <span className="text-xs font-bold uppercase tracking-wider text-rose-400">
@@ -467,156 +987,7 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* ─── 3. Latar Belakang & Masalah Gen Z ────────────────── */}
-      <section className="py-16 md:py-24 border-b border-[#251323]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-14">
-            <span className="text-xs font-bold uppercase tracking-wider text-rose-400">
-              Latar Belakang & Masalah
-            </span>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-white mt-2">
-              Dilema Gen Z: Beli Saham Modal FOMO vs Riset Sekuritas Kaku
-            </h2>
-            <p className="text-sm sm:text-base text-slate-400 mt-3">
-              Berdasarkan data Kustodian Sentral Efek Indonesia (KSEI), generasi muda mendominasi pasar modal namun terperangkap dalam asimetri informasi yang merugikan.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Box 1 */}
-            <div className="bg-[#140b17]/90 border border-red-500/30 rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between">
-              <div>
-                <div className="w-10 h-10 rounded-xl bg-red-500/10 text-red-400 flex items-center justify-center mb-4">
-                  <ShieldAlert className="w-5 h-5" />
-                </div>
-                <h3 className="text-lg font-bold text-red-400">Realita: Pom-Pom & FOMO Medsos</h3>
-                <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                  <strong>70% Gen Z</strong> menelan info investasi mentah-mentah dari video TikTok, Reels, dan grup Telegram pom-pom bandar yang menjanjikan cuan instan <em>"To The Moon"</em>.
-                </p>
-                <div className="mt-4 p-3 bg-red-950/40 rounded-xl border border-red-900/50 text-[11px] text-red-300">
-                  ⚠️ <strong>Dampak:</strong> Rata-rata hold saham hanya 1–3 bulan. Sering beli di pucuk harga dan berakhir jadi <em>exit liquidity</em> bagi spekulan pasar.
-                </div>
-              </div>
-              <div className="mt-6 pt-4 border-t border-[#291426] flex items-center gap-2 text-xs text-slate-500 font-mono">
-                <span>Status: Cepat tapi Boncos</span>
-              </div>
-            </div>
-
-            {/* Box 2 */}
-            <div className="bg-[#140b17]/90 border border-[#31192e] rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between">
-              <div>
-                <div className="w-10 h-10 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center mb-4">
-                  <Newspaper className="w-5 h-5" />
-                </div>
-                <h3 className="text-lg font-bold text-slate-200">Dilema: Riset Sekuritas Kaku</h3>
-                <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                  Riset sekuritas dan keterbukaan informasi BEI sebetulnya akurat dan resmi. Namun disajikan dalam dokumen PDF 20–30+ lembar dengan tabel abu-abu dan istilah rumit (DER, EBITDA, WACC).
-                </p>
-                <div className="mt-4 p-3 bg-slate-800/60 rounded-xl border border-slate-700 text-[11px] text-slate-300">
-                  ℹ️ <strong>Dampak:</strong> <strong>60%+ investor pemula</strong> tidak melakukan analisis fundamental karena pusing dan tidak ramah bagi generasi <em>mobile-first</em>.
-                </div>
-              </div>
-              <div className="mt-6 pt-4 border-t border-[#291426] flex items-center gap-2 text-xs text-slate-500 font-mono">
-                <span>Status: Akurat tapi Kaku</span>
-              </div>
-            </div>
-
-            {/* Box 3 */}
-            <div className="bg-gradient-to-b from-rose-950/40 via-[#180d1b] to-[#120815] border border-rose-500/40 rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between shadow-lg shadow-rose-500/10">
-              <div>
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 to-orange-500 text-white flex items-center justify-center mb-4 shadow-md shadow-rose-500/20">
-                  <Zap className="w-5 h-5" />
-                </div>
-                <h3 className="text-lg font-bold text-rose-300">Solusi: Jembatan SahamFYP</h3>
-                <p className="text-xs text-slate-300 mt-2 leading-relaxed">
-                  Mengambil <strong>kedalaman data riset Sectors API</strong> dan memformatnya menjadi <strong>daya cerna visual media sosial</strong> dengan analogi sehari-hari tanpa mengorbankan akurasi.
-                </p>
-                <div className="mt-4 p-3 bg-rose-950/60 rounded-xl border border-rose-500/30 text-[11px] text-rose-200">
-                  ✨ <strong>Anti-FOMO Reality Check:</strong> Jika saham ramai tapi utang menumpuk atau rugi, SahamFYP memberikan <strong>Red Flag / Warning</strong> lugas!
-                </div>
-              </div>
-              <div className="mt-6 pt-4 border-t border-rose-500/20 flex items-center gap-2 text-xs text-rose-300 font-mono font-bold">
-                <span>Status: Valid, Edukatif, Siap Tayang</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── 4. Konsep & Arsitektur (Cara Kerja Pipeline) ─────── */}
-      <section className="py-16 md:py-24 border-b border-[#251323] bg-[#0e0711]/60">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-10">
-            <span className="text-xs font-bold uppercase tracking-wider text-rose-400">
-              Konsep & Arsitektur
-            </span>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-white mt-2">
-              Data + Otomasi + Kontrol = Konten Finansial Berkualitas
-            </h2>
-            <p className="text-sm sm:text-base text-slate-400 mt-3">
-              Diagram alur kerja otonom SahamFYP: menghubungkan LLM AI, Sectors.app REST API, dan n8n orchestrator langsung ke multi-kanal media sosial publik.
-            </p>
-          </div>
-
-          {/* Architecture Diagram Card */}
-          <div className="bg-[#140c17] border border-[#31172f] rounded-3xl p-4 sm:p-8 shadow-2xl overflow-hidden relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-rose-500/5 via-orange-500/5 to-amber-500/5 pointer-events-none" />
-
-            <div className="relative rounded-2xl overflow-hidden border border-[#3b1c38] shadow-xl bg-white">
-              <img
-                src="/slides/sahamfyp-concept.png"
-                alt="Konsep & Arsitektur Sistem SahamFYP"
-                className="w-full h-auto object-contain mx-auto transition-transform duration-300 hover:scale-[1.01]"
-              />
-            </div>
-
-            {/* 4 Pillars Summary */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
-              <div className="bg-[#1a0e1e]/90 p-4 rounded-2xl border border-[#361a33]">
-                <div className="flex items-center gap-2 text-rose-400 font-bold text-xs">
-                  <Cpu className="w-4 h-4" />
-                  <span>1. AI & Reasoning</span>
-                </div>
-                <p className="text-xs text-slate-300 mt-1.5 leading-relaxed">
-                  Sumopod / Gemini LLM untuk riset berita, klasifikasi emiten, dan generator naskah edukatif.
-                </p>
-              </div>
-
-              <div className="bg-[#1a0e1e]/90 p-4 rounded-2xl border border-[#361a33]">
-                <div className="flex items-center gap-2 text-orange-400 font-bold text-xs">
-                  <Database className="w-4 h-4" />
-                  <span>2. Sectors.app API</span>
-                </div>
-                <p className="text-xs text-slate-300 mt-1.5 leading-relaxed">
-                  Pasokan data resmi sektor, valuasi fundamental (PER, PBV, ROE, DER), serta top changes pasar.
-                </p>
-              </div>
-
-              <div className="bg-[#1a0e1e]/90 p-4 rounded-2xl border border-[#361a33]">
-                <div className="flex items-center gap-2 text-amber-400 font-bold text-xs">
-                  <Workflow className="w-4 h-4" />
-                  <span>3. n8n Orchestration</span>
-                </div>
-                <p className="text-xs text-slate-300 mt-1.5 leading-relaxed">
-                  Automasi alur kerja harian tanpa operator: trigger sesi open/close, render gambar, dan logging.
-                </p>
-              </div>
-
-              <div className="bg-[#1a0e1e]/90 p-4 rounded-2xl border border-[#361a33]">
-                <div className="flex items-center gap-2 text-pink-400 font-bold text-xs">
-                  <Share2 className="w-4 h-4" />
-                  <span>4. Multi-Publishing</span>
-                </div>
-                <p className="text-xs text-slate-300 mt-1.5 leading-relaxed">
-                  Distribusi otomatis via Repliz API ke Instagram, TikTok, Threads, Facebook, dan Telegram.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── 4b. Framework 3W & Anti-FOMO Warning ─────────────── */}
+      {/* ─── 6. Core Logic & Anti-FOMO Red Flag (Deep Dive) ──── */}
       <section className="py-16 md:py-24 border-b border-[#251323] bg-[#0e0711]/40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -712,7 +1083,7 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* ─── 5. Sectors.app REST API — The Core Backbone ─────── */}
+      {/* ─── 7. Data Source (Sectors.app REST API) ───────────── */}
       <section className="py-16 md:py-24 border-b border-[#251323] bg-[#0e0711]/50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-gradient-to-r from-[#1b0d1e] via-[#150a18] to-[#1c0e18] border border-[#3c1b37] rounded-3xl p-8 sm:p-10">
@@ -777,12 +1148,12 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* ─── 6. Fitur Dashboard Internal Operator ─────────────── */}
+      {/* ─── 8. Dashboard Internal Operator (Yang Jalan di Baliknya) */}
       <section className="py-16 md:py-24 border-b border-[#251323]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-14">
             <span className="text-xs font-bold uppercase tracking-wider text-rose-400">
-              Dashboard Internal Operator
+              Tool Internal Operator & Otomasi Backend
             </span>
             <h2 className="text-2xl sm:text-4xl font-extrabold text-white mt-2">
               Sistem Operasional Operator End-to-End
@@ -856,7 +1227,7 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* ─── 7. Final CTA Banner ─────────────────────────────── */}
+      {/* ─── 9. Final CTA Banner (Dual Call to Action) ───────── */}
       {!inDashboard && (
         <section className="py-16 md:py-20 relative overflow-hidden bg-gradient-to-b from-[#0a060c] via-[#120715] to-[#0a060c]">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
@@ -876,7 +1247,7 @@ export default function LandingPage({
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
               <a
                 href="#social-accounts"
-                onClick={scrollToSocialAccounts}
+                onClick={(e) => scrollToSection(e, 'social-accounts')}
                 className="w-full sm:w-auto px-7 py-3.5 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 hover:opacity-95 text-white font-extrabold rounded-2xl text-sm sm:text-base transition shadow-xl shadow-rose-500/30 flex items-center justify-center gap-2 active:scale-95 group"
               >
                 <Sparkles className="w-4 h-4 text-amber-200" />
