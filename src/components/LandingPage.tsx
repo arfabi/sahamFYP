@@ -286,7 +286,7 @@ export default function LandingPage({
               className="px-6 py-3.5 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 hover:opacity-95 text-white font-extrabold rounded-xl text-sm sm:text-base transition shadow-xl shadow-rose-500/30 flex items-center gap-2 active:scale-95 group"
             >
               <Smartphone className="w-4 h-4 text-amber-200" />
-              <span>📱 Lihat Produk Nyata (Interactive Carousel)</span>
+              <span>📱 Lihat Hasil Postingan</span>
               <span className="text-amber-200 group-hover:translate-y-0.5 transition-transform">↓</span>
             </a>
 
@@ -351,7 +351,7 @@ export default function LandingPage({
                 <p className="text-xs text-slate-400 mt-2 leading-relaxed">
                   <strong>70% Gen Z</strong> menelan info investasi mentah-mentah dari konten TikTok, Reels, dan grup Telegram pom-pom yang menjanjikan cuan instan <em>"To The Moon"</em>.
                   <span className="block mt-1 text-[10px] text-red-300/80 font-medium">
-                    *Sumber Jurnal/Riset: Survei Edukasi Finansial & Media Sosial (Pola Konsumsi Info Investasi Gen Z)
+                    *Referensi Jurnal: Rohman & Safiih (2025); Anastasya, Ridha, & Windarsari (2025)
                   </span>
                 </p>
 
@@ -397,7 +397,7 @@ export default function LandingPage({
                 <div className="mt-4 p-3 bg-slate-800/60 rounded-xl border border-slate-700 text-[11px] text-slate-300">
                   ℹ️ <strong>Dampak:</strong> <strong>60%+ investor pemula</strong> tidak membaca riset fundamental karena pusing dan tidak ramah bagi generasi <em>mobile-first</em>.
                   <span className="block mt-1 text-[10px] text-slate-400 font-medium">
-                    *Sumber Jurnal/Riset: Survei Perilaku Investor Pemula & Riset Pasar Modal
+                    *Referensi Jurnal: Adinda, Wahid, & Sitorus (2025); Katadata Opini (2025)
                   </span>
                 </div>
               </div>
@@ -448,47 +448,135 @@ export default function LandingPage({
           </div>
 
           {/* Research & Data Reference Table Callout */}
-          <div className="mt-10 p-5 rounded-2xl bg-[#140b17]/80 border border-[#2b1528]">
-            <div className="flex items-center gap-2 text-rose-400 font-bold text-xs uppercase tracking-wider mb-3">
-              <BookOpen className="w-4 h-4" />
-              <span>Daftar Referensi Riset & Jurnal Data Pendukung (Latar Belakang Gen Z Investor)</span>
+          <div className="mt-10 p-5 sm:p-6 rounded-2xl bg-[#140b17]/90 border border-[#2b1528] shadow-xl">
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b border-[#2b1528]">
+              <div className="flex items-center gap-2 text-rose-400 font-bold text-xs uppercase tracking-wider">
+                <BookOpen className="w-4 h-4 text-rose-400" />
+                <span>Referensi Jurnal Ilmiah & Data Publikasi Pasar Modal</span>
+              </div>
+              <span className="text-[11px] font-mono text-slate-400">Terverifikasi Akademik & Publikasi Resmi</span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
-              <div className="p-3 rounded-xl bg-[#1b0e1e] border border-[#351832]">
-                <span className="font-bold text-rose-300">54,4% — 55,38% Investor Gen Z</span>
-                <p className="text-slate-400 text-[11px] mt-1">
-                  <strong>Sumber:</strong> KSEI & BEI — Data Demografi Investor Pasar Modal Indonesia (usia &le;30 tahun mendominasi basis investor individu).
-                </p>
+
+            {/* 1. Jurnal Ilmiah Section */}
+            <div className="space-y-3">
+              <p className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                <span>Publikasi Jurnal Ilmiah (Peer-Reviewed)</span>
+              </p>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                <div className="p-3.5 rounded-xl bg-[#1b0e1e] border border-[#351832] flex flex-col justify-between">
+                  <div>
+                    <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 mb-1.5">
+                      Jurnal Bisman (2025)
+                    </span>
+                    <p className="text-slate-200 text-xs font-semibold leading-snug">
+                      Mind over media: Moderasi literasi keuangan dalam pengaruh finfluencer dan FOMO terhadap keputusan investasi pada investor pemula.
+                    </p>
+                    <p className="text-slate-400 text-[11px] mt-1.5 italic font-serif">
+                      Anastasya, L., Ridha, A., & Windarsari, W. R. (2025). <em>Bisman (Bisnis dan Manajemen): The Journal of Business and Management</em>, 8(2), 508–523.
+                    </p>
+                  </div>
+                  <div className="mt-2.5 pt-2 border-t border-rose-950/60 text-[10px] text-slate-400">
+                    💡 <strong>Fokus:</strong> Bukti empiris peran finfluencer dan FOMO terhadap keputusan investasi pemula serta pentingnya moderasi literasi keuangan.
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-[#1b0e1e] border border-[#351832] flex flex-col justify-between">
+                  <div>
+                    <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-orange-500/20 text-orange-300 border border-orange-500/30 mb-1.5">
+                      Jurnal Innobiz (2025)
+                    </span>
+                    <p className="text-slate-200 text-xs font-semibold leading-snug">
+                      Meningkatkan investor saham Gen Z di Indonesia.
+                    </p>
+                    <p className="text-slate-400 text-[11px] mt-1.5 italic font-serif">
+                      Adinda, D. N., Wahid, A., & Sitorus, M. (2025). <em>Innovation and Business: Jurnal Ilmu Manajemen, Bisnis dan Keuangan (Innobiz)</em>, 2(2), 13–23.
+                    </p>
+                  </div>
+                  <div className="mt-2.5 pt-2 border-t border-orange-950/60 text-[10px] text-slate-400">
+                    💡 <strong>Fokus:</strong> Strategi meningkatkan pemahaman pasar modal dan keterlibatan investor saham Gen Z di Indonesia secara berkelanjutan.
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-[#1b0e1e] border border-[#351832] flex flex-col justify-between">
+                  <div>
+                    <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 mb-1.5">
+                      Prosiding Semnas Manajemen (2025)
+                    </span>
+                    <p className="text-slate-200 text-xs font-semibold leading-snug">
+                      Pengaruh media sosial terhadap keputusan investasi saham di kalangan Generasi Z.
+                    </p>
+                    <p className="text-slate-400 text-[11px] mt-1.5 italic font-serif">
+                      Rohman, A., & Safiih, A. R. (2025). <em>Prosiding Seminar Nasional Manajemen</em>, 4(1), 366–373.
+                    </p>
+                  </div>
+                  <div className="mt-2.5 pt-2 border-t border-amber-950/60 text-[10px] text-slate-400">
+                    💡 <strong>Fokus:</strong> Validasi empiris dominasi paparan media sosial terhadap keputusan transaksi saham kalangan Generasi Z.
+                  </div>
+                </div>
               </div>
-              <div className="p-3 rounded-xl bg-[#1b0e1e] border border-[#351832]">
-                <span className="font-bold text-orange-300">70% Info dari Media Sosial</span>
-                <p className="text-slate-400 text-[11px] mt-1">
-                  <strong>Sumber:</strong> Survei Edukasi Finansial & Media Sosial — Pola konsumsi info investasi pemula didominasi konten medsos dibanding data fundamental.
-                </p>
-              </div>
-              <div className="p-3 rounded-xl bg-[#1b0e1e] border border-[#351832]">
-                <span className="font-bold text-amber-300">60%+ Tanpa Analisis Fundamental</span>
-                <p className="text-slate-400 text-[11px] mt-1">
-                  <strong>Sumber:</strong> Survei Perilaku Investor Pemula & Riset Pasar Modal — Investor muda membeli saham tanpa mengevaluasi laporan keuangan emiten.
-                </p>
-              </div>
-              <div className="p-3 rounded-xl bg-[#1b0e1e] border border-[#351832]">
-                <span className="font-bold text-emerald-300">70% Pernah FOMO Ikut Tren</span>
-                <p className="text-slate-400 text-[11px] mt-1">
-                  <strong>Sumber:</strong> Survei Tren Pasar Finansial — Keputusan transaksi terdorong euforia tren viral dan ajakan grup komunitas.
-                </p>
-              </div>
-              <div className="p-3 rounded-xl bg-[#1b0e1e] border border-[#351832]">
-                <span className="font-bold text-cyan-300">Holding Period 1–3 Bulan</span>
-                <p className="text-slate-400 text-[11px] mt-1">
-                  <strong>Sumber:</strong> Analisis Transaksi Ritel Pasar Modal BEI — Perilaku spekulatif jangka pendek (FOMO trading), bukan investasi bertumbuh.
-                </p>
-              </div>
-              <div className="p-3 rounded-xl bg-[#1b0e1e] border border-[#351832]">
-                <span className="font-bold text-purple-300">Misi Anti-FOMO SahamFYP</span>
-                <p className="text-slate-400 text-[11px] mt-1">
-                  <strong>Solusi:</strong> <em>"Paham dulu, baru FOMO"</em> — Menyediakan reality check fundamental via Sectors API agar investor muda tidak jadi exit liquidity.
-                </p>
+            </div>
+
+            {/* 2. Data Statistik & Publikasi Katadata */}
+            <div className="mt-5 pt-4 border-t border-[#2b1528] space-y-3">
+              <p className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                <span>Publikasi Data Statistik & Analisis Pasar (Katadata)</span>
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <a
+                  href="https://databoks.katadata.co.id/pasar/statistik/66bdf4a992e5b/gen-z-dan-milenial-mendominasi-investor-pasar-modal-di-indonesia"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3.5 rounded-xl bg-[#170e1b] border border-[#30172e] hover:border-cyan-500/50 transition group flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                        Katadata Databoks (Statistik KSEI / BEI)
+                      </span>
+                      <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-cyan-400 transition" />
+                    </div>
+                    <p className="text-xs font-bold text-white group-hover:text-cyan-300 transition mt-1">
+                      Gen Z dan Milenial Mendominasi Investor Pasar Modal di Indonesia
+                    </p>
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Data demografi resmi bursa: Gen Z (&lt;30 tahun) mendominasi lebih dari 54%–55% jumlah investor pasar modal Indonesia.
+                    </p>
+                  </div>
+                  <span className="mt-2.5 text-[10px] text-cyan-400 font-mono group-hover:underline flex items-center gap-1">
+                    <span>databoks.katadata.co.id/pasar/statistik/...</span>
+                    <span>↗</span>
+                  </span>
+                </a>
+
+                <a
+                  href="https://katadata.co.id/indepth/opini/6a505cc400c1e/membangun-fondasi-investasi-gen-z-sejak-dini"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3.5 rounded-xl bg-[#170e1b] border border-[#30172e] hover:border-rose-500/50 transition group flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                        Katadata Opini (Indepth Analysis)
+                      </span>
+                      <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-rose-400 transition" />
+                    </div>
+                    <p className="text-xs font-bold text-white group-hover:text-rose-300 transition mt-1">
+                      Membangun Fondasi Investasi Gen Z Sejak Dini
+                    </p>
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Analisis urgensi membekali generasi muda dengan literasi fundamental, pengelolaan risiko, dan data pasar riil sebelum melakukan transaksi saham.
+                    </p>
+                  </div>
+                  <span className="mt-2.5 text-[10px] text-rose-400 font-mono group-hover:underline flex items-center gap-1">
+                    <span>katadata.co.id/indepth/opini/...</span>
+                    <span>↗</span>
+                  </span>
+                </a>
               </div>
             </div>
           </div>
@@ -597,11 +685,10 @@ export default function LandingPage({
                       setActiveCaseIndex(idx);
                       setActiveSlideIndex(0);
                     }}
-                    className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 ${
-                      isActive
+                    className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 ${isActive
                         ? 'bg-gradient-to-r from-rose-500 to-orange-500 text-white shadow-lg shadow-rose-500/25 scale-[1.02]'
                         : 'bg-[#180b1b] hover:bg-[#25112a] text-slate-300 border border-[#331730]'
-                    }`}
+                      }`}
                   >
                     <span>
                       {item.category === 'green' && '🟢'}
@@ -682,9 +769,8 @@ export default function LandingPage({
                         <button
                           key={dotIdx}
                           onClick={() => setActiveSlideIndex(dotIdx)}
-                          className={`h-1.5 rounded-full transition-all ${
-                            activeSlideIndex === dotIdx ? 'w-4 bg-rose-400' : 'w-1.5 bg-white/40'
-                          }`}
+                          className={`h-1.5 rounded-full transition-all ${activeSlideIndex === dotIdx ? 'w-4 bg-rose-400' : 'w-1.5 bg-white/40'
+                            }`}
                         />
                       ))}
                     </div>
@@ -747,16 +833,14 @@ export default function LandingPage({
                       <button
                         key={idx}
                         onClick={() => setActiveSlideIndex(idx)}
-                        className={`text-left p-2.5 rounded-xl border text-xs transition flex items-start gap-2.5 ${
-                          isSelected
+                        className={`text-left p-2.5 rounded-xl border text-xs transition flex items-start gap-2.5 ${isSelected
                             ? 'bg-rose-500/20 border-rose-500/60 text-white shadow-sm'
                             : 'bg-[#100713] hover:bg-[#1a0c1b] border-[#291327] text-slate-300'
-                        }`}
+                          }`}
                       >
                         <span
-                          className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 ${
-                            isSelected ? 'bg-rose-500 text-white' : 'bg-slate-800 text-slate-300'
-                          }`}
+                          className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 ${isSelected ? 'bg-rose-500 text-white' : 'bg-slate-800 text-slate-300'
+                            }`}
                         >
                           {idx + 1}
                         </span>

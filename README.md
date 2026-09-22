@@ -1208,12 +1208,19 @@ sahamFYP/
 
 | Sumber / Riset | Data / Temuan | Indikator / Keterangan |
 |----------------|---------------|------------------------|
-| BEI (Bursa Efek Indonesia) | **54,4%** investor pasar modal adalah Gen Z | Dominasi kelompok usia muda di bursa |
-| KSEI (Kustodian Sentral Efek Indonesia) | **55,38%** investor individu berusia ≤30 tahun | Kelompok investor terbesar di Indonesia |
-| Survei Edukasi Finansial & Medsos | **70%** Gen Z dapat info investasi dari **media sosial** | Sumber info didominasi medsos, bukan data fundamental |
-| Survei Perilaku Investor Pemula | **60%+ investor pemula** tidak melakukan analisis fundamental sebelum beli | Membeli saham tanpa evaluasi laporan keuangan |
-| Survei Tren Pasar Finansial | **70%** investor muda pernah ikut tren tanpa pertimbangan matang | Keputusan berbasis FOMO & ajakan viral |
-| Analisis Transaksi Ritel | Rata-rata hold saham hanya **1–3 bulan** | FOMO trading spekulatif, bukan investasi bertumbuh |
+| **KSEI & BEI** / [Katadata Databoks](https://databoks.katadata.co.id/pasar/statistik/66bdf4a992e5b/gen-z-dan-milenial-mendominasi-investor-pasar-modal-di-indonesia) | **54,4% — 55,38%** investor pasar modal adalah Gen Z & Milenial (≤30 tahun) | Dominasi kelompok usia muda di pasar modal Indonesia |
+| **Rohman & Safiih (2025)** | Pengaruh media sosial terhadap keputusan investasi saham di kalangan Generasi Z | Validasi empiris 70% Gen Z dipengaruhi media sosial |
+| **Anastasya, Ridha, & Windarsari (2025)** | Moderasi literasi keuangan dalam pengaruh finfluencer dan FOMO pada investor pemula | Pembuktian dampak FOMO pom-pom vs perlunya literasi keuangan |
+| **Adinda, Wahid, & Sitorus (2025)** | Meningkatkan investor saham Gen Z di Indonesia | Kebutuhan format edukasi ramah generasi muda |
+| **Katadata Opini (2025)** | [Membangun Fondasi Investasi Gen Z Sejak Dini](https://katadata.co.id/indepth/opini/6a505cc400c1e/membangun-fondasi-investasi-gen-z-sejak-dini) | Urgensi literasi data fundamental & manajemen risiko |
+| Analisis Transaksi Ritel Pasar Modal | Rata-rata hold saham hanya **1–3 bulan** | FOMO trading spekulatif, bukan investasi bertumbuh |
+
+### 📚 Daftar Pustaka & Referensi Jurnal:
+1. **Anastasya, L., Ridha, A., & Windarsari, W. R. (2025).** *Mind over media: Moderasi literasi keuangan dalam pengaruh finfluencer dan FOMO terhadap keputusan investasi pada investor pemula.* Bisman (Bisnis dan Manajemen): The Journal of Business and Management, 8(2), 508–523.
+2. **Adinda, D. N., Wahid, A., & Sitorus, M. (2025).** *Meningkatkan investor saham Gen Z di Indonesia.* Innovation and Business: Jurnal Ilmu Manajemen, Bisnis dan Keuangan (Innobiz), 2(2), 13–23.
+3. **Rohman, A., & Safiih, A. R. (2025).** *Pengaruh media sosial terhadap keputusan investasi saham di kalangan Generasi Z.* Prosiding Seminar Nasional Manajemen, 4(1), 366–373.
+4. **Katadata Databoks:** [Gen Z dan Milenial Mendominasi Investor Pasar Modal di Indonesia](https://databoks.katadata.co.id/pasar/statistik/66bdf4a992e5b/gen-z-dan-milenial-mendominasi-investor-pasar-modal-di-indonesia)
+5. **Katadata Opini:** [Membangun Fondasi Investasi Gen Z Sejak Dini](https://katadata.co.id/indepth/opini/6a505cc400c1e/membangun-fondasi-investasi-gen-z-sejak-dini)
 
 ### Masalah FOMO & Minim Analisis Fundamental
 
