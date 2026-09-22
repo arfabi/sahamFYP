@@ -302,35 +302,6 @@ export default function NewsMonitoring() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 mb-6">
-        <div className="bg-white rounded-2xl border border-slate-200 p-5">
-          <h3 className="text-base font-semibold text-slate-700 mb-3">Ranking Emiten</h3>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-slate-500 border-b border-slate-100">
-                <th className="pb-2 pr-4">#</th>
-                <th className="pb-2 pr-4">Ticker</th>
-                <th className="pb-2 pr-4">Jumlah</th>
-                <th className="pb-2">Trend</th>
-              </tr>
-            </thead>
-            <tbody>
-              {td.map((t, i) => (
-                <tr key={t.ticker} className="border-b border-slate-50 hover:bg-slate-50 cursor-pointer" onClick={() => setSelectedTicker(t.ticker)}>
-                  <td className="py-2 pr-4 text-slate-400">{i + 1}</td>
-                  <td className="py-2 pr-4 font-semibold">{t.ticker}</td>
-                  <td className="py-2 pr-4">{t.count}</td>
-                  <td className="py-2">
-                    <div className="w-full bg-slate-100 rounded-full h-2">
-                      <div className="bg-amber-500 h-2 rounded-full" style={{ width: ((t.count / (td[0]?.count || 1)) * 100) + '%' }} />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 p-5">
         <h3 className="text-base font-semibold text-slate-700 mb-4">Tabel Berita ({total})</h3>

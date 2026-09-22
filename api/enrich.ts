@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { validateApiKey, parseBody } from './_lib/auth.js';
+import { supabaseServer } from './_lib/supabase.js';
 
 // --- Sectors.app API client (self-contained) ---
 const SECTORS_API_KEY = process.env.SECTORS_API_KEY || '';
@@ -70,7 +71,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { category, ticker } = parseBody(req);
+  const { category, ticker, url, source_url } = parseBody(req);
+  const targetUrl = url || source_url;
 
   if (!category) {
     return res.status(400).json({ error: 'category is required' });
@@ -78,6 +80,39 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const result = await enrichByCategory(category, ticker);
+
+    // Update field sector di tabel sector_trigger_news (Supabase) jika targetUrl disediakan
+    if (targetUrl && result) {
+      try {
+        const report = (result as any)?.data?.report || (result as any)?.report;
+        const detectedSector = report?.overview?.sector || report?.sector || null;
+        const detectedSubSector = report?.overview?.sub_sector || report?.sub_sector || null;
+
+        if (detectedSector) {
+          const updatePayload: Record<string, any> = {
+            sector: detectedSector,
+            updated_at: new Date().toISOString(),
+          };
+          if (detectedSubSector) {
+            updatePayload.sub_sectors = [detectedSubSector];
+          }
+          if (ticker) {
+            const cleanTicker = String(ticker).trim().toUpperCase().replace(/\.JK$/i, '');
+            if (cleanTicker && cleanTicker !== 'NULL' && cleanTicker !== 'NONE') {
+              updatePayload.symbols = [`${cleanTicker}.JK`];
+            }
+          }
+
+          await supabaseServer
+            .from('sector_trigger_news')
+            .update(updatePayload)
+            .eq('source_url', targetUrl);
+        }
+      } catch (dbErr) {
+        console.warn('[Enrich] Error updating sector in Supabase:', dbErr);
+      }
+    }
+
     return res.status(200).json(result);
   } catch (error) {
     console.error('Enrich error:', error);

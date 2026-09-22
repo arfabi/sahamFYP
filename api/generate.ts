@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import * as cheerio from 'cheerio';
 import { validateApiKey, parseBody } from './_lib/auth.js';
 import { chatComplete, generateJson } from './_lib/llm.js';
+import { supabaseServer } from './_lib/supabase.js';
 
 // --- LLM (Sumopod, OpenAI-compatible) ---
 
@@ -240,6 +241,55 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Step 3: Enrich
     const enrichment = await enrichByCategory(category, ticker);
+
+    // Update field sector di tabel sector_trigger_news (Supabase)
+    // Berita dari 8 kanal media luar tidak memiliki sektor usaha saham saat scrape awal,
+    // sehingga diisi secara otomatis dari Sectors API Company Report pasca enrichment.
+    if (url && enrichment) {
+      try {
+        const report = enrichment?.data?.report || enrichment?.report;
+        const detectedSector = report?.overview?.sector || report?.sector || null;
+        const detectedSubSector = report?.overview?.sub_sector || report?.sub_sector || null;
+
+        if (detectedSector) {
+          const updatePayload: Record<string, any> = {
+            sector: detectedSector,
+            updated_at: new Date().toISOString(),
+          };
+          if (detectedSubSector) {
+            updatePayload.sub_sectors = [detectedSubSector];
+          }
+          if (ticker) {
+            const cleanTicker = String(ticker).trim().toUpperCase().replace(/\.JK$/i, '');
+            if (cleanTicker && cleanTicker !== 'NULL' && cleanTicker !== 'NONE') {
+              updatePayload.symbols = [`${cleanTicker}.JK`];
+            }
+          }
+
+          // Update record berita by source_url
+          const { data: updatedRows, error: updateErr } = await supabaseServer
+            .from('sector_trigger_news')
+            .update(updatePayload)
+            .eq('source_url', url)
+            .select('id');
+
+          if (updateErr) {
+            console.warn('[Generate] Gagal update sector ke sector_trigger_news:', updateErr.message);
+          } else if (!updatedRows || updatedRows.length === 0) {
+            // Fallback match by title jika source_url memiliki perbedaan formatting
+            if (title) {
+              await supabaseServer
+                .from('sector_trigger_news')
+                .update(updatePayload)
+                .eq('title', title);
+            }
+          }
+          console.log(`[Generate] Berhasil update sector untuk berita -> ${detectedSector}`);
+        }
+      } catch (dbErr) {
+        console.warn('[Generate] Error updating sector in Supabase:', dbErr);
+      }
+    }
 
     // Step 4: Generate naskah
     const naskah = await generateNaskah({
