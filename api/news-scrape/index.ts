@@ -84,7 +84,12 @@ function parseTags(tagsInput?: any): string[] | null {
       return cleaned.length > 0 ? cleaned : null;
     }
   }
-  return null;
+function parseWibDate(ts?: any): string | null {
+  if (!ts) return null;
+  if (typeof ts === 'string' && /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2})?$/.test(ts.trim())) {
+    return `${ts.trim().replace(' ', 'T')}+07:00`;
+  }
+  return ts;
 }
 
 // --- Handler ---
@@ -161,8 +166,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             } else if (field === 'score' && val !== null) {
               updateData.score = typeof val === 'string' ? parseInt(val, 10) || 0 : val;
             } else if (field === 'published_at' || field === 'timestamp' || field === 'time_scrape') {
-              updateData.published_at = val;
-              updateData.timestamp = val;
+              const parsedTime = parseWibDate(val);
+              updateData.published_at = parsedTime;
+              updateData.timestamp = parsedTime;
             } else {
               updateData[field] = val;
             }
@@ -189,7 +195,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       const now = new Date().toISOString();
-      const newsTime = body.published_at || body.timestamp || body.time_scrape || now;
+      const rawTime = body.published_at || body.timestamp || body.time_scrape;
+      const newsTime = parseWibDate(rawTime) || now;
       const formattedSymbols = parseSymbols(body.symbols, body.ticker);
       const formattedTags = parseTags(body.tags);
 

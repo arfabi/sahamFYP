@@ -1,5 +1,5 @@
 {
-  "name": "SahamFYP - News Monitoring",
+  "name": "SahamFYP - Sector News Monitoring",
   "nodes": [
     {
       "parameters": {
@@ -25,39 +25,39 @@
         },
         "options": {}
       },
-      "id": "71d3575a-b352-499d-be5c-3e7c1d476285",
+      "id": "2d778711-ee74-4ad7-b9fb-5b2eba02c5dc",
       "name": "4. Decision?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -3648,
-        -1152
+        -3584,
+        -1376
       ]
     },
-  {
+    {
       "parameters": {
-        "jsCode": "const allItems = $input.all();\nconst scrapeItems = $('Scrape').all();\nconst now = new Date();\n\n// Format waktu Indonesia\nconst options = { \n  weekday: 'long', \n  year: 'numeric', \n  month: '2-digit', \n  day: '2-digit', \n  hour: '2-digit', \n  minute: '2-digit',\n  timeZone: 'Asia/Jakarta'\n};\nconst waktu = now.toLocaleString('id-ID', options).replace(/\\//g, '/');\n\nreturn allItems.map((item, index) => {\n  const pairIdx = item.pairedItem?.item ?? index;\n  const scrapeData = scrapeItems[pairIdx]?.json || scrapeItems[index]?.json || {};\n  const scoreData = item.json || {};\n\n  let message = `📰 *SahamFYP - News Update*\\n`;\n  message += `━━━━━━━━━━━━━━━━━━━━\\n`;\n  message += `🕐 Waktu : ${waktu} WIB\\n`;\n  message += `📌 Judul : ${scrapeData.title || 'N/A'}\\n`;\n  message += `🌐 Media : ${scrapeData.siteName || 'N/A'}\\n`;\n  message += `🔗 Link : ${scrapeData.url || 'N/A'}\\n`;\n  message += `📊 Status : ${scoreData.decision || 'PASS'} ❌\\n`;\n  message += `📝 Alasan : ${scoreData.reason || 'Tidak ada alasan'}\\n`;\n  message += `📊 Score : ${scoreData.score ?? 0} \\n\\n\\n`;\n  message += `━━━━━━━━━━━━━━━━━━━━\\n`;\n  message += `_Tidak di-generate karena score < 9_`;\n\n  return { json: { message } };\n});\n"
+        "jsCode": "const allItems = $input.all();\nconst scrapeItems = $('Scrape').all();\nconst now = new Date();\n\n// Format waktu Indonesia (WIB)\nconst options = { \n  weekday: 'long', \n  year: 'numeric', \n  month: '2-digit', \n  day: '2-digit', \n  hour: '2-digit', \n  minute: '2-digit',\n  timeZone: 'Asia/Jakarta'\n};\nconst waktu = now.toLocaleString('id-ID', options).replace(/\\//g, '/');\n\n// Looping seluruh berita yang berstatus PASS\nreturn allItems.map((item, index) => {\n  const pairIdx = item.pairedItem?.item ?? index;\n  const scrapeData = scrapeItems[pairIdx]?.json || scrapeItems[index]?.json || {};\n  const scoreData = item.json || {};\n\n  let message = `📰 *SahamFYP - News Update*\\n`;\n  message += `━━━━━━━━━━━━━━━━━━━━\\n`;\n  message += `🕐 Waktu : ${waktu} WIB\\n`;\n  message += `📌 Judul : ${scrapeData.title || 'N/A'}\\n`;\n  message += `🌐 Media : ${scrapeData.siteName || 'N/A'}\\n`;\n  message += `🔗 Link : ${scrapeData.url || 'N/A'}\\n`;\n  message += `📊 Status : ${scoreData.decision || 'PASS'} ❌\\n`;\n  message += `📝 Alasan : ${scoreData.reason || 'Tidak ada alasan'}\\n`;\n  message += `📊 Score : ${scoreData.score ?? 0}\\n\\n\\n`;\n  message += `━━━━━━━━━━━━━━━━━━━━\\n`;\n  message += `_Tidak di-generate karena score < 9_`;\n\n  return { json: { message } };\n});\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -3424,
-        -1056
+        -3360,
+        -1232
       ],
-      "id": "1c5ec1e5-acc1-4650-a56c-77e283b76fda",
+      "id": "2438c6dd-613f-44f5-a3e0-b9bed6b7eb86",
       "name": "Chat Generator - PASS"
     },
     {
       "parameters": {
-        "jsCode": "const allItems = $input.all();\nconst scrapeItems = $('Scrape').all();\nconst now = new Date();\n\n// Format waktu Indonesia\nconst options = { \n  weekday: 'long', \n  year: 'numeric', \n  month: '2-digit', \n  day: '2-digit', \n  hour: '2-digit', \n  minute: '2-digit',\n  timeZone: 'Asia/Jakarta'\n};\nconst waktu = now.toLocaleString('id-ID', options).replace(/\\//g, '/');\n\nreturn allItems.map((item, index) => {\n  const pairIdx = item.pairedItem?.item ?? index;\n  const scrapeData = scrapeItems[pairIdx]?.json || scrapeItems[index]?.json || {};\n  const scoreData = item.json || {};\n\n  let message = `📰 *SahamFYP - News Update*\\n`;\n  message += `━━━━━━━━━━━━━━━━━━━━\\n`;\n  message += `🕐 Waktu : ${waktu} WIB\\n`;\n  message += `📌 Judul : ${scrapeData.title || 'N/A'}\\n`;\n  message += `🌐 Media : ${scrapeData.siteName || 'N/A'}\\n`;\n  message += `🔗 Link : ${scrapeData.url || 'N/A'}\\n`;\n  message += `📊 Status : ${scoreData.decision || 'GENERATE'} ✅\\n`;\n  message += `📝 Alasan : ${scoreData.reason || 'Tidak ada alasan'}\\n`;\n  message += `📊 Score : ${scoreData.score ?? 0} \\n\\n\\n`;\n  message += `━━━━━━━━━━━━━━━━━━━━\\n`;\n  message += `_Berita di Generate karena Score > 8 _`;\n\n  return { json: { message } };\n});\n"
+        "jsCode": "const allItems = $input.all();\nconst scrapeItems = $('Scrape').all();\nconst now = new Date();\n\n// Format waktu Indonesia (WIB)\nconst options = { \n  weekday: 'long', \n  year: 'numeric', \n  month: '2-digit', \n  day: '2-digit', \n  hour: '2-digit', \n  minute: '2-digit',\n  timeZone: 'Asia/Jakarta'\n};\nconst waktu = now.toLocaleString('id-ID', options).replace(/\\//g, '/');\n\n// Looping seluruh berita yang berstatus GENERATE\nreturn allItems.map((item, index) => {\n  const pairIdx = item.pairedItem?.item ?? index;\n  const scrapeData = scrapeItems[pairIdx]?.json || scrapeItems[index]?.json || {};\n  const scoreData = item.json || {};\n\n  let message = `📰 *SahamFYP - News Update*\\n`;\n  message += `━━━━━━━━━━━━━━━━━━━━\\n`;\n  message += `🕐 Waktu : ${waktu} WIB\\n`;\n  message += `📌 Judul : ${scrapeData.title || 'N/A'}\\n`;\n  message += `🌐 Media : ${scrapeData.siteName || 'N/A'}\\n`;\n  message += `🔗 Link : ${scrapeData.url || 'N/A'}\\n`;\n  message += `📊 Status : ${scoreData.decision || 'GENERATE'} ✅\\n`;\n  message += `📝 Alasan : ${scoreData.reason || 'Tidak ada alasan'}\\n`;\n  message += `📊 Score : ${scoreData.score ?? 0}\\n\\n\\n`;\n  message += `━━━━━━━━━━━━━━━━━━━━\\n`;\n  message += `_Berita di Generate karena Score > 8_`;\n\n  return { json: { message } };\n});\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -3424,
-        -1248
+        -3136,
+        -1552
       ],
-      "id": "3761ddcc-9c87-4b29-895e-98499bb125ea",
+      "id": "d98da524-4e42-45d2-be33-c63f32cdf35d",
       "name": "Chat Generator - GENERATE"
     },
     {
@@ -69,12 +69,12 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        -3200,
-        -1248
+        -2912,
+        -1552
       ],
-      "id": "9c633f7d-431f-4ba8-b8a8-003df1153729",
+      "id": "60de6b5d-5f1a-4287-9bf6-351494609c78",
       "name": "BROADCAST - GENERATE",
-      "webhookId": "8a3bff5d-f9e1-4652-bdb0-1a8e80ccfdc1",
+      "webhookId": "6203ccb7-8c35-4a7e-83cc-2d6bf7ef3e9c",
       "credentials": {
         "telegramApi": {
           "id": "7nKsmDhD828CPjdX",
@@ -91,12 +91,12 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        -3200,
-        -1056
+        -3136,
+        -1232
       ],
-      "id": "cc03dca7-1967-4d1e-b205-4fb573639147",
+      "id": "42691560-b8b4-4566-a6bc-b8c7b4522b7a",
       "name": "BROADCAST - PASS",
-      "webhookId": "480e315e-4b0f-4b6b-bde3-0ccbcf72b78b",
+      "webhookId": "8f894d06-b854-4f49-8970-ee34f85e1774",
       "credentials": {
         "telegramApi": {
           "id": "7nKsmDhD828CPjdX",
@@ -131,10 +131,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -4544,
-        -1152
+        -4480,
+        -1376
       ],
-      "id": "35db6438-f83f-4769-8513-f94cc481a1a5",
+      "id": "d7020326-0cb9-4dee-85d8-4ed129e95daf",
       "name": "IF Exists?"
     },
     {
@@ -161,13 +161,13 @@
         },
         "options": {}
       },
-      "id": "a92d36bc-9c1b-499a-b20e-bd4e8a910d4c",
+      "id": "c1bea920-c8e8-413c-9b0c-8cdf6f14a3db",
       "name": "Scrape",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -4320,
-        -1152
+        -4256,
+        -1376
       ]
     },
     {
@@ -198,13 +198,13 @@
         },
         "options": {}
       },
-      "id": "3969e296-64ae-4555-9265-8b12dc704f4d",
+      "id": "6e1e6c70-b7e0-4dbf-addd-b72cec93ee81",
       "name": "Classify",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -4096,
-        -1152
+        -4032,
+        -1376
       ]
     },
     {
@@ -247,174 +247,14 @@
         },
         "options": {}
       },
-      "id": "ae50f3da-4011-47e2-b895-efb9463b8d10",
+      "id": "883ea517-f1ad-479d-9144-07b93334b849",
       "name": "Score",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -3872,
-        -1152
+        -3808,
+        -1376
       ]
-    },
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "mode": "everyMinute"
-            }
-          ]
-        },
-        "feedUrl": "https://katadata.co.id/rss"
-      },
-      "type": "n8n-nodes-base.rssFeedReadTrigger",
-      "typeVersion": 1,
-      "position": [
-        -4992,
-        -480
-      ],
-      "id": "58f61ae0-26f8-4be7-ad10-a65573935bdb",
-      "name": "Katadata"
-    },
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "mode": "everyMinute"
-            }
-          ]
-        },
-        "feedUrl": "https://keuangan.kontan.co.id/rss"
-      },
-      "type": "n8n-nodes-base.rssFeedReadTrigger",
-      "typeVersion": 1,
-      "position": [
-        -4992,
-        -672
-      ],
-      "id": "b2b78984-c069-4e61-b2e2-a532bc488aae",
-      "name": "Kontan"
-    },
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "mode": "everyMinute"
-            }
-          ]
-        },
-        "feedUrl": "https://sindikasi.okezone.com/index.php/rss/11/RSS2.0"
-      },
-      "type": "n8n-nodes-base.rssFeedReadTrigger",
-      "typeVersion": 1,
-      "position": [
-        -4992,
-        -864
-      ],
-      "id": "e6866e66-4963-4669-ac42-6f49497afa52",
-      "name": "OKEZONE"
-    },
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "mode": "everyMinute"
-            }
-          ]
-        },
-        "feedUrl": "https://feed.liputan6.com/rss/saham"
-      },
-      "type": "n8n-nodes-base.rssFeedReadTrigger",
-      "typeVersion": 1,
-      "position": [
-        -4992,
-        -1056
-      ],
-      "id": "4541c7da-c665-4244-9345-f07aea5a5d3b",
-      "name": "Liputan6"
-    },
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "mode": "everyMinute"
-            }
-          ]
-        },
-        "feedUrl": "https://finance.detik.com/rss"
-      },
-      "type": "n8n-nodes-base.rssFeedReadTrigger",
-      "typeVersion": 1,
-      "position": [
-        -4992,
-        -1248
-      ],
-      "id": "bbd7d5ca-6afb-4bbf-9263-bdac37986676",
-      "name": "Detik"
-    },
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "mode": "everyMinute"
-            }
-          ]
-        },
-        "feedUrl": "https://www.cnnindonesia.com/ekonomi/rss"
-      },
-      "type": "n8n-nodes-base.rssFeedReadTrigger",
-      "typeVersion": 1,
-      "position": [
-        -4992,
-        -1440
-      ],
-      "id": "01112342-9751-449a-845f-ffe20e6092b1",
-      "name": "CNN"
-    },
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "mode": "everyMinute"
-            }
-          ]
-        },
-        "feedUrl": "https://www.cnbcindonesia.com/market/rss"
-      },
-      "type": "n8n-nodes-base.rssFeedReadTrigger",
-      "typeVersion": 1,
-      "position": [
-        -4992,
-        -1824
-      ],
-      "id": "069f8be6-c9de-4bce-b0d5-2820c3fe31fe",
-      "name": "CNBC"
-    },
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "mode": "everyMinute"
-            }
-          ]
-        },
-        "feedUrl": "https://www.idxchannel.com/rss"
-      },
-      "type": "n8n-nodes-base.rssFeedReadTrigger",
-      "typeVersion": 1,
-      "position": [
-        -4992,
-        -1632
-      ],
-      "id": "85cfbdc8-119e-411c-a3ec-858b1f3b5095",
-      "name": "IDX Channel"
     },
     {
       "parameters": {
@@ -438,24 +278,11 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        -4768,
-        -1152
+        -4704,
+        -1376
       ],
-      "id": "74592686-a7db-4b0c-bda6-182ede58584c",
+      "id": "f76efbb8-98e5-448e-b1a6-20153f1ca581",
       "name": "Check Exists?"
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "type": "n8n-nodes-base.splitInBatches",
-      "typeVersion": 3,
-      "position": [
-        -2304,
-        -1248
-      ],
-      "id": "5685d9c6-b8ec-49a4-9f56-e7b3995acd90",
-      "name": "Loop Over Items"
     },
     {
       "parameters": {
@@ -475,10 +302,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        -1856,
-        -1216
+        -1792,
+        -1552
       ],
-      "id": "4e4cf354-5aa1-4b80-b2d3-8542c8ca5b3a",
+      "id": "15b0b270-fd36-404c-ba33-6b703aad3ff7",
       "name": "Browserless.io"
     },
     {
@@ -488,10 +315,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -2080,
-        -1408
+        -1344,
+        -1552
       ],
-      "id": "1b0da4b8-75a4-439a-9c8d-6b565f410fd5",
+      "id": "f54f7f5b-21a3-4666-ab04-05767b1d7263",
       "name": "Collect All URLs"
     },
     {
@@ -509,16 +336,16 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{\n  JSON.stringify({\n    imageUrls: $('Collect All URLs').first().json.imageUrls,\n    workflowType: \"news_monitoring\",\n    caption: $('Generate Naskah Slides').item.json.naskah.caption.instagram || \"Market Brief SahamFYP Hari Ini\"\n  })\n}}\n",
+        "jsonBody": "={{\n  JSON.stringify({\n    imageUrls: $('Collect All URLs').item.json.imageUrls,\n    workflowType: \"news_monitoring\",\n    caption: $('Generate Naskah Slides').item.json.naskah.caption.instagram || \"Berita SahamFYP Hari Ini\"\n  })\n}}\n",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        -1632,
-        -1408
+        -896,
+        -1552
       ],
-      "id": "18ca69b8-9705-4231-b068-8346111315ea",
+      "id": "ca664f7d-396c-4b86-8365-d4258607aec8",
       "name": "Publish - Repliz"
     },
     {
@@ -530,12 +357,12 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        -1184,
-        -1408
+        -448,
+        -1472
       ],
-      "id": "b8823818-6142-400d-bf2d-b1f1c2fff359",
+      "id": "9224330e-1c11-4d6b-bb5b-5c2d5b776f34",
       "name": "Broadcast - Reports",
-      "webhookId": "6b2464cd-a7fb-405f-92e6-b6aa9ba85f5b",
+      "webhookId": "68948d52-6702-4ff3-abc7-1c2135373dc6",
       "credentials": {
         "telegramApi": {
           "id": "7nKsmDhD828CPjdX",
@@ -545,15 +372,15 @@
     },
     {
       "parameters": {
-        "jsCode": "// Mengambil data hasil generate (sesuaikan nama node 'Generate' jika berbeda)\nconst generateData = $('Generate Naskah Slides').first().json || {};\nconst classification = generateData.classification || {};\nconst naskah = generateData.naskah || {};\nconst slides = naskah.slides || [];\n\n// Mengambil data hasil publish dari node sebelumnya\nconst publishData = $('Publish - Repliz').first().json || {};\nconst publishResults = publishData.results || [];\n\nconst now = new Date();\n\n// Format waktu Indonesia (WIB)\nconst options = { \n  weekday: 'long', \n  year: 'numeric', \n  month: '2-digit', \n  day: '2-digit', \n  hour: '2-digit', \n  minute: '2-digit',\n  timeZone: 'Asia/Jakarta'\n};\nconst waktu = now.toLocaleString('id-ID', options).replace(/\\//g, '/');\n\n// Helper untuk generate URL profil berdasarkan platform\nfunction getProfileUrl(platform, name) {\n  const cleanName = (name || '').replace('@', '');\n  if (!cleanName) return '#';\n  switch (platform.toLowerCase()) {\n    case 'instagram': return `https://instagram.com/${cleanName}`;\n    case 'twitter': return `https://x.com/${cleanName}`;\n    case 'tiktok': return `https://tiktok.com/@${cleanName}`;\n    case 'facebook': return `https://facebook.com/${cleanName}`;\n    case 'threads': return `https://threads.net/@${cleanName}`;\n    case 'telegram': return `https://t.me/${cleanName}`;\n    case 'linkedin': return `https://linkedin.com/company/${cleanName}`;\n    default: return '#';\n  }\n}\n\n// Membangun daftar platform yang sukses\nlet publishList = publishResults\n  .filter(r => r.status === 'success')\n  .map(r => {\n    // Membuat huruf pertama platform menjadi kapital\n    const platformName = r.platform.charAt(0).toUpperCase() + r.platform.slice(1);\n    const link = getProfileUrl(r.platform, r.accountName);\n    return `• ${platformName} : ${link}`;\n  })\n  .join('\\n');\n\nif (!publishList) {\n  publishList = \"_Tidak ada publikasi yang sukses_\";\n}\n\n// Data dari News Monitoring\nconst title = slides[0]?.title || generateData.title || 'Berita Saham Terbaru';\nconst ticker = classification.ticker || 'N/A';\nconst category = (classification.category || 'N/A').replace(/_/g, ' ');\nconst source = generateData.siteName || 'Sistem Auto-Scrape';\n\n// Menyusun pesan Telegram\nlet message = `📰 *SahamFYP - News Monitoring*\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `🕐 *Waktu* : ${waktu} WIB\\n`;\nmessage += `📌 *Judul* : ${title}\\n`;\nmessage += `🏢 *Emiten* : ${ticker}\\n`;\nmessage += `🏷️ *Kategori* : ${category}\\n`;\nmessage += `🌐 *Sumber* : ${source}\\n\\n`;\n\nmessage += `📝 *Alasan Klasifikasi*:\\n`;\nmessage += `_${classification.reason || 'Katalis berita terbaru terdeteksi.'}_\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `✨ *Berhasil terbit ke ${publishData.success_count || 0} akun*:\\n`;\nmessage += `${publishList}`;\n\nreturn { json: { message } };\n"
+        "jsCode": "// Mengambil data hasil generate (sesuaikan nama node 'Generate' jika berbeda)\nconst generateData = $('Generate Naskah Slides').item.json || {};\nconst classification = generateData.classification || {};\nconst naskah = generateData.naskah || {};\nconst slides = naskah.slides || [];\n\n// Mengambil data hasil publish dari node sebelumnya\nconst publishData = $('Publish - Repliz').item.json || {};\nconst publishResults = publishData.results || [];\n\nconst now = new Date();\n\n// Format waktu Indonesia (WIB)\nconst options = { \n  weekday: 'long', \n  year: 'numeric', \n  month: '2-digit', \n  day: '2-digit', \n  hour: '2-digit', \n  minute: '2-digit',\n  timeZone: 'Asia/Jakarta'\n};\nconst waktu = now.toLocaleString('id-ID', options).replace(/\\//g, '/');\n\n// Helper untuk generate URL profil berdasarkan platform\nfunction getProfileUrl(platform, name) {\n  const cleanName = (name || '').replace('@', '');\n  if (!cleanName) return '#';\n  switch (platform.toLowerCase()) {\n    case 'instagram': return `https://instagram.com/${cleanName}`;\n    case 'twitter': return `https://x.com/${cleanName}`;\n    case 'tiktok': return `https://tiktok.com/@${cleanName}`;\n    case 'facebook': return `https://facebook.com/${cleanName}`;\n    case 'threads': return `https://threads.net/@${cleanName}`;\n    case 'telegram': return `https://t.me/${cleanName}`;\n    case 'linkedin': return `https://linkedin.com/company/${cleanName}`;\n    default: return '#';\n  }\n}\n\n// Membangun daftar platform yang sukses\nlet publishList = publishResults\n  .filter(r => r.status === 'success')\n  .map(r => {\n    // Membuat huruf pertama platform menjadi kapital\n    const platformName = r.platform.charAt(0).toUpperCase() + r.platform.slice(1);\n    const link = getProfileUrl(r.platform, r.accountName);\n    return `• ${platformName} : ${link}`;\n  })\n  .join('\\n');\n\nif (!publishList) {\n  publishList = \"_Tidak ada publikasi yang sukses_\";\n}\n\n// Data dari News Monitoring\nconst title = slides[0]?.title || generateData.title || 'Berita Saham Terbaru';\nconst ticker = classification.ticker || 'N/A';\nconst category = (classification.category || 'N/A').replace(/_/g, ' ');\nconst source = generateData.siteName || 'Sistem Auto-Scrape';\n\n// Menyusun pesan Telegram\nlet message = `📰 *SahamFYP - News Monitoring*\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `🕐 *Waktu* : ${waktu} WIB\\n`;\nmessage += `📌 *Judul* : ${title}\\n`;\nmessage += `🏢 *Emiten* : ${ticker}\\n`;\nmessage += `🏷️ *Kategori* : ${category}\\n`;\nmessage += `🌐 *Sumber* : ${source}\\n\\n`;\n\nmessage += `📝 *Alasan Klasifikasi*:\\n`;\nmessage += `_${classification.reason || 'Katalis berita terbaru terdeteksi.'}_\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `✨ *Berhasil terbit ke ${publishData.success_count || 0} akun*:\\n`;\nmessage += `${publishList}`;\n\nreturn { json: { message } };\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1408,
-        -1408
+        -672,
+        -1552
       ],
-      "id": "c16d3424-31a3-4d6d-bac4-7d9426b2e62f",
+      "id": "4de7fa0b-d740-48db-ae8e-5ef13b907eef",
       "name": "Chat Generator - Reports"
     },
     {
@@ -564,10 +391,10 @@
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        -2528,
-        -1248
+        -2240,
+        -1552
       ],
-      "id": "81f9584c-9f46-4678-ab05-d38da0658ba1",
+      "id": "7d5257ef-93c3-4c49-b0e2-d5d56dabeca5",
       "name": "Split Out - Slide by slide"
     },
     {
@@ -632,10 +459,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        -2976,
-        -1248
+        -2688,
+        -1552
       ],
-      "id": "a7093502-3043-4802-b033-ae67205e39fe",
+      "id": "42863ff9-7bb0-46f9-a2b9-ff1a07da8f64",
       "name": "Save - News - Supabase"
     },
     {
@@ -669,10 +496,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        -1856,
-        -1408
+        -1120,
+        -1552
       ],
-      "id": "397d16fe-66c2-4f29-9f6f-9a8a85031e8e",
+      "id": "3d2e65ed-984b-4ba1-8625-a79208c4a0a9",
       "name": "Save - Post - Supabase"
     },
     {
@@ -718,10 +545,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        -2752,
-        -1248
+        -2464,
+        -1552
       ],
-      "id": "986ce95e-b103-4110-b19b-0164bb953915",
+      "id": "a34f6dcc-7db8-4c03-a5ee-fff6f7565b01",
       "name": "Generate Naskah Slides"
     },
     {
@@ -732,16 +559,16 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -2080,
-        -1216
+        -2016,
+        -1552
       ],
-      "id": "c99a20dd-c0d2-45e8-a840-7cd1aed39a61",
+      "id": "015828c9-c8ae-4e86-836e-6aa9ab5f2631",
       "name": "Slides HTML to Image"
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://xgqsrttpdxiiqknuulwl.supabase.co/storage/v1/object/sfyp-storage/slide-{{$execution.id}}-{{$runIndex}}.jpg",
+        "url": "==https://xgqsrttpdxiiqknuulwl.supabase.co/storage/v1/object/sfyp-storage/slide-{{$execution.id}}-{{Date.now()}}-{{$itemIndex}}.jpg\n",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpBearerAuth",
         "sendHeaders": true,
@@ -765,10 +592,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        -1632,
-        -1152
+        -1568,
+        -1552
       ],
-      "id": "3ef4e239-e053-431a-be8f-7cf26cd4976d",
+      "id": "fe0b8047-6483-4a1e-b9a9-c19c0802d144",
       "name": "Save Image - Bucket Supabase",
       "credentials": {
         "httpBearerAuth": {
@@ -785,10 +612,10 @@
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        -4960,
-        -272
+        -4928,
+        -1376
       ],
-      "id": "73751f58-16bd-4a5f-b1c6-1d1057131469",
+      "id": "b860b7c4-9d6b-4182-8fe4-a16d735987e7",
       "name": "Split Out"
     },
     {
@@ -808,10 +635,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        -5168,
-        -272
+        -5152,
+        -1376
       ],
-      "id": "b7aa6404-e809-43fb-b455-f9bee478a1e0",
+      "id": "0c8928ee-5526-4d0c-82c5-7290c6c459fd",
       "name": "SahamFYP - api/news"
     },
     {
@@ -829,10 +656,23 @@
       "typeVersion": 1.4,
       "position": [
         -5376,
-        -272
+        -1376
       ],
-      "id": "f067bc4e-8faa-4f5f-a5ef-0153476a4f20",
+      "id": "8a3b9831-615f-465f-b1ca-e57f53511794",
       "name": "Sector API News"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -3360,
+        -1472
+      ],
+      "id": "e3addcdd-90fe-464f-899e-d57111e73278",
+      "name": "Loop Over Items1"
     }
   ],
   "pinData": {},
@@ -841,7 +681,7 @@
       "main": [
         [
           {
-            "node": "Chat Generator - GENERATE",
+            "node": "Loop Over Items1",
             "type": "main",
             "index": 0
           }
@@ -938,117 +778,11 @@
         ]
       ]
     },
-    "CNBC": {
-      "main": [
-        [
-          {
-            "node": "Check Exists?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "IDX Channel": {
-      "main": [
-        [
-          {
-            "node": "Check Exists?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "CNN": {
-      "main": [
-        [
-          {
-            "node": "Check Exists?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Detik": {
-      "main": [
-        [
-          {
-            "node": "Check Exists?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Liputan6": {
-      "main": [
-        [
-          {
-            "node": "Check Exists?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "OKEZONE": {
-      "main": [
-        [
-          {
-            "node": "Check Exists?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Kontan": {
-      "main": [
-        [
-          {
-            "node": "Check Exists?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Katadata": {
-      "main": [
-        [
-          {
-            "node": "Check Exists?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Check Exists?": {
       "main": [
         [
           {
             "node": "IF Exists?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Loop Over Items": {
-      "main": [
-        [
-          {
-            "node": "Collect All URLs",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Slides HTML to Image",
             "type": "main",
             "index": 0
           }
@@ -1103,7 +837,7 @@
       "main": [
         [
           {
-            "node": "Loop Over Items",
+            "node": "Slides HTML to Image",
             "type": "main",
             "index": 0
           }
@@ -1158,7 +892,7 @@
       "main": [
         [
           {
-            "node": "Loop Over Items",
+            "node": "Collect All URLs",
             "type": "main",
             "index": 0
           }
@@ -1197,6 +931,29 @@
           }
         ]
       ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Chat Generator - GENERATE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Broadcast - Reports": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -1208,12 +965,12 @@
     "availableInMCP": false,
     "timeSavedPerExecution": 5
   },
-  "versionId": "2a478b38-59e3-4d32-862b-5e3e7e371163",
+  "versionId": "14e4ac83-4b28-4197-9cbb-a04417b39d15",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "dc96f10ae7dc95d3c138575ba243a0a167923dbcb524841d451aadf9135d5fb3"
   },
   "nodeGroups": [],
-  "id": "pNpygEWFXQskabcb",
+  "id": "RjYjWBFq1glNdD88",
   "tags": []
 }

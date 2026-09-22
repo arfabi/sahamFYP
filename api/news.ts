@@ -22,7 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    let { limit = '20', start, end } = req.query;
+    let { limit = '20', start, end, tags } = req.query;
 
     // Jika start atau end tidak diberikan, default ke kemarin dan hari ini (GMT+7 / Asia/Jakarta)
     if (!start || !end) {
@@ -51,6 +51,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     url.searchParams.set('limit', limit as string);
     if (start) url.searchParams.set('start', start as string);
     if (end) url.searchParams.set('end', end as string);
+    if (tags) url.searchParams.set('tags', tags as string);
 
     // Fetch data dari Sectors
     const response = await fetch(url.toString(), {
@@ -64,10 +65,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const data = await response.json();
 
-    // Mapping 'source' menjadi 'link' agar n8n tidak perlu mengubah konfigurasi lagi
+    const parseWibDate = (ts: any): string | null => {
+      if (!ts) return null;
+      if (typeof ts === 'string' && /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2})?$/.test(ts.trim())) {
+        return `${ts.trim().replace(' ', 'T')}+07:00`;
+      }
+      return ts;
+    };
+
+    // Mapping 'source' menjadi 'link' & 'url' agar kompatibel dengan n8n (Check Exists? dsb)
     const formattedResults = (data.results || []).map((item: any) => ({
       ...item,
       link: item.source,
+      url: item.source,
+      source_url: item.source,
+      timestamp: parseWibDate(item.timestamp),
+      published_at: parseWibDate(item.timestamp),
     }));
 
     return res.status(200).json({

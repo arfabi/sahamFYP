@@ -75,7 +75,7 @@ const FIXED_KAMUS = [
 const NEWS_TAGS = 'bullish,rights-issue,executive-changes';
 const IHSG_WINDOW_DAYS = 10; // fetch a range so weekend/holiday gaps resolve to latest trading day
 const TOP_MOVERS_MIN_MCAP_BILLION = 500; // filter micro/penny caps so top movers match real market screens (e.g. Stockbit)
-const BASE_CREDITS = 5; // index-daily(1) + news(1) + filings(1) + top-changes gainers+losers(2)
+const BASE_CREDITS = 4; // index-daily(1) + filings(1) + top-changes gainers+losers(2) (berita diambil dari DB)
 const REPORT_CREDITS_PER_TICKER = 3; // company report sections requested: valuation + financials + peers
 const TECHNICAL_CREDITS_PER_TICKER = 1; // GET /v2/daily/{symbol}/ per ticker lolos LLM
 
@@ -118,6 +118,15 @@ function extractDomain(url: string): string {
   } catch {
     return 'sector.app';
   }
+}
+
+/** Pastikan string timestamp polos tanpa timezone ditambahkan offset +07:00 (WIB) */
+function parseWibDate(ts: any): string | null {
+  if (!ts) return null;
+  if (typeof ts === 'string' && /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2})?$/.test(ts.trim())) {
+    return `${ts.trim().replace(' ', 'T')}+07:00`;
+  }
+  return ts;
 }
 
 /**
@@ -424,10 +433,9 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     const today = getTodayDate();
     const ihsStart = dateNDaysAgo(IHSG_WINDOW_DAYS);
 
-    // Step 1: Fetch raw data (IHSG + news + filings + top movers)
-    const [indexData, newsData, filingsData, topMovers] = await Promise.all([
+    // Step 1: Fetch raw data (IHSG + filings + top movers) & query berita dari Supabase sector_trigger_news
+    const [indexData, filingsData, topMovers, dbNewsRes] = await Promise.all([
       fetchIndexDaily(ihsStart), // Omit end date to avoid timezone future date error
-      fetchNews({ start: yesterday, limit: 15, tags: NEWS_TAGS }),
       fetchFilings({ start: yesterday }),
       fetchTopMovers({
         classifications: ['top_gainers', 'top_losers'],
@@ -435,10 +443,41 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         nStock: 5,
         minMcapBillion: TOP_MOVERS_MIN_MCAP_BILLION,
       }),
+      supabaseServer
+        .from('sector_trigger_news')
+        .select('*')
+        .gte('published_at', `${yesterday}T00:00:00+07:00`)
+        .order('published_at', { ascending: false })
+        .limit(40),
     ]);
 
-    const newsResults = Array.isArray(newsData?.results) ? newsData.results : [];
     const filingsArray = Array.isArray(filingsData) ? filingsData : (filingsData?.data || filingsData?.results || []);
+    const rawDbNews = dbNewsRes?.data || [];
+
+    // Fallback: Jika Supabase belum terisi berita (misal scraper belum jalan), fallback ke Sectors fetchNews
+    let newsResults: any[] = [];
+    if (rawDbNews.length > 0) {
+      newsResults = rawDbNews.map((n: any) => ({
+        title: n.title,
+        body: n.body || n.description || '',
+        source: n.source_url,
+        thumbnail: n.thumbnail_url,
+        timestamp: n.timestamp || n.published_at,
+        tags: n.tags || (n.category ? [n.category] : []),
+        symbols: (n.symbols || []).map((s: string) => {
+          const clean = String(s).trim().toUpperCase().replace(/\.JK$/i, '');
+          return clean ? `${clean}.JK` : '';
+        }).filter(Boolean),
+        sector: n.sector || null,
+        sub_sector: n.sub_sectors || [],
+        score: n.score,
+        decision: n.decision,
+      }));
+    } else {
+      console.warn('[SectorTrigger Open] Tabel sector_trigger_news kosong hari ini, fallback memanggil Sectors fetchNews...');
+      const fallbackNewsData = await fetchNews({ start: yesterday, limit: 15, tags: NEWS_TAGS }).catch(() => null);
+      newsResults = Array.isArray(fallbackNewsData?.results) ? fallbackNewsData.results : [];
+    }
 
     // IHSG: index-daily returns { index_code, date, price } rows (no change field).
     // Latest trading day = last row of the window; change% computed vs previous row.
@@ -483,32 +522,45 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
     const logId = logData?.id;
 
-    // Insert news articles to database
+    // Sinkronisasi berita ke database
     if (logId && newsResults.length > 0) {
-      const newsInserts = newsResults.map((n: any, i: number) => ({
-        log_id: logId,
-        news_index: i + 1,
-        title: n.title || null,
-        body: (n as any).body || null,
-        tags: n.tags || [],
-        symbols: n.symbols || [],
-        sector: n.sector || null,
-        sub_sectors: (n as any).sub_sector || [],
-        dimensions: (n as any).dimension || null,
-        source_url: n.source || null,
-        thumbnail_url: (n as any).thumbnail || null,
-        timestamp: n.timestamp || null,
-        published_at: n.timestamp || null,
-        raw: n,
-        is_selected: false
-      }));
+      if (rawDbNews.length === 0) {
+        // Jika berita didapat dari fallback Sectors API, simpan ke database
+        const newsInserts = newsResults.map((n: any, i: number) => ({
+          log_id: logId,
+          news_index: i + 1,
+          title: n.title || null,
+          body: (n as any).body || null,
+          tags: n.tags || [],
+          symbols: n.symbols || [],
+          sector: n.sector || null,
+          sub_sectors: (n as any).sub_sector || [],
+          dimensions: (n as any).dimension || null,
+          source_url: n.source || null,
+          thumbnail_url: (n as any).thumbnail || null,
+          timestamp: parseWibDate(n.timestamp),
+          published_at: parseWibDate(n.timestamp),
+          raw: n,
+          is_selected: false
+        }));
 
-      const { error: newsError } = await supabaseServer
-        .from('sector_trigger_news')
-        .upsert(newsInserts, { onConflict: 'source_url', ignoreDuplicates: true });
+        const { error: newsError } = await supabaseServer
+          .from('sector_trigger_news')
+          .upsert(newsInserts, { onConflict: 'source_url', ignoreDuplicates: true });
 
-      if (newsError) {
-        console.error('[SectorTrigger Open] News insert error:', newsError);
+        if (newsError) {
+          console.error('[SectorTrigger Open] News insert error:', newsError);
+        }
+      } else {
+        // Berita sudah ada di Supabase, update log_id untuk batch run hari ini jika belum terisi
+        const urls = newsResults.map((n: any) => n.source).filter(Boolean);
+        if (urls.length > 0) {
+          await supabaseServer
+            .from('sector_trigger_news')
+            .update({ log_id: logId })
+            .in('source_url', urls)
+            .is('log_id', null);
+        }
       }
     }
 
@@ -842,9 +894,12 @@ async function selectTickersWithLlm(newsResults: any[], filingsArray: any[]): Pr
   const newsSummary = newsResults.map((n: any, i: number) => ({
     idx: i + 1,
     title: n.title,
+    snippet: (n.body || n.description || '').slice(0, 180),
     tags: n.tags || [],
     symbols: n.symbols || [],
     sector: n.sector || null,
+    score: n.score ?? undefined,
+    decision: n.decision ?? undefined,
     timestamp: n.timestamp,
   }));
 
@@ -889,7 +944,8 @@ Output HANYA JSON, tanpa markdown.`;
     };
   } catch (error) {
     console.error('[SelectTickers] Failed to generate/parse LLM response:', error);
-    return { tickers: [], reasoning: 'Gagal menganalisis berita', skipped: [] };
+    const errDetail = error instanceof Error ? error.message : String(error);
+    return { tickers: [], reasoning: `Gagal menganalisis berita: ${errDetail}`, skipped: [] };
   }
 }
 

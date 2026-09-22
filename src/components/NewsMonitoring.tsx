@@ -19,12 +19,50 @@ function Card({ label, value, icon, color }: { label: string; value: React.React
     </div>
   );
 }
-function fmtDate(iso){if(!iso)return'-';try{const d=new Date(iso);if(isNaN(d.getTime()))return'-';return d.toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});}catch{return'-';}}
-const dateOf=(r)=>(r&&(r.published_at||r.timestamp||r.created_at))||null;
-const domainOf=(u)=>{try{return new URL(u).hostname.replace(/^www\./,'');}catch{return'-';}};
+function fmtDate(iso: any) {
+  if (!iso) return '-';
+  try {
+    let cleanIso = String(iso);
+    // Jika format polos YYYY-MM-DDTHH:mm:ss tanpa timezone offset (+/- atau Z), tambahkan +07:00
+    if (/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2})?$/.test(cleanIso.trim())) {
+      cleanIso = `${cleanIso.trim().replace(' ', 'T')}+07:00`;
+    }
+    const d = new Date(cleanIso);
+    if (isNaN(d.getTime())) return '-';
+    return (
+      d.toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        timeZone: 'Asia/Jakarta',
+      }) +
+      ' ' +
+      d.toLocaleTimeString('id-ID', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Asia/Jakarta',
+      }) +
+      ' WIB'
+    );
+  } catch {
+    return '-';
+  }
+}
+const dateOf = (r: any) => (r && (r.published_at || r.timestamp || r.created_at)) || null;
+const domainOf = (u: any) => {
+  try {
+    return new URL(u).hostname.replace(/^www\./, '');
+  } catch {
+    return '-';
+  }
+};
 function getTodayStr() {
-  const now = new Date();
-  return now.toISOString().split('T')[0];
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jakarta',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
 }
 
 export default function NewsMonitoring() {
@@ -48,11 +86,11 @@ export default function NewsMonitoring() {
       if (sectorFilter) query = query.eq('sector', sectorFilter);
       if (tagFilter) query = query.contains('tags', [tagFilter]);
       if (startDate && endDate) {
-        query = query.gte('published_at', `${startDate}T00:00:00`).lte('published_at', `${endDate}T23:59:59`);
+        query = query.gte('published_at', `${startDate}T00:00:00+07:00`).lte('published_at', `${endDate}T23:59:59+07:00`);
       } else if (startDate) {
-        query = query.gte('published_at', `${startDate}T00:00:00`).lte('published_at', `${startDate}T23:59:59`);
+        query = query.gte('published_at', `${startDate}T00:00:00+07:00`).lte('published_at', `${startDate}T23:59:59+07:00`);
       } else if (endDate) {
-        query = query.lte('published_at', `${endDate}T23:59:59`);
+        query = query.lte('published_at', `${endDate}T23:59:59+07:00`);
       }
       query = query.order('published_at', { ascending: false }).limit(200);
       const { data, error } = await query;
@@ -300,7 +338,7 @@ export default function NewsMonitoring() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-slate-500 border-b border-slate-200">
-                <th className="pb-3 pr-4">Tgl/Waktu</th>
+                <th className="pb-3 pr-4">Tgl/Waktu (WIB)</th>
                 <th className="pb-3 pr-4">Thumb</th>
                 <th className="pb-3 pr-4">Judul</th>
                 <th className="pb-3 pr-4">Tag</th>
