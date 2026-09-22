@@ -106,36 +106,11 @@ export default function Overview({ onNavigate }: OverviewProps) {
         ))}
       </div>
 
-      {/* ⚡ Quick Actions */}
-      <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
-        <h2 className="text-lg font-bold text-slate-800 mb-4">⚡ Quick Actions</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-          <ActionCard icon="📝" title="Generate Konten" desc="Buat carousel dari berita" onClick={() => onNavigate('generator')} />
-          <ActionCard icon="📈" title="Market Brief" desc="Dashboard summary market" onClick={() => onNavigate('daily-market-brief')} />
-          <ActionCard icon="👁️" title="Stock Watchlist" desc="Pantau saham potensial" onClick={() => onNavigate('stock-watchlist')} />
-          <ActionCard icon="🔗" title="Accounts" desc="Kelola IG / Telegram" onClick={() => onNavigate('accounts')} />
-        </div>
-      </div>
-
       {/* 🌊 2 Saluran Sumber Utama Otomasi SahamFYP (Pipeline Flow dengan Animasi Mengalir) */}
       <PipelineFlow onNavigate={onNavigate} stats={statsData} />
 
       {/* 🧠 Technical Depth: Multi-API Orchestration, Zero-Hallucination Math, & Dual-Stage LLM */}
       <TechnicalDepth />
     </div>
-  );
-}
-
-function ActionCard({ icon, title, desc, onClick, disabled = false }: { icon: string; title: string; desc: string; onClick: () => void; disabled?: boolean }) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className={`p-4 rounded-xl text-left transition ${disabled ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : 'bg-slate-50 hover:bg-amber-50 border border-transparent hover:border-amber-200'}`}
-    >
-      <span className="text-2xl block mb-2">{icon}</span>
-      <p className="font-medium text-slate-800">{title}</p>
-      <p className="text-xs text-slate-500 mt-1">{desc}</p>
-    </button>
   );
 }

@@ -160,7 +160,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-y-auto">
         {/* Topbar - persistent di semua modul/menu */}
-        <header className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-10">
+        <header className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-30">
           <div className="flex items-center justify-between px-5 py-3">
             <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
               <span className="text-base">{findNavItem(activePage)?.icon || '📄'}</span>

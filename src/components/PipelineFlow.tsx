@@ -56,7 +56,7 @@ export default function PipelineFlow({ onNavigate, stats }: PipelineFlowProps) {
   ];
 
   return (
-    <div className="bg-slate-900 rounded-2xl p-5 sm:p-7 shadow-xl border border-slate-800 text-slate-100 overflow-hidden relative">
+    <div className="bg-slate-900 rounded-2xl p-5 sm:p-7 shadow-xl border border-slate-800 text-slate-100 overflow-hidden relative isolate">
       {/* Background Decorative Tech Grids & Radial Glow */}
       <div className="absolute inset-0 bg-[radial-gradient(#38bdf815_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none opacity-40" />
       <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
