@@ -10,7 +10,7 @@
           "parameters": [
             {
               "name": "X-API-Key",
-              "value": "MASUKKAN KEY API ANDA DISINI"
+              "value": "MASUKKAN API KEY ANDA DISINI"
             }
           ]
         },
@@ -41,7 +41,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://chrome.browserless.io/screenshot?token=MASUKKAN KEY API ANDA DISINI",
+        "url": "=https://chrome.browserless.io/screenshot?token=MASUKKAN API KEY ANDA DISINI",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"url\": \"data:text/html;charset=utf-8,{{ encodeURIComponent($json.html) }}\",\n  \"options\": {\n    \"type\": \"jpeg\",\n    \"fullPage\": true\n  },\n  \"viewport\": {\n    \"width\": 1080,\n    \"height\": 1350\n  }\n}\n",
@@ -98,7 +98,7 @@
           "parameters": [
             {
               "name": "X-API-Key",
-              "value": "MASUKKAN KEY API ANDA DISINI"
+              "value": "MASUKKAN API KEY ANDA DISINI"
             }
           ]
         },
@@ -133,7 +133,7 @@
       "webhookId": "6b2464cd-a7fb-405f-92e6-b6aa9ba85f5b",
       "credentials": {
         "telegramApi": {
-          "id": "7nKsmDhD828CPjdX",
+          "id": "MASUKKAN API KEY ANDA DISINI",
           "name": "Telegram account"
         }
       }
@@ -160,7 +160,7 @@
           "parameters": [
             {
               "name": "X-API-Key",
-              "value": "MASUKKAN KEY API ANDA DISINI"
+              "value": "MASUKKAN API KEY ANDA DISINI"
             }
           ]
         },
@@ -232,7 +232,7 @@
             },
             {
               "name": "apikey",
-              "value": "MASUKKAN KEY API ANDA DISINI"
+              "value": "MASUKKAN API KEY ANDA DISINI"
             }
           ]
         },
@@ -251,7 +251,7 @@
       "name": "Bucket Supabase",
       "credentials": {
         "httpBearerAuth": {
-          "id": "fvjDamOUe1YBbbBo",
+          "id": "MASUKKAN API KEY ANDA DISINI",
           "name": "Bearer Auth account"
         }
       }
@@ -435,7 +435,7 @@
     "availableInMCP": false,
     "timeSavedPerExecution": 5
   },
-  "versionId": "e174394b-bb2a-4784-a80f-c2feb182d728",
+  "versionId": "9ead325a-160b-448b-b711-023621f22932",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "dc96f10ae7dc95d3c138575ba243a0a167923dbcb524841d451aadf9135d5fb3"

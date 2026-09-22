@@ -25,6 +25,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Check,
+  BookOpen,
 } from 'lucide-react';
 
 interface LandingPageProps {
@@ -246,8 +247,7 @@ export default function LandingPage({
                   className="px-3.5 sm:px-4 py-2 bg-[#170c18] hover:bg-[#251327] border border-[#381934] hover:border-rose-500/40 text-slate-200 hover:text-white font-semibold rounded-xl text-xs sm:text-sm transition flex items-center gap-1.5 shadow-sm active:scale-95"
                 >
                   <LogIn className="w-3.5 h-3.5 text-rose-400" />
-                  <span className="hidden sm:inline">Login Dashboard (Operator)</span>
-                  <span className="sm:hidden">Dashboard (Operator)</span>
+                  <span>Login Dashboard</span>
                 </button>
               </>
             )}
@@ -275,10 +275,10 @@ export default function LandingPage({
           </h1>
 
           <p className="mt-6 text-base sm:text-lg md:text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed font-normal">
-            Mentransformasi riset sekuritas 25+ lembar dan laporan keuangan tebal menjadi visual watchlist harian berbasis <strong>Sectors REST API</strong>, lengkap dengan bedah katalis 3W dan sistem peringatan risiko (warning) objektif untuk <strong>54,4% investor Gen Z</strong> di Indonesia.
+            SahamFYP mengubah riset sekuritas 20+ lembar jadi Daily Market Brief visual — lengkap bedah katalis 3W (What, Why, What's Next) dan sistem warning risiko objektif, dirancang untuk <strong>54,4% investor Gen-Z Indonesia</strong> yang butuh data jelas dan mudah dimengerti. Paham dulu, baru FOMO.
           </p>
 
-          {/* Call to Actions (Primary: Lihat Produk Carousel, Secondary: Dashboard Operator) */}
+          {/* Call to Actions (Primary: Lihat Produk Carousel, Secondary: Login Dashboard) */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
             <a
               href="#product-showcase"
@@ -296,7 +296,7 @@ export default function LandingPage({
                 className="px-5 py-3.5 bg-[#170c18] hover:bg-[#231224] border border-[#381934] hover:border-rose-500/40 text-slate-200 hover:text-white font-semibold rounded-xl text-sm sm:text-base transition flex items-center gap-2 active:scale-95"
               >
                 <LogIn className="w-4 h-4 text-rose-400" />
-                <span>Login Dashboard (Operator)</span>
+                <span>Login Dashboard</span>
                 <ArrowRight className="w-4 h-4 text-slate-400" />
               </button>
             )}
@@ -307,6 +307,7 @@ export default function LandingPage({
             <div className="bg-[#140b17]/80 border border-[#2b1528] p-4 rounded-2xl">
               <p className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-rose-400 to-orange-400 bg-clip-text text-transparent">54,4%</p>
               <p className="text-xs text-slate-400 mt-1 font-medium">Investor BEI adalah Gen Z (&lt;30 thn)</p>
+              <p className="text-[10px] text-slate-500 mt-1 italic">Riset Demografi KSEI & BEI</p>
             </div>
             <div className="bg-[#140b17]/80 border border-[#2b1528] p-4 rounded-2xl">
               <p className="text-2xl sm:text-3xl font-black text-emerald-400">100%</p>
@@ -335,7 +336,7 @@ export default function LandingPage({
               Dilema Gen Z: Beli Saham Modal FOMO vs Riset Sekuritas Kaku
             </h2>
             <p className="text-sm sm:text-base text-slate-400 mt-3">
-              Berdasarkan data KSEI, 54,4% investor pasar modal adalah generasi muda. Namun mereka terperangkap di antara dua kutub yang sama-sama merugikan:
+              Berdasarkan data resmi <strong>Kustodian Sentral Efek Indonesia (KSEI)</strong> dan <strong>Bursa Efek Indonesia (BEI)</strong>, <strong>54,4%</strong> investor pasar modal adalah generasi muda (usia &le;30 tahun). Namun mereka terperangkap di antara dua kutub yang sama-sama merugikan:
             </p>
           </div>
 
@@ -349,6 +350,9 @@ export default function LandingPage({
                 <h3 className="text-lg font-bold text-red-400">1. Realita: Pom-Pom & FOMO Medsos</h3>
                 <p className="text-xs text-slate-400 mt-2 leading-relaxed">
                   <strong>70% Gen Z</strong> menelan info investasi mentah-mentah dari konten TikTok, Reels, dan grup Telegram pom-pom yang menjanjikan cuan instan <em>"To The Moon"</em>.
+                  <span className="block mt-1 text-[10px] text-red-300/80 font-medium">
+                    *Sumber Jurnal/Riset: Survei Edukasi Finansial & Media Sosial (Pola Konsumsi Info Investasi Gen Z)
+                  </span>
                 </p>
 
                 {/* Screenshot Bukti FOMO Medsos */}
@@ -361,7 +365,7 @@ export default function LandingPage({
                 </div>
 
                 <div className="mt-4 p-3 bg-red-950/40 rounded-xl border border-red-900/50 text-[11px] text-red-300">
-                  ⚠️ <strong>Dampak:</strong> Rata-rata hold saham hanya 1–3 bulan. Sering beli di pucuk harga dan berakhir jadi <em>exit liquidity</em> spekulan.
+                  ⚠️ <strong>Dampak:</strong> Rata-rata hold saham hanya 1–3 bulan <em>(Sumber: Analisis Transaksi Ritel Pasar Modal BEI)</em>. Sering beli di pucuk harga dan berakhir jadi <em>exit liquidity</em> spekulan.
                 </div>
               </div>
 
@@ -392,6 +396,9 @@ export default function LandingPage({
 
                 <div className="mt-4 p-3 bg-slate-800/60 rounded-xl border border-slate-700 text-[11px] text-slate-300">
                   ℹ️ <strong>Dampak:</strong> <strong>60%+ investor pemula</strong> tidak membaca riset fundamental karena pusing dan tidak ramah bagi generasi <em>mobile-first</em>.
+                  <span className="block mt-1 text-[10px] text-slate-400 font-medium">
+                    *Sumber Jurnal/Riset: Survei Perilaku Investor Pemula & Riset Pasar Modal
+                  </span>
                 </div>
               </div>
 
@@ -439,6 +446,52 @@ export default function LandingPage({
               </div>
             </div>
           </div>
+
+          {/* Research & Data Reference Table Callout */}
+          <div className="mt-10 p-5 rounded-2xl bg-[#140b17]/80 border border-[#2b1528]">
+            <div className="flex items-center gap-2 text-rose-400 font-bold text-xs uppercase tracking-wider mb-3">
+              <BookOpen className="w-4 h-4" />
+              <span>Daftar Referensi Riset & Jurnal Data Pendukung (Latar Belakang Gen Z Investor)</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+              <div className="p-3 rounded-xl bg-[#1b0e1e] border border-[#351832]">
+                <span className="font-bold text-rose-300">54,4% — 55,38% Investor Gen Z</span>
+                <p className="text-slate-400 text-[11px] mt-1">
+                  <strong>Sumber:</strong> KSEI & BEI — Data Demografi Investor Pasar Modal Indonesia (usia &le;30 tahun mendominasi basis investor individu).
+                </p>
+              </div>
+              <div className="p-3 rounded-xl bg-[#1b0e1e] border border-[#351832]">
+                <span className="font-bold text-orange-300">70% Info dari Media Sosial</span>
+                <p className="text-slate-400 text-[11px] mt-1">
+                  <strong>Sumber:</strong> Survei Edukasi Finansial & Media Sosial — Pola konsumsi info investasi pemula didominasi konten medsos dibanding data fundamental.
+                </p>
+              </div>
+              <div className="p-3 rounded-xl bg-[#1b0e1e] border border-[#351832]">
+                <span className="font-bold text-amber-300">60%+ Tanpa Analisis Fundamental</span>
+                <p className="text-slate-400 text-[11px] mt-1">
+                  <strong>Sumber:</strong> Survei Perilaku Investor Pemula & Riset Pasar Modal — Investor muda membeli saham tanpa mengevaluasi laporan keuangan emiten.
+                </p>
+              </div>
+              <div className="p-3 rounded-xl bg-[#1b0e1e] border border-[#351832]">
+                <span className="font-bold text-emerald-300">70% Pernah FOMO Ikut Tren</span>
+                <p className="text-slate-400 text-[11px] mt-1">
+                  <strong>Sumber:</strong> Survei Tren Pasar Finansial — Keputusan transaksi terdorong euforia tren viral dan ajakan grup komunitas.
+                </p>
+              </div>
+              <div className="p-3 rounded-xl bg-[#1b0e1e] border border-[#351832]">
+                <span className="font-bold text-cyan-300">Holding Period 1–3 Bulan</span>
+                <p className="text-slate-400 text-[11px] mt-1">
+                  <strong>Sumber:</strong> Analisis Transaksi Ritel Pasar Modal BEI — Perilaku spekulatif jangka pendek (FOMO trading), bukan investasi bertumbuh.
+                </p>
+              </div>
+              <div className="p-3 rounded-xl bg-[#1b0e1e] border border-[#351832]">
+                <span className="font-bold text-purple-300">Misi Anti-FOMO SahamFYP</span>
+                <p className="text-slate-400 text-[11px] mt-1">
+                  <strong>Solusi:</strong> <em>"Paham dulu, baru FOMO"</em> — Menyediakan reality check fundamental via Sectors API agar investor muda tidak jadi exit liquidity.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -449,8 +502,8 @@ export default function LandingPage({
             <span className="text-xs font-bold uppercase tracking-wider text-rose-400">
               Konsep & Arsitektur
             </span>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-white mt-2">
-              Data + Otomasi + Kontrol = Konten Finansial Berkualitas
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mt-2 leading-tight">
+              Katalis (Berita dan Fillings) + Data (Sector.app) + LLM AI + Otomasi = Konten Finansial Berkualitas dan Dipahami Gen Z
             </h2>
             <p className="text-sm sm:text-base text-slate-400 mt-3">
               Diagram alur kerja otonom SahamFYP: menghubungkan LLM AI, Sectors.app REST API, dan n8n orchestrator langsung ke multi-kanal media sosial publik.
@@ -772,7 +825,7 @@ export default function LandingPage({
                 <p className="text-sm font-mono text-pink-400 mt-0.5">@sahamfyp.id</p>
 
                 <p className="text-xs text-slate-300 mt-3 leading-relaxed">
-                  Pusat rilis carousel visual resolusi tinggi (1080×1350) untuk ringkasan <strong>Market Open</strong>, bedah katalis 3W, dan peringatan anti-FOMO harian.
+                  Pusat rilis carousel visual resolusi tinggi (1080×1350) untuk ringkasan <strong>Market Open</strong>, bedah katalis 3W (What, Why, What's Next), dan peringatan anti-FOMO harian.
                 </p>
 
                 <div className="mt-4 p-3 bg-[#110813] rounded-xl border border-[#2b1328] text-[11px] text-slate-400 space-y-1">
@@ -996,10 +1049,10 @@ export default function LandingPage({
                 Core Logic & AI Reasoning
               </span>
               <h2 className="text-2xl sm:text-4xl font-extrabold text-white mt-2 leading-snug">
-                Framework Ekstraksi 3W & Sistem Deteksi Red Flag
+                Framework Ekstraksi 3W (What, Why, What's Next) & Sistem Deteksi Red Flag
               </h2>
               <p className="text-sm sm:text-base text-slate-300 mt-4 leading-relaxed">
-                Bukan sekadar menulis ulang berita (<em>rewrite</em>), AI SahamFYP mengekstrak intisari peristiwa menjadi 3 komponen esensial, lalu mencocokkannya dengan metrik keuangan resmi dari Sectors API:
+                Bukan sekadar menulis ulang berita (<em>rewrite</em>), AI SahamFYP mengekstrak intisari peristiwa menjadi 3 pilar utama: <strong>What – Why – What's Next</strong>, lalu memvalidasinya dengan metrik keuangan resmi dari Sectors API:
               </p>
 
               <div className="space-y-3.5 mt-6">
@@ -1010,7 +1063,7 @@ export default function LandingPage({
                   <div>
                     <h4 className="text-sm font-bold text-white">WHAT — Peristiwa Nyata</h4>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Fakta konkret aksi korporasi, kontrak baru, atau perubahan kinerja yang diumumkan emiten.
+                      Fakta konkret aksi korporasi, keterbukaan informasi (filings) BEI, kontrak baru, atau rilis laporan keuangan emiten.
                     </p>
                   </div>
                 </div>
@@ -1022,7 +1075,7 @@ export default function LandingPage({
                   <div>
                     <h4 className="text-sm font-bold text-white">WHY — Konteks & Pendorong</h4>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Mengapa katalis tersebut terjadi (tren komoditas, ekspansi pabrik, restrukturisasi utang).
+                      Mengapa katalis tersebut terjadi: pemicu industri makro, lonjakan harga komoditas acuan, ekspansi kapasitas, atau restrukturisasi utang.
                     </p>
                   </div>
                 </div>
@@ -1032,9 +1085,9 @@ export default function LandingPage({
                     3
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-white">IMPACT — Verifikasi Data Fundamental</h4>
+                    <h4 className="text-sm font-bold text-white">WHAT'S NEXT — Langkah Selanjutnya & Proyeksi Risiko</h4>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Apakah katalis benar-benar berdampak pada laba bersih, valuasi PER/PBV, atau hanya sensasi sesaat?
+                      Bukan sekadar dampak sesaat (<em>impact</em>), melainkan apa langkah ke depan bagi investor: verifikasi data fundamental & teknikal Sectors API, level pantauan kunci, dan peringatan risiko jika emiten tidak sehat.
                     </p>
                   </div>
                 </div>
@@ -1260,7 +1313,7 @@ export default function LandingPage({
                 className="w-full sm:w-auto px-7 py-3.5 bg-[#170c18] hover:bg-[#231224] border border-[#381934] hover:border-rose-500/40 text-slate-200 hover:text-white font-semibold rounded-2xl text-sm sm:text-base transition flex items-center justify-center gap-2 active:scale-95"
               >
                 <LogIn className="w-4 h-4 text-rose-400" />
-                <span>Login Dashboard (Operator)</span>
+                <span>Login Dashboard</span>
               </button>
             </div>
           </div>

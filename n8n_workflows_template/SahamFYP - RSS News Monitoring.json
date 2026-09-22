@@ -1,5 +1,5 @@
 {
-  "name": "SahamFYP - News Monitoring",
+  "name": "SahamFYP - RSS News Monitoring",
   "nodes": [
     {
       "parameters": {
@@ -34,9 +34,9 @@
         -1152
       ]
     },
-  {
+    {
       "parameters": {
-        "jsCode": "const allItems = $input.all();\nconst scrapeItems = $('Scrape').all();\nconst now = new Date();\n\n// Format waktu Indonesia\nconst options = { \n  weekday: 'long', \n  year: 'numeric', \n  month: '2-digit', \n  day: '2-digit', \n  hour: '2-digit', \n  minute: '2-digit',\n  timeZone: 'Asia/Jakarta'\n};\nconst waktu = now.toLocaleString('id-ID', options).replace(/\\//g, '/');\n\nreturn allItems.map((item, index) => {\n  const pairIdx = item.pairedItem?.item ?? index;\n  const scrapeData = scrapeItems[pairIdx]?.json || scrapeItems[index]?.json || {};\n  const scoreData = item.json || {};\n\n  let message = `📰 *SahamFYP - News Update*\\n`;\n  message += `━━━━━━━━━━━━━━━━━━━━\\n`;\n  message += `🕐 Waktu : ${waktu} WIB\\n`;\n  message += `📌 Judul : ${scrapeData.title || 'N/A'}\\n`;\n  message += `🌐 Media : ${scrapeData.siteName || 'N/A'}\\n`;\n  message += `🔗 Link : ${scrapeData.url || 'N/A'}\\n`;\n  message += `📊 Status : ${scoreData.decision || 'PASS'} ❌\\n`;\n  message += `📝 Alasan : ${scoreData.reason || 'Tidak ada alasan'}\\n`;\n  message += `📊 Score : ${scoreData.score ?? 0} \\n\\n\\n`;\n  message += `━━━━━━━━━━━━━━━━━━━━\\n`;\n  message += `_Tidak di-generate karena score < 9_`;\n\n  return { json: { message } };\n});\n"
+        "jsCode": "const allItems = $input.all();\nconst scrapeItems = $('Scrape').all();\nconst now = new Date();\n\n// Format waktu Indonesia (WIB)\nconst options = { \n  weekday: 'long', \n  year: 'numeric', \n  month: '2-digit', \n  day: '2-digit', \n  hour: '2-digit', \n  minute: '2-digit',\n  timeZone: 'Asia/Jakarta'\n};\nconst waktu = now.toLocaleString('id-ID', options).replace(/\\//g, '/');\n\n// Looping seluruh berita yang berstatus PASS\nreturn allItems.map((item, index) => {\n  const pairIdx = item.pairedItem?.item ?? index;\n  const scrapeData = scrapeItems[pairIdx]?.json || scrapeItems[index]?.json || {};\n  const scoreData = item.json || {};\n\n  let message = `📰 *SahamFYP - News Update From RSS News Monitoring*\\n`;\n  message += `━━━━━━━━━━━━━━━━━━━━\\n`;\n  message += `🕐 Waktu : ${waktu} WIB\\n`;\n  message += `📌 Judul : ${scrapeData.title || 'N/A'}\\n`;\n  message += `🌐 Media : ${scrapeData.siteName || 'N/A'}\\n`;\n  message += `🔗 Link : ${scrapeData.url || 'N/A'}\\n`;\n  message += `📊 Status : ${scoreData.decision || 'PASS'} ❌\\n`;\n  message += `📝 Alasan : ${scoreData.reason || 'Tidak ada alasan'}\\n`;\n  message += `📊 Score : ${scoreData.score ?? 0}\\n\\n\\n`;\n  message += `━━━━━━━━━━━━━━━━━━━━\\n`;\n  message += `_Tidak di-generate karena score < 9_`;\n\n  return { json: { message } };\n});\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -49,7 +49,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const allItems = $input.all();\nconst scrapeItems = $('Scrape').all();\nconst now = new Date();\n\n// Format waktu Indonesia\nconst options = { \n  weekday: 'long', \n  year: 'numeric', \n  month: '2-digit', \n  day: '2-digit', \n  hour: '2-digit', \n  minute: '2-digit',\n  timeZone: 'Asia/Jakarta'\n};\nconst waktu = now.toLocaleString('id-ID', options).replace(/\\//g, '/');\n\nreturn allItems.map((item, index) => {\n  const pairIdx = item.pairedItem?.item ?? index;\n  const scrapeData = scrapeItems[pairIdx]?.json || scrapeItems[index]?.json || {};\n  const scoreData = item.json || {};\n\n  let message = `📰 *SahamFYP - News Update*\\n`;\n  message += `━━━━━━━━━━━━━━━━━━━━\\n`;\n  message += `🕐 Waktu : ${waktu} WIB\\n`;\n  message += `📌 Judul : ${scrapeData.title || 'N/A'}\\n`;\n  message += `🌐 Media : ${scrapeData.siteName || 'N/A'}\\n`;\n  message += `🔗 Link : ${scrapeData.url || 'N/A'}\\n`;\n  message += `📊 Status : ${scoreData.decision || 'GENERATE'} ✅\\n`;\n  message += `📝 Alasan : ${scoreData.reason || 'Tidak ada alasan'}\\n`;\n  message += `📊 Score : ${scoreData.score ?? 0} \\n\\n\\n`;\n  message += `━━━━━━━━━━━━━━━━━━━━\\n`;\n  message += `_Berita di Generate karena Score > 8 _`;\n\n  return { json: { message } };\n});\n"
+        "jsCode": "const allItems = $input.all();\nconst scrapeItems = $('Scrape').all();\nconst now = new Date();\n\n// Format waktu Indonesia (WIB)\nconst options = { \n  weekday: 'long', \n  year: 'numeric', \n  month: '2-digit', \n  day: '2-digit', \n  hour: '2-digit', \n  minute: '2-digit',\n  timeZone: 'Asia/Jakarta'\n};\nconst waktu = now.toLocaleString('id-ID', options).replace(/\\//g, '/');\n\n// Looping seluruh berita yang berstatus GENERATE\nreturn allItems.map((item, index) => {\n  const pairIdx = item.pairedItem?.item ?? index;\n  const scrapeData = scrapeItems[pairIdx]?.json || scrapeItems[index]?.json || {};\n  const scoreData = item.json || {};\n\n  let message = `📰 *SahamFYP - News Update RSS News Monitoring*\\n`;\n  message += `━━━━━━━━━━━━━━━━━━━━\\n`;\n  message += `🕐 Waktu : ${waktu} WIB\\n`;\n  message += `📌 Judul : ${scrapeData.title || 'N/A'}\\n`;\n  message += `🌐 Media : ${scrapeData.siteName || 'N/A'}\\n`;\n  message += `🔗 Link : ${scrapeData.url || 'N/A'}\\n`;\n  message += `📊 Status : ${scoreData.decision || 'GENERATE'} ✅\\n`;\n  message += `📝 Alasan : ${scoreData.reason || 'Tidak ada alasan'}\\n`;\n  message += `📊 Score : ${scoreData.score ?? 0}\\n\\n\\n`;\n  message += `━━━━━━━━━━━━━━━━━━━━\\n`;\n  message += `_Berita di Generate karena Score > 8_`;\n\n  return { json: { message } };\n});\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -77,7 +77,7 @@
       "webhookId": "8a3bff5d-f9e1-4652-bdb0-1a8e80ccfdc1",
       "credentials": {
         "telegramApi": {
-          "id": "7nKsmDhD828CPjdX",
+          "id": "MASUKKAN API KEY ANDA DISINI",
           "name": "Telegram account"
         }
       }
@@ -99,7 +99,7 @@
       "webhookId": "480e315e-4b0f-4b6b-bde3-0ccbcf72b78b",
       "credentials": {
         "telegramApi": {
-          "id": "7nKsmDhD828CPjdX",
+          "id": "MASUKKAN API KEY ANDA DISINI",
           "name": "Telegram account"
         }
       }
@@ -460,7 +460,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://chrome.browserless.io/screenshot?token=2VEwVdb9hWKYbvoe74f8dd268e526e79608c5d9d5c23154ac",
+        "url": "=https://chrome.browserless.io/screenshot?token=MASUKKAN API KEY ANDA DISINI",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"url\": \"data:text/html;charset=utf-8,{{ encodeURIComponent($json.html) }}\",\n  \"options\": {\n    \"type\": \"jpeg\",\n    \"fullPage\": true\n  },\n  \"viewport\": {\n    \"width\": 1080,\n    \"height\": 1350\n  }\n}\n",
@@ -503,7 +503,7 @@
           "parameters": [
             {
               "name": "X-API-Key",
-              "value": "=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmMzAyMDViMi1hMzY1LTQyZDUtODE0ZS0yYzRiYjJkNDQyYmIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiNDdmMGMwYjktMTQ1MC00NjcwLTk3ZjktZjA1ZDU2Y2EzM2ViIiwiaWF0IjoxNzg4OTM1MDA2fQ.PVtFSytgbdeoVO_86oOpYZPMmNbYOYEV9MCaUSVVGos"
+              "value": "MASUKKAN API KEY ANDA DISINI"
             }
           ]
         },
@@ -538,14 +538,14 @@
       "webhookId": "6b2464cd-a7fb-405f-92e6-b6aa9ba85f5b",
       "credentials": {
         "telegramApi": {
-          "id": "7nKsmDhD828CPjdX",
+          "id": "MASUKKAN API KEY ANDA DISINI",
           "name": "Telegram account"
         }
       }
     },
     {
       "parameters": {
-        "jsCode": "// Mengambil data hasil generate (sesuaikan nama node 'Generate' jika berbeda)\nconst generateData = $('Generate Naskah Slides').first().json || {};\nconst classification = generateData.classification || {};\nconst naskah = generateData.naskah || {};\nconst slides = naskah.slides || [];\n\n// Mengambil data hasil publish dari node sebelumnya\nconst publishData = $('Publish - Repliz').first().json || {};\nconst publishResults = publishData.results || [];\n\nconst now = new Date();\n\n// Format waktu Indonesia (WIB)\nconst options = { \n  weekday: 'long', \n  year: 'numeric', \n  month: '2-digit', \n  day: '2-digit', \n  hour: '2-digit', \n  minute: '2-digit',\n  timeZone: 'Asia/Jakarta'\n};\nconst waktu = now.toLocaleString('id-ID', options).replace(/\\//g, '/');\n\n// Helper untuk generate URL profil berdasarkan platform\nfunction getProfileUrl(platform, name) {\n  const cleanName = (name || '').replace('@', '');\n  if (!cleanName) return '#';\n  switch (platform.toLowerCase()) {\n    case 'instagram': return `https://instagram.com/${cleanName}`;\n    case 'twitter': return `https://x.com/${cleanName}`;\n    case 'tiktok': return `https://tiktok.com/@${cleanName}`;\n    case 'facebook': return `https://facebook.com/${cleanName}`;\n    case 'threads': return `https://threads.net/@${cleanName}`;\n    case 'telegram': return `https://t.me/${cleanName}`;\n    case 'linkedin': return `https://linkedin.com/company/${cleanName}`;\n    default: return '#';\n  }\n}\n\n// Membangun daftar platform yang sukses\nlet publishList = publishResults\n  .filter(r => r.status === 'success')\n  .map(r => {\n    // Membuat huruf pertama platform menjadi kapital\n    const platformName = r.platform.charAt(0).toUpperCase() + r.platform.slice(1);\n    const link = getProfileUrl(r.platform, r.accountName);\n    return `• ${platformName} : ${link}`;\n  })\n  .join('\\n');\n\nif (!publishList) {\n  publishList = \"_Tidak ada publikasi yang sukses_\";\n}\n\n// Data dari News Monitoring\nconst title = slides[0]?.title || generateData.title || 'Berita Saham Terbaru';\nconst ticker = classification.ticker || 'N/A';\nconst category = (classification.category || 'N/A').replace(/_/g, ' ');\nconst source = generateData.siteName || 'Sistem Auto-Scrape';\n\n// Menyusun pesan Telegram\nlet message = `📰 *SahamFYP - News Monitoring*\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `🕐 *Waktu* : ${waktu} WIB\\n`;\nmessage += `📌 *Judul* : ${title}\\n`;\nmessage += `🏢 *Emiten* : ${ticker}\\n`;\nmessage += `🏷️ *Kategori* : ${category}\\n`;\nmessage += `🌐 *Sumber* : ${source}\\n\\n`;\n\nmessage += `📝 *Alasan Klasifikasi*:\\n`;\nmessage += `_${classification.reason || 'Katalis berita terbaru terdeteksi.'}_\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `✨ *Berhasil terbit ke ${publishData.success_count || 0} akun*:\\n`;\nmessage += `${publishList}`;\n\nreturn { json: { message } };\n"
+        "jsCode": "// Mengambil data hasil generate (sesuaikan nama node 'Generate' jika berbeda)\nconst generateData = $('Generate Naskah Slides').first().json || {};\nconst classification = generateData.classification || {};\nconst naskah = generateData.naskah || {};\nconst slides = naskah.slides || [];\n\n// Mengambil data hasil publish dari node sebelumnya\nconst publishData = $('Publish - Repliz').first().json || {};\nconst publishResults = publishData.results || [];\n\nconst now = new Date();\n\n// Format waktu Indonesia (WIB)\nconst options = { \n  weekday: 'long', \n  year: 'numeric', \n  month: '2-digit', \n  day: '2-digit', \n  hour: '2-digit', \n  minute: '2-digit',\n  timeZone: 'Asia/Jakarta'\n};\nconst waktu = now.toLocaleString('id-ID', options).replace(/\\//g, '/');\n\n// Helper untuk generate URL profil berdasarkan platform\nfunction getProfileUrl(platform, name) {\n  const cleanName = (name || '').replace('@', '');\n  if (!cleanName) return '#';\n  switch (platform.toLowerCase()) {\n    case 'instagram': return `https://instagram.com/${cleanName}`;\n    case 'twitter': return `https://x.com/${cleanName}`;\n    case 'tiktok': return `https://tiktok.com/@${cleanName}`;\n    case 'facebook': return `https://facebook.com/${cleanName}`;\n    case 'threads': return `https://threads.net/@${cleanName}`;\n    case 'telegram': return `https://t.me/${cleanName}`;\n    case 'linkedin': return `https://linkedin.com/company/${cleanName}`;\n    default: return '#';\n  }\n}\n\n// Membangun daftar platform yang sukses\nlet publishList = publishResults\n  .filter(r => r.status === 'success')\n  .map(r => {\n    // Membuat huruf pertama platform menjadi kapital\n    const platformName = r.platform.charAt(0).toUpperCase() + r.platform.slice(1);\n    const link = getProfileUrl(r.platform, r.accountName);\n    return `• ${platformName} : ${link}`;\n  })\n  .join('\\n');\n\nif (!publishList) {\n  publishList = \"_Tidak ada publikasi yang sukses_\";\n}\n\n// Data dari News Monitoring\nconst title = slides[0]?.title || generateData.title || 'Berita Saham Terbaru';\nconst ticker = classification.ticker || 'N/A';\nconst category = (classification.category || 'N/A').replace(/_/g, ' ');\nconst source = generateData.siteName || 'Sistem Auto-Scrape';\n\n// Menyusun pesan Telegram\nlet message = `📰 *SahamFYP - Generate Postingan Baru dari RSS News Monitoring*\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `🕐 *Waktu* : ${waktu} WIB\\n`;\nmessage += `📌 *Judul* : ${title}\\n`;\nmessage += `🏢 *Emiten* : ${ticker}\\n`;\nmessage += `🏷️ *Kategori* : ${category}\\n`;\nmessage += `🌐 *Sumber* : ${source}\\n\\n`;\n\nmessage += `📝 *Alasan Klasifikasi*:\\n`;\nmessage += `_${classification.reason || 'Katalis berita terbaru terdeteksi.'}_\\n`;\nmessage += `━━━━━━━━━━━━━━━━━━━━\\n`;\nmessage += `✨ *Berhasil terbit ke ${publishData.success_count || 0} akun*:\\n`;\nmessage += `${publishList}`;\n\nreturn { json: { message } };\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -647,7 +647,7 @@
           "parameters": [
             {
               "name": "X-API-Key",
-              "value": "=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmMzAyMDViMi1hMzY1LTQyZDUtODE0ZS0yYzRiYjJkNDQyYmIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiNDdmMGMwYjktMTQ1MC00NjcwLTk3ZjktZjA1ZDU2Y2EzM2ViIiwiaWF0IjoxNzg4OTM1MDA2fQ.PVtFSytgbdeoVO_86oOpYZPMmNbYOYEV9MCaUSVVGos"
+              "value": "MASUKKAN API KEY ANDA DISINI"
             }
           ]
         },
@@ -684,7 +684,7 @@
           "parameters": [
             {
               "name": "X-API-Key",
-              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmMzAyMDViMi1hMzY1LTQyZDUtODE0ZS0yYzRiYjJkNDQyYmIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiNDdmMGMwYjktMTQ1MC00NjcwLTk3ZjktZjA1ZDU2Y2EzM2ViIiwiaWF0IjoxNzg4OTM1MDA2fQ.PVtFSytgbdeoVO_86oOpYZPMmNbYOYEV9MCaUSVVGos"
+              "value": "MASUKKAN API KEY ANDA DISINI"
             }
           ]
         },
@@ -727,7 +727,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// ============================================================\n// n8n Code Node — Generate Slide HTML (Berdasarkan generate.ts)\n// Mode: Run Once for Each Item\n// Input: Setiap item adalah 1 objek slide + data global (badgeText, handle, dll)\n// Output: { html: string, index: number }\n// ============================================================\n\nconst s = $json;\n\n// ── Global Meta ─────────────────────────────────────────────\nconst slideIndex = s.slideIndex !== undefined ? s.slideIndex : $itemIndex;\nconst totalCount = s.totalSlides || 8;\n\n// Mengambil Ticker/Badge dari node 'Generate' secara dinamis\nlet badgeText = 'SAHAMFYP';\ntry { badgeText = $('Generate Naskah Slides').first().json.classification.ticker || $('Generate Naskah Slides').first().json.naskah.badgeText; } catch(e) {}\nif (s.badgeText) badgeText = s.badgeText;\n\nconst handle     = s.handle || '@sahamfyp';\nconst template   = String(s.template || '').toLowerCase().trim();\n\n// Palette sesuai Templates.tsx\nconst PALETTE = {\n  navy: \"#14182B\",\n  amber: \"#F2A93B\",\n  sage: \"#4CAF7D\",\n  brick: \"#E4572E\",\n  cream: \"#F5F1E7\",\n  card: \"#EDE6D8\",\n};\n\n// ── Helpers ─────────────────────────────────────────────────\n// Render Markdown Bold (**teks**) jadi <strong>\nfunction renderBold(text) {\n  if (!text) return '';\n  return text.replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>');\n}\n\n// Skala ukuran font berdasarkan panjang teks (mencegah overflow)\nfunction getFontSize(text, max, min, threshold = 28) {\n  const len = (text || \"\").trim().length;\n  if (!len) return max;\n  if (len <= threshold) return max;\n  const ratio = Math.min((len - threshold) / threshold, 1);\n  return Math.max(Math.round(max - (max - min) * ratio), min);\n}\n\n// ── CSS Base Styles ─────────────────────────────────────────\nfunction buildBaseStyles() {\n  return `<style>\n    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800;900&family=Inter:wght@400;500;600&display=swap');\n    \n    * { box-sizing: border-box; margin: 0; padding: 0; }\n    strong { font-weight: 800; }\n    \n    body {\n      width: 1080px; height: 1350px;\n      background: #F8F6F0;\n      font-family: 'Inter', sans-serif;\n      color: ${PALETTE.navy};\n      overflow: hidden;\n      display: flex;\n      justify-content: center;\n      align-items: center;\n    }\n    \n    .shell {\n      background-color: ${PALETTE.cream};\n      color: ${PALETTE.navy};\n      width: 1080px; \n      height: 1350px;\n      display: flex; \n      flex-direction: column; \n      position: relative;\n      padding: 60px 80px;\n    }\n    \n    /* Header */\n    .header {\n      display: flex; justify-content: space-between; align-items: center;\n      flex-shrink: 0;\n    }\n    .handle { font-weight: 600; font-size: 28px; display: flex; align-items: center; gap: 12px;}\n    .badge {\n      background-color: ${PALETTE.navy};\n      color: #FFFFFF;\n      padding: 10px 32px;\n      border-radius: 40px;\n      font-weight: 800;\n      font-size: 24px;\n      letter-spacing: 1px;\n    }\n    \n    /* Footer Pagination */\n    .footer {\n      display: flex; justify-content: space-between; align-items: center;\n      flex-shrink: 0; padding-top: 30px;\n    }\n    .dots { display: flex; gap: 12px; align-items: center; }\n    .dot { border-radius: 50%; display: inline-block; }\n    .dot.active { background-color: ${PALETTE.amber}; width: 24px; height: 24px; }\n    .dot.inactive { border: 3px solid ${PALETTE.navy}; opacity: 0.45; width: 18px; height: 18px; }\n    .swipe-text { display: flex; items-center; gap: 8px; font-weight: 600; font-size: 24px; }\n    \n    /* Content Layout */\n    .content {\n      flex: 1; display: flex; flex-direction: column;\n      padding-top: 60px;\n    }\n    \n    .title { font-family: 'Outfit', sans-serif; font-weight: 800; line-height: 1.1; letter-spacing: -1px; }\n    .desc { font-weight: 500; opacity: 0.85; line-height: 1.5; margin-top: 16px; }\n    .source { font-size: 20px; font-style: italic; opacity: 0.6; margin-top: auto; }\n    \n    /* TLDR & Lists */\n    .card-list { display: flex; flex-direction: column; gap: 24px; margin-top: 40px; }\n    .tldr-card {\n      background-color: ${PALETTE.card};\n      border-radius: 28px;\n      padding: 28px 36px;\n      display: flex; align-items: center; gap: 24px;\n    }\n    .tldr-num {\n      background-color: ${PALETTE.amber}; color: ${PALETTE.cream};\n      min-width: 64px; height: 64px; border-radius: 20px;\n      display: flex; align-items: center; justify-content: center;\n      font-weight: 800; font-size: 28px;\n    }\n    \n    /* Metrics */\n    .metrics-grid { display: flex; flex-direction: column; gap: 24px; margin-top: 40px; }\n    .metric-card {\n      background-color: ${PALETTE.card};\n      border-radius: 28px; border-left: 12px solid ${PALETTE.amber};\n      padding: 28px 36px;\n    }\n    .metric-header { display: flex; justify-content: space-between; align-items: center; opacity: 0.7; font-weight: 600; font-size: 22px; text-transform: uppercase; letter-spacing: 1px; }\n    .metric-val { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 64px; margin-top: 8px; margin-bottom: 8px; }\n    .metric-cap { font-weight: 500; font-size: 26px; line-height: 1.4; opacity: 0.9;}\n    \n    /* Pros/Cons */\n    .bullet-card {\n      background-color: ${PALETTE.card};\n      border-radius: 28px; padding: 24px 32px;\n      display: flex; align-items: flex-start; gap: 24px;\n    }\n    .bullet-icon {\n      width: 56px; height: 56px; border-radius: 50%;\n      display: flex; align-items: center; justify-content: center;\n      flex-shrink: 0; color: #FFF; margin-top: 4px;\n    }\n  </style>`;\n}\n\n// Render footer / pagination\nfunction renderPagination() {\n  const isLast = slideIndex >= (totalCount - 1);\n  return `\n    <div class=\"footer\">\n      <div class=\"dots\">\n        <!-- Progress bar / dots dihapus sesuai permintaan -->\n      </div>\n      <div class=\"swipe-text\">\n        ${isLast ? '<i data-lucide=\"rotate-ccw\" width=\"32\" height=\"32\"></i>' : '<span>Geser</span> <i data-lucide=\"arrow-right\" width=\"32\" height=\"32\"></i>'}\n      </div>\n    </div>\n  `;\n}\n\n// Header\nfunction renderHeader() {\n  return `\n    <div class=\"header\">\n      <span class=\"handle\">${handle}</span>\n      <span class=\"badge\">${badgeText}</span>\n    </div>\n  `;\n}\n\n// ── Template Builder ─────────────────────────────────────────\nlet bodyContent = '';\n\nswitch (template) {\n  case 'cover': {\n    const tSize = getFontSize(s.title, 86, 60, 40);\n    const dSize = getFontSize(s.description, 40, 32, 50);\n    bodyContent = `\n      <div class=\"content\" style=\"text-align: left;\">\n        <h2 class=\"title\" style=\"font-size: ${tSize}px;\">${renderBold(s.title)}</h2>\n        ${s.description ? `<p class=\"desc\" style=\"font-size: ${dSize}px;\">${renderBold(s.description)}</p>` : ''}\n        \n        <div style=\"flex:1; margin-top:40px; border-radius:32px; overflow:hidden; position:relative; background-color:${PALETTE.card}; display:flex; align-items:center; justify-content:center;\">\n          ${s.illustrationUrl \n            ? `<img src=\"${s.illustrationUrl}\" style=\"width:100%; height:100%; object-fit:cover;\">` \n            : `<i data-lucide=\"${s.visualIcon || 'trending-up'}\" width=\"200\" height=\"200\" color=\"${PALETTE.amber}\"></i>`\n          }\n        </div>\n      </div>`;\n    break;\n  }\n\n  case 'tldr': {\n    const tSize = getFontSize(s.title, 76, 60);\n    const cardsHtml = (s.tldrCards || []).map((card, idx) => {\n      const cSize = getFontSize(card.text, 36, 28, 50);\n      return `\n        <div class=\"tldr-card\">\n          <div class=\"tldr-num\">${idx + 1}</div>\n          <p style=\"font-size: ${cSize}px; font-weight: 500;\">${renderBold(card.text)}</p>\n        </div>`;\n    }).join('');\n    \n    bodyContent = `\n      <div class=\"content\" style=\"text-align: center;\">\n        <h2 class=\"title\" style=\"font-size: ${tSize}px;\">${renderBold(s.title)}</h2>\n        <div class=\"card-list\" style=\"text-align: left;\">${cardsHtml}</div>\n      </div>`;\n    break;\n  }\n\n  case 'kronologi': {\n    const tSize = getFontSize(s.title, 76, 50);\n    const dSize = getFontSize(s.description, 36, 28, 50);\n    bodyContent = `\n      <div class=\"content\" style=\"text-align: center; align-items: center;\">\n        <h2 class=\"title\" style=\"font-size: ${tSize}px; margin-bottom: 30px;\">${renderBold(s.title)}</h2>\n        \n        <div style=\"flex:1; width:100%; max-height:450px; border-radius:32px; overflow:hidden; background-color:${PALETTE.card}; display:flex; align-items:center; justify-content:center;\">\n          ${s.illustrationUrl \n            ? `<img src=\"${s.illustrationUrl}\" style=\"width:100%; height:100%; object-fit:cover;\">` \n            : `<span style=\"font-size:32px; color:#94A3B8;\">Foto Kronologi</span>`\n          }\n        </div>\n        \n        <p class=\"desc\" style=\"font-size: ${dSize}px; margin-top: 30px; max-width: 900px;\">${renderBold(s.description)}</p>\n        ${s.source ? `<div class=\"source\" style=\"margin-top:40px;\">Sumber: ${s.source}</div>` : ''}\n      </div>`;\n    break;\n  }\n\n  case 'data': {\n    const tSize = getFontSize(s.title, 76, 60);\n    const metricsHtml = (s.metrics || []).slice(0, 4).map(m => {\n      const toneColor = m.tone === 'sage' ? PALETTE.sage : PALETTE.amber;\n      return `\n        <div class=\"metric-card\" style=\"border-color: ${toneColor};\">\n          <div class=\"metric-header\" style=\"color: ${toneColor};\">\n            <span>${m.label}</span>\n            <i data-lucide=\"${m.icon || 'bar-chart-3'}\" width=\"36\" height=\"36\"></i>\n          </div>\n          <div class=\"metric-val\" style=\"color: ${toneColor};\">${m.value}</div>\n          <div class=\"metric-cap\">${renderBold(m.caption)}</div>\n        </div>`;\n    }).join('');\n\n    bodyContent = `\n      <div class=\"content\" style=\"text-align: center;\">\n        <h2 class=\"title\" style=\"font-size: ${tSize}px;\">${renderBold(s.title)}</h2>\n        <div class=\"metrics-grid\" style=\"text-align: left;\">${metricsHtml}</div>\n      </div>`;\n    break;\n  }\n\n  case 'pros':\n  case 'cons': {\n    const tSize = getFontSize(s.title, 76, 60);\n    const isPros = template === 'pros';\n    const bgColor = isPros ? PALETTE.sage : PALETTE.brick;\n    const mainIcon = isPros ? 'check-circle-2' : 'x-circle';\n    \n    const bulletsHtml = (s.bullets || []).map(b => {\n      const cSize = getFontSize(b.text, 36, 28, 50);\n      return `\n        <div class=\"bullet-card\">\n          <div class=\"bullet-icon\" style=\"background-color: ${bgColor};\">\n            <i data-lucide=\"${mainIcon}\" width=\"32\" height=\"32\"></i>\n          </div>\n          <p style=\"font-size: ${cSize}px; font-weight: 500;\">${renderBold(b.text)}</p>\n        </div>`;\n    }).join('');\n\n    bodyContent = `\n      <div class=\"content\" style=\"text-align: center;\">\n        <h2 class=\"title\" style=\"font-size: ${tSize}px;\">${renderBold(s.title)}</h2>\n        <div style=\"margin: 30px auto; width: 120px; height: 120px; background-color: ${bgColor}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;\">\n          <i data-lucide=\"${mainIcon}\" width=\"64\" height=\"64\"></i>\n        </div>\n        <div class=\"card-list\" style=\"text-align: left; margin-top:20px;\">${bulletsHtml}</div>\n      </div>`;\n    break;\n  }\n\n  case 'standar': {\n    const tSize = getFontSize(s.title, 86, 60);\n    const dSize = getFontSize(s.description, 42, 32, 60);\n    bodyContent = `\n      <div class=\"content\" style=\"text-align: center; align-items: center;\">\n        <h2 class=\"title\" style=\"font-size: ${tSize}px;\">${renderBold(s.title)}</h2>\n        \n        <div style=\"margin: 60px 0;\">\n          <i data-lucide=\"${s.visualIcon || 'info'}\" width=\"240\" height=\"240\" color=\"${PALETTE.amber}\"></i>\n        </div>\n        \n        <p class=\"desc\" style=\"font-size: ${dSize}px; max-width: 900px;\">${renderBold(s.description)}</p>\n      </div>`;\n    break;\n  }\n\n  case 'cta': {\n    const tSize = getFontSize(s.title, 86, 60);\n    const dSize = getFontSize(s.description, 46, 36, 50);\n    bodyContent = `\n      <div class=\"content\" style=\"text-align: center; align-items: center; justify-content: center;\">\n        <h2 class=\"title\" style=\"font-size: ${tSize}px;\">${renderBold(s.title)}</h2>\n        \n        <div style=\"margin: 60px 0;\">\n          <i data-lucide=\"${s.visualIcon || 'message-circle'}\" width=\"280\" height=\"280\" color=\"${PALETTE.amber}\"></i>\n        </div>\n        \n        <p class=\"desc\" style=\"font-size: ${dSize}px; max-width: 900px;\">${renderBold(s.description)}</p>\n        \n        ${s.disclaimer ? `\n          <div style=\"margin-top: 60px; background-color: ${PALETTE.amber}; padding: 16px 48px; border-radius: 50px; font-weight: 800; font-size: 24px; color: ${PALETTE.navy};\">\n            ${s.disclaimer}\n          </div>\n        ` : ''}\n      </div>`;\n    break;\n  }\n\n  default: {\n    bodyContent = `\n      <div class=\"content\">\n        <h2 class=\"title\">${s.title || ''}</h2>\n        <p class=\"desc\">${s.description || ''}</p>\n      </div>`;\n  }\n}\n\n// ── HTML Wrapper ─────────────────────────────────────────────\nconst html = `<!DOCTYPE html>\n<html lang=\"id\">\n<head>\n  <meta charset=\"utf-8\">\n  <script src=\"https://unpkg.com/lucide@latest\"></script>\n  ${buildBaseStyles()}\n</head>\n<body>\n  <div class=\"shell\">\n    ${renderHeader()}\n    ${bodyContent}\n    ${renderPagination()}\n  </div>\n  \n  <script>\n    // Initialize Lucide icons\n    lucide.createIcons();\n  </script>\n</body>\n</html>`;\n\nreturn { html, index: slideIndex, name: `slide_${slideIndex + 1}.jpg` };\n"
+        "jsCode": "// ============================================================\n// n8n Code Node — Generate Slide HTML (Berdasarkan generate.ts)\n// Mode: Run Once for Each Item\n// Input: Setiap item adalah 1 objek slide + data global (badgeText, handle, dll)\n// Output: { html: string, index: number }\n// ============================================================\n\nconst s = $json;\n\n// ── Global Meta ─────────────────────────────────────────────\nconst slideIndex = s.slideIndex !== undefined ? s.slideIndex : $itemIndex;\nconst totalCount = s.totalSlides || 8;\n\n// Mengambil Ticker/Badge dari node 'Generate' secara dinamis\nlet badgeText = 'SAHAMFYP';\ntry { badgeText = $('Generate Naskah Slides').item.json.classification.ticker || $('Generate Naskah Slides').item.json.naskah.badgeText; } catch(e) {}\nif (s.badgeText) badgeText = s.badgeText;\n\nconst handle     = s.handle || '@sahamfyp';\nconst template   = String(s.template || '').toLowerCase().trim();\n\n// Palette sesuai Templates.tsx\nconst PALETTE = {\n  navy: \"#14182B\",\n  amber: \"#F2A93B\",\n  sage: \"#4CAF7D\",\n  brick: \"#E4572E\",\n  cream: \"#F5F1E7\",\n  card: \"#EDE6D8\",\n};\n\n// ── Helpers ─────────────────────────────────────────────────\nfunction renderBold(text) {\n  if (!text) return '';\n  return text.replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>');\n}\n\nfunction getFontSize(text, max, min, threshold = 28) {\n  const len = (text || \"\").trim().length;\n  if (!len) return max;\n  if (len <= threshold) return max;\n  const ratio = Math.min((len - threshold) / threshold, 1);\n  return Math.max(Math.round(max - (max - min) * ratio), min);\n}\n\n// ── CSS Base Styles ─────────────────────────────────────────\nfunction buildBaseStyles() {\n  return `<style>\n    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800;900&family=Inter:wght@400;500;600&display=swap');\n    \n    * { box-sizing: border-box; margin: 0; padding: 0; }\n    strong { font-weight: 800; }\n    \n    body {\n      width: 1080px; height: 1350px;\n      background: #F8F6F0;\n      font-family: 'Inter', sans-serif;\n      color: ${PALETTE.navy};\n      overflow: hidden;\n      display: flex;\n      justify-content: center;\n      align-items: center;\n    }\n    \n    .shell {\n      background-color: ${PALETTE.cream};\n      color: ${PALETTE.navy};\n      width: 1080px; \n      height: 1350px;\n      display: flex; \n      flex-direction: column; \n      position: relative;\n      padding: 60px 80px;\n    }\n    \n    .header {\n      display: flex; justify-content: space-between; align-items: center;\n      flex-shrink: 0;\n    }\n    .handle { font-weight: 600; font-size: 28px; display: flex; align-items: center; gap: 12px;}\n    .badge {\n      background-color: ${PALETTE.navy};\n      color: #FFFFFF;\n      padding: 10px 32px;\n      border-radius: 40px;\n      font-weight: 800;\n      font-size: 24px;\n      letter-spacing: 1px;\n    }\n    \n    .footer {\n      display: flex; justify-content: space-between; align-items: center;\n      flex-shrink: 0; padding-top: 30px;\n    }\n    .dots { display: flex; gap: 12px; align-items: center; }\n    .swipe-text { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 24px; }\n    \n    .content {\n      flex: 1; display: flex; flex-direction: column;\n      padding-top: 60px;\n    }\n    \n    .title { font-family: 'Outfit', sans-serif; font-weight: 800; line-height: 1.1; letter-spacing: -1px; }\n    .desc { font-weight: 500; opacity: 0.85; line-height: 1.5; margin-top: 16px; }\n    .source { font-size: 20px; font-style: italic; opacity: 0.6; margin-top: auto; }\n    \n    .card-list { display: flex; flex-direction: column; gap: 24px; margin-top: 40px; }\n    .tldr-card {\n      background-color: ${PALETTE.card};\n      border-radius: 28px;\n      padding: 28px 36px;\n      display: flex; align-items: center; gap: 24px;\n    }\n    .tldr-num {\n      background-color: ${PALETTE.amber}; color: ${PALETTE.cream};\n      min-width: 64px; height: 64px; border-radius: 20px;\n      display: flex; align-items: center; justify-content: center;\n      font-weight: 800; font-size: 28px;\n    }\n    \n    .metrics-grid { display: flex; flex-direction: column; gap: 24px; margin-top: 40px; }\n    .metric-card {\n      background-color: ${PALETTE.card};\n      border-radius: 28px; border-left: 12px solid ${PALETTE.amber};\n      padding: 28px 36px;\n    }\n    .metric-header { display: flex; justify-content: space-between; align-items: center; opacity: 0.7; font-weight: 600; font-size: 22px; text-transform: uppercase; letter-spacing: 1px; }\n    .metric-val { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 64px; margin-top: 8px; margin-bottom: 8px; }\n    .metric-cap { font-weight: 500; font-size: 26px; line-height: 1.4; opacity: 0.9;}\n    \n    .bullet-card {\n      background-color: ${PALETTE.card};\n      border-radius: 28px; padding: 24px 32px;\n      display: flex; align-items: flex-start; gap: 24px;\n    }\n    .bullet-icon {\n      width: 56px; height: 56px; border-radius: 50%;\n      display: flex; align-items: center; justify-content: center;\n      flex-shrink: 0; color: #FFF; margin-top: 4px;\n    }\n  </style>`;\n}\n\nfunction renderPagination() {\n  const isLast = slideIndex >= (totalCount - 1);\n  return `\n    <div class=\"footer\">\n      <div class=\"dots\"></div>\n      <div class=\"swipe-text\">\n        ${isLast ? '<i data-lucide=\"rotate-ccw\" width=\"32\" height=\"32\"></i>' : '<span>Geser</span> <i data-lucide=\"arrow-right\" width=\"32\" height=\"32\"></i>'}\n      </div>\n    </div>\n  `;\n}\n\nfunction renderHeader() {\n  return `\n    <div class=\"header\">\n      <span class=\"handle\">${handle}</span>\n      <span class=\"badge\">${badgeText}</span>\n    </div>\n  `;\n}\n\n// ── Template Builder ─────────────────────────────────────────\nlet bodyContent = '';\n\nswitch (template) {\n  case 'cover': {\n    const tSize = getFontSize(s.title, 86, 60, 40);\n    const dSize = getFontSize(s.description, 40, 32, 50);\n    const fallbackIcon = s.visualIcon || 'trending-up';\n\n    bodyContent = `\n      <div class=\"content\" style=\"text-align: left;\">\n        <h2 class=\"title\" style=\"font-size: ${tSize}px;\">${renderBold(s.title)}</h2>\n        ${s.description ? `<p class=\"desc\" style=\"font-size: ${dSize}px;\">${renderBold(s.description)}</p>` : ''}\n        \n        <div style=\"flex:1; margin-top:40px; border-radius:32px; overflow:hidden; position:relative; background-color:${PALETTE.card}; display:flex; align-items:center; justify-content:center;\">\n          ${s.illustrationUrl ? `\n            <img src=\"${s.illustrationUrl}\" \n                 style=\"width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; z-index:2;\" \n                 onerror=\"this.style.display='none';\" />\n          ` : ''}\n          <div style=\"display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; z-index:1;\">\n            <div style=\"width:160px; height:160px; border-radius:50%; background-color:${PALETTE.cream}; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(0,0,0,0.06);\">\n              <i data-lucide=\"${fallbackIcon}\" width=\"80\" height=\"80\" color=\"${PALETTE.amber}\"></i>\n            </div>\n            <span style=\"font-weight:800; font-size:24px; letter-spacing:2px; color:${PALETTE.navy}; opacity:0.6; text-transform:uppercase;\">UPDATE PASAR HARI INI</span>\n          </div>\n        </div>\n      </div>`;\n    break;\n  }\n\n  case 'tldr': {\n    const tSize = getFontSize(s.title, 76, 60);\n    const cardsHtml = (s.tldrCards || []).map((card, idx) => {\n      const cSize = getFontSize(card.text, 36, 28, 50);\n      return `\n        <div class=\"tldr-card\">\n          <div class=\"tldr-num\">${idx + 1}</div>\n          <p style=\"font-size: ${cSize}px; font-weight: 500;\">${renderBold(card.text)}</p>\n        </div>`;\n    }).join('');\n    \n    bodyContent = `\n      <div class=\"content\" style=\"text-align: center;\">\n        <h2 class=\"title\" style=\"font-size: ${tSize}px;\">${renderBold(s.title)}</h2>\n        <div class=\"card-list\" style=\"text-align: left;\">${cardsHtml}</div>\n      </div>`;\n    break;\n  }\n\n  case 'kronologi': {\n    const tSize = getFontSize(s.title, 76, 50);\n    const dSize = getFontSize(s.description, 36, 28, 50);\n\n    bodyContent = `\n      <div class=\"content\" style=\"text-align: center; align-items: center;\">\n        <h2 class=\"title\" style=\"font-size: ${tSize}px; margin-bottom: 30px;\">${renderBold(s.title)}</h2>\n        \n        <div style=\"flex:1; width:100%; max-height:450px; border-radius:32px; overflow:hidden; position:relative; background-color:${PALETTE.card}; display:flex; align-items:center; justify-content:center;\">\n          ${s.illustrationUrl ? `\n            <img src=\"${s.illustrationUrl}\" \n                 style=\"width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; z-index:2;\" \n                 onerror=\"this.style.display='none';\" />\n          ` : ''}\n          <div style=\"display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; z-index:1;\">\n            <div style=\"width:120px; height:120px; border-radius:50%; background-color:${PALETTE.cream}; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 20px rgba(0,0,0,0.05);\">\n              <i data-lucide=\"newspaper\" width=\"60\" height=\"60\" color=\"${PALETTE.amber}\"></i>\n            </div>\n            <span style=\"font-weight:800; font-size:22px; letter-spacing:2px; color:${PALETTE.navy}; opacity:0.6; text-transform:uppercase;\">KILAS BERITA & FAKTA</span>\n          </div>\n        </div>\n        \n        <p class=\"desc\" style=\"font-size: ${dSize}px; margin-top: 30px; max-width: 900px;\">${renderBold(s.description)}</p>\n        ${s.source ? `<div class=\"source\" style=\"margin-top:40px;\">Sumber: ${s.source}</div>` : ''}\n      </div>`;\n    break;\n  }\n\n  case 'data': {\n    const tSize = getFontSize(s.title, 76, 60);\n    const metricsHtml = (s.metrics || []).slice(0, 4).map(m => {\n      const toneColor = m.tone === 'sage' ? PALETTE.sage : PALETTE.amber;\n      return `\n        <div class=\"metric-card\" style=\"border-color: ${toneColor};\">\n          <div class=\"metric-header\" style=\"color: ${toneColor};\">\n            <span>${m.label}</span>\n            <i data-lucide=\"${m.icon || 'bar-chart-3'}\" width=\"36\" height=\"36\"></i>\n          </div>\n          <div class=\"metric-val\" style=\"color: ${toneColor};\">${m.value}</div>\n          <div class=\"metric-cap\">${renderBold(m.caption)}</div>\n        </div>`;\n    }).join('');\n\n    bodyContent = `\n      <div class=\"content\" style=\"text-align: center;\">\n        <h2 class=\"title\" style=\"font-size: ${tSize}px;\">${renderBold(s.title)}</h2>\n        <div class=\"metrics-grid\" style=\"text-align: left;\">${metricsHtml}</div>\n      </div>`;\n    break;\n  }\n\n  case 'pros':\n  case 'cons': {\n    const tSize = getFontSize(s.title, 76, 60);\n    const isPros = template === 'pros';\n    const bgColor = isPros ? PALETTE.sage : PALETTE.brick;\n    const mainIcon = isPros ? 'check-circle-2' : 'x-circle';\n    \n    const bulletsHtml = (s.bullets || []).map(b => {\n      const cSize = getFontSize(b.text, 36, 28, 50);\n      return `\n        <div class=\"bullet-card\">\n          <div class=\"bullet-icon\" style=\"background-color: ${bgColor};\">\n            <i data-lucide=\"${mainIcon}\" width=\"32\" height=\"32\"></i>\n          </div>\n          <p style=\"font-size: ${cSize}px; font-weight: 500;\">${renderBold(b.text)}</p>\n        </div>`;\n    }).join('');\n\n    bodyContent = `\n      <div class=\"content\" style=\"text-align: center;\">\n        <h2 class=\"title\" style=\"font-size: ${tSize}px;\">${renderBold(s.title)}</h2>\n        <div style=\"margin: 30px auto; width: 120px; height: 120px; background-color: ${bgColor}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;\">\n          <i data-lucide=\"${mainIcon}\" width=\"64\" height=\"64\"></i>\n        </div>\n        <div class=\"card-list\" style=\"text-align: left; margin-top:20px;\">${bulletsHtml}</div>\n      </div>`;\n    break;\n  }\n\n  case 'standar': {\n    const tSize = getFontSize(s.title, 86, 60);\n    const dSize = getFontSize(s.description, 42, 32, 60);\n    bodyContent = `\n      <div class=\"content\" style=\"text-align: center; align-items: center;\">\n        <h2 class=\"title\" style=\"font-size: ${tSize}px;\">${renderBold(s.title)}</h2>\n        \n        <div style=\"margin: 60px 0;\">\n          <i data-lucide=\"${s.visualIcon || 'info'}\" width=\"240\" height=\"240\" color=\"${PALETTE.amber}\"></i>\n        </div>\n        \n        <p class=\"desc\" style=\"font-size: ${dSize}px; max-width: 900px;\">${renderBold(s.description)}</p>\n      </div>`;\n    break;\n  }\n\n  case 'cta': {\n    const tSize = getFontSize(s.title, 86, 60);\n    const dSize = getFontSize(s.description, 46, 36, 50);\n    bodyContent = `\n      <div class=\"content\" style=\"text-align: center; align-items: center; justify-content: center;\">\n        <h2 class=\"title\" style=\"font-size: ${tSize}px;\">${renderBold(s.title)}</h2>\n        \n        <div style=\"margin: 60px 0;\">\n          <i data-lucide=\"${s.visualIcon || 'message-circle'}\" width=\"280\" height=\"280\" color=\"${PALETTE.amber}\"></i>\n        </div>\n        \n        <p class=\"desc\" style=\"font-size: ${dSize}px; max-width: 900px;\">${renderBold(s.description)}</p>\n        \n        ${s.disclaimer ? `\n          <div style=\"margin-top: 60px; background-color: ${PALETTE.amber}; padding: 16px 48px; border-radius: 50px; font-weight: 800; font-size: 24px; color: ${PALETTE.navy};\">\n            ${s.disclaimer}\n          </div>\n        ` : ''}\n      </div>`;\n    break;\n  }\n\n  default: {\n    bodyContent = `\n      <div class=\"content\">\n        <h2 class=\"title\">${s.title || ''}</h2>\n        <p class=\"desc\">${s.description || ''}</p>\n      </div>`;\n  }\n}\n\n// ── HTML Wrapper ─────────────────────────────────────────────\nconst html = `<!DOCTYPE html>\n<html lang=\"id\">\n<head>\n  <meta charset=\"utf-8\">\n  <script src=\"https://unpkg.com/lucide@latest\"></script>\n  ${buildBaseStyles()}\n</head>\n<body>\n  <div class=\"shell\">\n    ${renderHeader()}\n    ${bodyContent}\n    ${renderPagination()}\n  </div>\n  \n  <script>\n    lucide.createIcons();\n  </script>\n</body>\n</html>`;\n\nreturn { html, index: slideIndex, name: `slide_${slideIndex + 1}.jpg` };\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -753,7 +753,7 @@
             },
             {
               "name": "apikey",
-              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhncXNydHRwZHhpaXFrbnV1bHdsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODg0NzQzNSwiZXhwIjoyMTA0NDIzNDM1fQ.9ph-hVC34GmTDucS6PzwVri66YgOZGBknWtgxx9mbp8"
+              "value": "MASUKKAN API KEY ANDA DISINI"
             }
           ]
         },
@@ -772,67 +772,10 @@
       "name": "Save Image - Bucket Supabase",
       "credentials": {
         "httpBearerAuth": {
-          "id": "fvjDamOUe1YBbbBo",
+          "id": "MASUKKAN API KEY ANDA DISINI",
           "name": "Bearer Auth account"
         }
       }
-    },
-    {
-      "parameters": {
-        "fieldToSplitOut": "data",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.splitOut",
-      "typeVersion": 1,
-      "position": [
-        -4960,
-        -272
-      ],
-      "id": "73751f58-16bd-4a5f-b1c6-1d1057131469",
-      "name": "Split Out"
-    },
-    {
-      "parameters": {
-        "url": "https://saham-fyp.vercel.app/api/news/",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "X-API-Key",
-              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmMzAyMDViMi1hMzY1LTQyZDUtODE0ZS0yYzRiYjJkNDQyYmIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiNDdmMGMwYjktMTQ1MC00NjcwLTk3ZjktZjA1ZDU2Y2EzM2ViIiwiaWF0IjoxNzg4OTM1MDA2fQ.PVtFSytgbdeoVO_86oOpYZPMmNbYOYEV9MCaUSVVGos"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.5,
-      "position": [
-        -5168,
-        -272
-      ],
-      "id": "b7aa6404-e809-43fb-b455-f9bee478a1e0",
-      "name": "SahamFYP - api/news"
-    },
-    {
-      "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "field": "cronExpression",
-              "expression": "0 7,12,16 * * 1-5"
-            }
-          ]
-        }
-      },
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.4,
-      "position": [
-        -5376,
-        -272
-      ],
-      "id": "f067bc4e-8faa-4f5f-a5ef-0153476a4f20",
-      "name": "Sector API News"
     }
   ],
   "pinData": {},
@@ -1164,39 +1107,6 @@
           }
         ]
       ]
-    },
-    "Split Out": {
-      "main": [
-        [
-          {
-            "node": "Check Exists?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "SahamFYP - api/news": {
-      "main": [
-        [
-          {
-            "node": "Split Out",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Sector API News": {
-      "main": [
-        [
-          {
-            "node": "SahamFYP - api/news",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
     }
   },
   "active": true,
@@ -1208,7 +1118,7 @@
     "availableInMCP": false,
     "timeSavedPerExecution": 5
   },
-  "versionId": "2a478b38-59e3-4d32-862b-5e3e7e371163",
+  "versionId": "8d20d823-f408-41be-990d-3d32bb139714",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "dc96f10ae7dc95d3c138575ba243a0a167923dbcb524841d451aadf9135d5fb3"
