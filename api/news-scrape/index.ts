@@ -84,6 +84,9 @@ function parseTags(tagsInput?: any): string[] | null {
       return cleaned.length > 0 ? cleaned : null;
     }
   }
+  return null;
+}
+
 function parseWibDate(ts?: any): string | null {
   if (!ts) return null;
   if (typeof ts === 'string' && /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2})?$/.test(ts.trim())) {
