@@ -1,23 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { isReplizConfigured } from '../services/repliz';
 import { supabase } from '../services/supabase';
 import PipelineFlow from './PipelineFlow';
+import TechnicalDepth from './TechnicalDepth';
 
 interface OverviewProps {
   onNavigate: (page: string) => void;
 }
 
-interface ServiceInfo {
-  name: string;
-  icon: string;
-  description: string;
-  connected: boolean;
-  details: string;
-  color: string;
-}
-
 export default function Overview({ onNavigate }: OverviewProps) {
-  const [replizConnected, setReplizConnected] = useState(false);
   const [statsData, setStatsData] = useState({
     totalNews: 0,
     totalBriefs: 0,
@@ -29,7 +19,6 @@ export default function Overview({ onNavigate }: OverviewProps) {
   const [loadingStats, setLoadingStats] = useState(true);
 
   useEffect(() => {
-    setReplizConnected(isReplizConfigured());
     loadStats();
   }, []);
 
@@ -77,61 +66,23 @@ export default function Overview({ onNavigate }: OverviewProps) {
     { label: 'Stock Watchlist Today', value: loadingStats ? '...' : statsData.watchlistToday, icon: '👁️', color: 'bg-green-50 text-green-600', page: 'stock-watchlist' },
   ];
 
-  // Services list:
-  // 1. Sectors.app : Stocks Market Data, Stocks News & Filing
-  // 2. Sumopod LLM
-  // 3. Supabase
-  // 4. Repliz (Sosial Media Aggregator)
-  const services: ServiceInfo[] = [
-    {
-      name: 'Sectors.app',
-      icon: '📊',
-      description: 'Stocks Market Data, Stocks News & Filing',
-      connected: !!import.meta.env.VITE_SECTORS_API_KEY,
-      details: import.meta.env.VITE_SECTORS_API_KEY ? 'API key configured' : 'Not configured',
-      color: 'bg-green-50 text-green-600',
-    },
-    {
-      name: 'Sumopod LLM',
-      icon: '🤖',
-      description: 'Content generation (OpenAI compatible)',
-      connected: !!import.meta.env.VITE_LLM_MODEL,
-      details: import.meta.env.VITE_LLM_MODEL ? `Model: ${import.meta.env.VITE_LLM_MODEL}` : 'Not configured',
-      color: 'bg-purple-50 text-purple-600',
-    },
-    {
-      name: 'Supabase',
-      icon: '🗄️',
-      description: 'Database & storage',
-      connected: !!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY),
-      details: import.meta.env.VITE_SUPABASE_URL ? 'Project connected' : 'Not configured',
-      color: 'bg-slate-100 text-slate-600',
-    },
-    {
-      name: 'Repliz (Sosial Media Aggregator)',
-      icon: '📱',
-      description: 'Multi-platform social media posting (Instagram, TikTok, Threads, FB, Telegram)',
-      connected: replizConnected,
-      details: replizConnected ? 'Account connected' : 'Not configured',
-      color: 'bg-pink-50 text-pink-600',
-    },
-  ];
-
   return (
     <div className="space-y-6">
+      {/* Top Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">📊 Dashboard Overview</h1>
-          <p className="text-sm text-slate-500 mt-1">Ringkasan statistik & status infrastruktur SahamFYP</p>
+          <p className="text-sm text-slate-500 mt-1">Ringkasan statistik & arsitektur sistem otomatisasi SahamFYP</p>
         </div>
         <button
           onClick={() => onNavigate('generator')}
-          className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl transition flex items-center gap-2"
+          className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl transition flex items-center gap-2 shadow-xs"
         >
           ✍️ Generate Konten Baru
         </button>
       </div>
 
+      {/* Metric Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, i) => (
           <div
@@ -155,7 +106,7 @@ export default function Overview({ onNavigate }: OverviewProps) {
         ))}
       </div>
 
-      {/* ⚡ Quick Actions (Moved above Connection Status) */}
+      {/* ⚡ Quick Actions */}
       <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
         <h2 className="text-lg font-bold text-slate-800 mb-4">⚡ Quick Actions</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
@@ -166,42 +117,11 @@ export default function Overview({ onNavigate }: OverviewProps) {
         </div>
       </div>
 
-      {/* 🌊 2 Saluran Sumber Utama Otomasi SahamFYP (Pipeline Flow) */}
+      {/* 🌊 2 Saluran Sumber Utama Otomasi SahamFYP (Pipeline Flow dengan Animasi Mengalir) */}
       <PipelineFlow onNavigate={onNavigate} stats={statsData} />
 
-      {/* Connection Status - Detailed */}
-      <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
-        <h2 className="text-lg font-bold text-slate-800 mb-4">🔗 Connection Status</h2>
-        <div className="space-y-3">
-          {services.map((service, i) => (
-            <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition">
-              <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${service.color}`}>
-                  {service.icon}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-slate-800">{service.name}</h3>
-                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${service.connected ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
-                      {service.connected ? 'Connected' : 'Disconnected'}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-500 mt-0.5">{service.description}</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">{service.details}</p>
-                </div>
-              </div>
-              {!service.connected && (
-                <button
-                  onClick={() => onNavigate('settings')}
-                  className="px-4 py-2 text-xs font-medium text-amber-600 hover:text-amber-700 border border-amber-200 rounded-lg hover:bg-amber-50 transition"
-                >
-                  Setup
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* 🧠 Technical Depth: Multi-API Orchestration, Zero-Hallucination Math, & Dual-Stage LLM */}
+      <TechnicalDepth />
     </div>
   );
 }
