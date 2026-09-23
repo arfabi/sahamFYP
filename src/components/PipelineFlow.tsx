@@ -318,7 +318,7 @@ export default function PipelineFlow({ onNavigate, stats }: PipelineFlowProps) {
 
             {/* Visual 3-Step Flow Pipeline */}
             <div className="grid grid-cols-1 lg:grid-cols-11 gap-3 items-center">
-              {/* STEP 1: 8 Kanal Berita & Sector.app API News */}
+              {/* STEP 1: 8 Kanal Berita & Sectors.app API News */}
               <div 
                 onClick={() => setSelectedNode(selectedNode === 'news_sources' ? null : 'news_sources')}
                 className={`lg:col-span-3 rounded-xl p-4 transition-all duration-200 cursor-pointer border ${

@@ -162,10 +162,10 @@ export default function LandingPage({
   const currentCase = CASE_STUDIES[activeCaseIndex];
 
   const handleLoginClick = () => {
-    if (onGoToLogin) {
-      onGoToLogin();
-    } else if (onEnterDemo) {
+    if (onEnterDemo) {
       onEnterDemo();
+    } else if (onGoToLogin) {
+      onGoToLogin();
     }
   };
 
@@ -270,10 +270,11 @@ export default function LandingPage({
 
                 <button
                   onClick={handleLoginClick}
-                  className="px-3.5 sm:px-4 py-2 bg-[#170c18] hover:bg-[#251327] border border-[#381934] hover:border-rose-500/40 text-slate-200 hover:text-white font-semibold rounded-xl text-xs sm:text-sm transition flex items-center gap-1.5 shadow-sm active:scale-95"
+                  className="px-3.5 sm:px-4 py-2 bg-gradient-to-r from-rose-500/10 to-orange-500/10 hover:from-rose-500/20 hover:to-orange-500/20 border border-rose-500/30 hover:border-rose-500/50 text-rose-200 hover:text-white font-semibold rounded-xl text-xs sm:text-sm transition flex items-center gap-1.5 shadow-sm active:scale-95"
+                  title="Pantau log eksekusi n8n, status publish, dan data Sectors API secara real-time"
                 >
-                  <LogIn className="w-3.5 h-3.5 text-rose-400" />
-                  <span>Login Dashboard</span>
+                  <BarChart3 className="w-3.5 h-3.5 text-rose-400" />
+                  <span>Buka Dashboard Monitoring</span>
                 </button>
               </>
             )}
@@ -304,27 +305,37 @@ export default function LandingPage({
             SahamFYP mengubah riset sekuritas 20+ lembar jadi Daily Market Brief visual — lengkap bedah katalis 3W (What, Why, What's Next) dan sistem warning risiko objektif, dirancang untuk <strong>54,4% investor Gen-Z Indonesia</strong> yang butuh data jelas dan mudah dimengerti. Paham dulu, baru FOMO.
           </p>
 
-          {/* Call to Actions (Primary: Lihat Produk Carousel, Secondary: Login Dashboard) */}
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-            <a
-              href="#product-showcase"
-              onClick={(e) => scrollToSection(e, 'product-showcase')}
-              className="px-6 py-3.5 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 hover:opacity-95 text-white font-extrabold rounded-xl text-sm sm:text-base transition shadow-xl shadow-rose-500/30 flex items-center gap-2 active:scale-95 group"
-            >
-              <Smartphone className="w-4 h-4 text-amber-200" />
-              <span>📱 Lihat Hasil Postingan</span>
-              <span className="text-amber-200 group-hover:translate-y-0.5 transition-transform">↓</span>
-            </a>
+          {/* Call to Actions (Dual Proof: Hasil Postingan & Dashboard Monitoring) */}
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+            <div className="flex flex-col items-center">
+              <a
+                href="#product-showcase"
+                onClick={(e) => scrollToSection(e, 'product-showcase')}
+                className="w-full py-3.5 px-5 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 hover:opacity-95 text-white font-extrabold rounded-xl text-sm sm:text-base transition shadow-xl shadow-rose-500/25 flex items-center justify-center gap-2 active:scale-95 group text-center"
+              >
+                <Smartphone className="w-4 h-4 text-amber-200" />
+                <span>📱 Lihat Hasil Postingan</span>
+                <span className="text-amber-200 group-hover:translate-y-0.5 transition-transform">↓</span>
+              </a>
+              <p className="mt-2 text-xs text-slate-400 text-center leading-snug">
+                Lihat output final yang tayang di Instagram, TikTok &amp; lainnya
+              </p>
+            </div>
 
             {!inDashboard && (
-              <button
-                onClick={handleLoginClick}
-                className="px-5 py-3.5 bg-[#170c18] hover:bg-[#231224] border border-[#381934] hover:border-rose-500/40 text-slate-200 hover:text-white font-semibold rounded-xl text-sm sm:text-base transition flex items-center gap-2 active:scale-95"
-              >
-                <LogIn className="w-4 h-4 text-rose-400" />
-                <span>Login Dashboard</span>
-                <ArrowRight className="w-4 h-4 text-slate-400" />
-              </button>
+              <div className="flex flex-col items-center">
+                <button
+                  onClick={handleLoginClick}
+                  className="w-full py-3.5 px-5 bg-gradient-to-r from-purple-600 via-rose-600 to-orange-500 hover:opacity-95 text-white font-extrabold rounded-xl text-sm sm:text-base transition shadow-xl shadow-purple-500/25 flex items-center justify-center gap-2 active:scale-95 group text-center"
+                >
+                  <BarChart3 className="w-4 h-4 text-rose-200" />
+                  <span>Buka Dashboard Monitoring</span>
+                  <ArrowRight className="w-4 h-4 text-rose-200 group-hover:translate-x-0.5 transition-transform" />
+                </button>
+                <p className="mt-2 text-xs text-slate-400 text-center leading-snug">
+                  Pantau log eksekusi n8n, status publish, dan data Sectors API secara real-time
+                </p>
+              </div>
             )}
           </div>
 
@@ -617,7 +628,7 @@ export default function LandingPage({
               Konsep & Arsitektur
             </span>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mt-2 leading-tight">
-              Katalis (Berita dan Fillings) + Data (Sector.app) + LLM AI + Otomasi = Konten Finansial Berkualitas dan Dipahami Gen Z
+              Katalis (Berita dan Filings) + Data (Sectors.app) + LLM AI + Otomasi = Konten Finansial Berkualitas dan Dipahami Gen Z
             </h2>
             <p className="text-sm sm:text-base text-slate-400 mt-3">
               Diagram alur kerja otonom SahamFYP: menghubungkan LLM AI, Sectors.app REST API, dan n8n orchestrator langsung ke multi-kanal media sosial publik.
@@ -1403,36 +1414,58 @@ export default function LandingPage({
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#170c18] border border-[#33182f] text-rose-300 text-xs font-semibold mb-5 shadow-inner">
               <Sparkles className="w-3.5 h-3.5 text-rose-400" />
-              <span>Dua Pintu Masuk SahamFYP</span>
+              <span>Verifikasi Karya SahamFYP</span>
             </div>
 
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-              Edukasi Publik di Medsos atau Uji Coba Dashboard
+              Edukasi Publik di Medsos atau Buka Dashboard Monitoring
             </h2>
             <p className="mt-3 text-sm sm:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
-              Ikuti konten harian ramah Gen Z langsung di akun media sosial kami, atau masuk ke dashboard operator internal untuk memantau dapur pacu otomasi.
+              Dua cara verifikasi karya ini: lihat hasil akhirnya di medsos, atau intip langsung dapur otomasinya di dashboard.
             </p>
 
             {/* Dual Actions CTA */}
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-              <a
-                href="#social-accounts"
-                onClick={(e) => scrollToSection(e, 'social-accounts')}
-                className="w-full sm:w-auto px-7 py-3.5 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 hover:opacity-95 text-white font-extrabold rounded-2xl text-sm sm:text-base transition shadow-xl shadow-rose-500/30 flex items-center justify-center gap-2 active:scale-95 group"
-              >
-                <Sparkles className="w-4 h-4 text-amber-200" />
-                <span>Follow @sahamfyp.id (Media Sosial)</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-              </a>
+            <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+              <div className="flex flex-col items-center">
+                <a
+                  href="#product-showcase"
+                  onClick={(e) => scrollToSection(e, 'product-showcase')}
+                  className="w-full py-3.5 px-5 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 hover:opacity-95 text-white font-extrabold rounded-xl text-sm sm:text-base transition shadow-xl shadow-rose-500/25 flex items-center justify-center gap-2 active:scale-95 group text-center"
+                >
+                  <Smartphone className="w-4 h-4 text-amber-200" />
+                  <span>📱 Lihat Hasil Postingan</span>
+                  <span className="text-amber-200 group-hover:translate-y-0.5 transition-transform">↓</span>
+                </a>
+                <p className="mt-2 text-xs text-slate-400 text-center leading-snug">
+                  Lihat output final yang tayang di Instagram, TikTok &amp; lainnya
+                </p>
+              </div>
 
-              <button
-                onClick={handleLoginClick}
-                className="w-full sm:w-auto px-7 py-3.5 bg-[#170c18] hover:bg-[#231224] border border-[#381934] hover:border-rose-500/40 text-slate-200 hover:text-white font-semibold rounded-2xl text-sm sm:text-base transition flex items-center justify-center gap-2 active:scale-95"
-              >
-                <LogIn className="w-4 h-4 text-rose-400" />
-                <span>Login Dashboard</span>
-              </button>
+              <div className="flex flex-col items-center">
+                <button
+                  onClick={handleLoginClick}
+                  className="w-full py-3.5 px-5 bg-gradient-to-r from-purple-600 via-rose-600 to-orange-500 hover:opacity-95 text-white font-extrabold rounded-xl text-sm sm:text-base transition shadow-xl shadow-purple-500/25 flex items-center justify-center gap-2 active:scale-95 group text-center"
+                >
+                  <BarChart3 className="w-4 h-4 text-rose-200" />
+                  <span>Buka Dashboard Monitoring</span>
+                  <ArrowRight className="w-4 h-4 text-rose-200 group-hover:translate-x-0.5 transition-transform" />
+                </button>
+                <p className="mt-2 text-xs text-slate-400 text-center leading-snug">
+                  Pantau log eksekusi n8n, status publish, dan data Sectors API secara real-time
+                </p>
+              </div>
             </div>
+
+            {onGoToLogin && (
+              <div className="mt-6 text-center">
+                <button
+                  onClick={onGoToLogin}
+                  className="text-slate-500 hover:text-rose-300 text-xs transition underline-offset-4 hover:underline"
+                >
+                  Akses login kredensial operator (opsional) →
+                </button>
+              </div>
+            )}
           </div>
         </section>
       )}
