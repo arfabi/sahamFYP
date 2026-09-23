@@ -39,7 +39,7 @@ interface CaseStudy {
   id: string;
   ticker: string;
   name: string;
-  category: 'green' | 'red' | 'catalyst';
+  category: 'brief' | 'green' | 'red' | 'catalyst';
   badge: string;
   badgeBg: string;
   title: string;
@@ -50,6 +50,32 @@ interface CaseStudy {
 }
 
 const CASE_STUDIES: CaseStudy[] = [
+  {
+    id: 'market-brief',
+    ticker: 'OPEN',
+    name: 'Daily Market Brief (23 September 2026)',
+    category: 'brief',
+    badge: 'Sesi Open • Daily Market Brief',
+    badgeBg: 'bg-sky-500/15 text-sky-300 border-sky-500/30',
+    title: 'Market Open: IHSG Terkoreksi, 4 Emiten Masuk Radar',
+    summary:
+      'Hasil kurasi otomatis pipeline n8n & Sectors API: update IHSG 6.277, top movers, serta membedah 4 emiten watchlist (SILO, BSSR, CDIA, WIKA) lengkap dengan matriks 4 kuadran & kamus Gen Z.',
+    slidesPrefix:
+      'https://xgqsrttpdxiiqknuulwl.supabase.co/storage/v1/object/public/sfyp-storage/slide-4651-',
+    totalSlides: 10,
+    slideLabels: [
+      { title: 'Cover Market Open', desc: 'Sesi pembukaan pasar, tanggal trading, & ringkasan kurasi berita' },
+      { title: 'TL;DR Ringkasan Hari Ini', desc: 'Status IHSG, top gainer, top loser, arus asing, & katalis utama' },
+      { title: 'Kondisi Market Kemarin', desc: 'Pergerakan IHSG 6.277 (-1.68%), data top movers, & foreign flow net sell' },
+      { title: 'Watchlist #1: $SILO', desc: 'Katalis ekspansi akuisisi 14 RS, evaluasi efisiensi operasional & valuasi' },
+      { title: 'Watchlist #2: $BSSR', desc: 'Dividen jumbo yield tinggi, analisis cash flow & laba sektor batu bara' },
+      { title: 'Watchlist #3: $CDIA', desc: 'Dividen interim US$10 Juta dari Prajogo Pangestu & jadwal cum date' },
+      { title: 'Watchlist #4: $WIKA', desc: 'Studi kasus risiko restrukturisasi obligasi BUMN & manajemen risiko' },
+      { title: 'Matriks 4 Kuadran', desc: 'Pemetaan Fundamental vs Teknikal: Q1 Investasi, Q2 Value, Q3 Momentum, Q4 Hindari' },
+      { title: 'Kamus Saham Gen Z', desc: 'Penjelasan istilah awam: PER, PBV, ROE, MA20/MA50, & Foreign Flow' },
+      { title: 'Kesimpulan & Disclaimer', desc: 'Aturan manajemen modal, panduan DYOR objektif, & call-to-action' },
+    ],
+  },
   {
     id: 'bbca',
     ticker: 'BBCA',
@@ -691,13 +717,20 @@ export default function LandingPage({
                       }`}
                   >
                     <span>
+                      {item.category === 'brief' && '📊'}
                       {item.category === 'green' && '🟢'}
                       {item.category === 'red' && '🔴'}
                       {item.category === 'catalyst' && '⚡'}
                     </span>
-                    <span>${item.ticker}</span>
+                    <span>{item.id === 'market-brief' ? 'Daily Market Brief' : `$${item.ticker}`}</span>
                     <span className="opacity-80 text-[11px] hidden sm:inline">
-                      ({item.category === 'green' ? 'Fundamental Solid' : item.category === 'red' ? 'Red Flag Warning' : 'Turnaround'})
+                      ({item.category === 'brief'
+                        ? 'Market Open'
+                        : item.category === 'green'
+                        ? 'Fundamental Solid'
+                        : item.category === 'red'
+                        ? 'Red Flag Warning'
+                        : 'Turnaround'})
                     </span>
                   </button>
                 );
@@ -807,7 +840,7 @@ export default function LandingPage({
                 </div>
 
                 <h3 className="text-xl sm:text-2xl font-bold text-white mt-1">
-                  ${currentCase.ticker} — {currentCase.name}
+                  {currentCase.id === 'market-brief' ? currentCase.name : `$${currentCase.ticker} — ${currentCase.name}`}
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-300 mt-2 leading-relaxed">
                   {currentCase.summary}
@@ -819,7 +852,7 @@ export default function LandingPage({
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-xs font-bold text-rose-300 uppercase tracking-wider flex items-center gap-1.5">
                     <Database className="w-3.5 h-3.5" />
-                    <span>Anatomi 8 Slide (Klik untuk Pratinjau):</span>
+                    <span>Anatomi {currentCase.totalSlides} Slide (Klik untuk Pratinjau):</span>
                   </h4>
                   <span className="text-[11px] text-slate-400">
                     Slide {activeSlideIndex + 1} aktif
