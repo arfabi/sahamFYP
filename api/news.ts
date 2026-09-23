@@ -22,7 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    let { limit = '20', start, end, tags } = req.query;
+    let { limit = '10', start, end, tags } = req.query;
 
     // Jika start atau end tidak diberikan, default ke kemarin dan hari ini (GMT+7 / Asia/Jakarta)
     if (!start || !end) {

@@ -29,6 +29,7 @@ Tugasmu adalah memberikan SCORE 0-10 apakah sebuah berita saham layak dijadikan 
 - **Rumor / belum terkonfirmasi**: -2
 - **News lama / sudah priced in**: -2
 - **Tidak ada ticker spesifik**: -1
+- **Ticker Saham lebih dari 1** : -1
 - **Macro vague tanpa dampak langsung ke saham**: -1
 
 ## ATURAN KETAT:
@@ -102,7 +103,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (ticker && ticker !== 'null') {
       try {
         const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
-        
+
         // 1. Cek di tabel automation_posts (jika sudah benar-benar terpublish di sosmed)
         const { data: publishedPosts, error: err1 } = await supabaseServer
           .from('automation_posts')
@@ -122,7 +123,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           .limit(1);
 
         if (
-          (!err1 && publishedPosts && publishedPosts.length > 0) || 
+          (!err1 && publishedPosts && publishedPosts.length > 0) ||
           (!err2 && scrapedNews && scrapedNews.length > 0)
         ) {
           console.log(`[Score] Ticker ${ticker} sudah diproses/dipublish hari ini. Melewati berita.`);
