@@ -143,25 +143,37 @@ export default function StockDetailPage() {
     if (!signal) return 'bg-[#200f27] text-zinc-400 border border-[#341a3e]';
     const s = signal.toLowerCase();
 
-    // Positive indicators
-    if (
-      s.includes('murah') ||
-      s.includes('di atas sektor') ||
-      s.includes('atas') ||
-      (type === 'der' && s.includes('rendah'))
-    ) {
-      return 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30';
+    // 1. Rasio Valuasi (PER, PBV): Lebih KECIL / Murah dari sektor = Bagus (Hijau)
+    if (type === 'per' || type === 'pbv') {
+      if (s.includes('murah') || s.includes('diskon') || s.includes('di bawah')) {
+        return 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30';
+      }
+      if (s.includes('mahal') || s.includes('berisiko') || s.includes('di atas') || s.includes('tinggi') || s.includes('rugi')) {
+        return 'bg-rose-500/15 text-rose-300 border border-rose-500/30';
+      }
+      return 'bg-[#200f27] text-zinc-400 border border-[#341a3e]';
     }
 
-    // Negative indicators
-    if (
-      s.includes('mahal') ||
-      s.includes('berisiko') ||
-      s.includes('di bawah sektor') ||
-      s.includes('bawah') ||
-      (type === 'der' && s.includes('tinggi'))
-    ) {
-      return 'bg-rose-500/15 text-rose-300 border border-rose-500/30';
+    // 2. Rasio Profitabilitas (ROE): Lebih BESAR / Efisien dari sektor = Bagus (Hijau)
+    if (type === 'roe') {
+      if (s.includes('di atas') || s.includes('tinggi') || s.includes('efisien') || s.includes('bagus') || s.includes('unggul')) {
+        return 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30';
+      }
+      if (s.includes('di bawah') || s.includes('rendah') || s.includes('rugi') || s.includes('negatif') || s.includes('defisit')) {
+        return 'bg-rose-500/15 text-rose-300 border border-rose-500/30';
+      }
+      return 'bg-[#200f27] text-zinc-400 border border-[#341a3e]';
+    }
+
+    // 3. Rasio Utang (DER): Lebih KECIL / Rendah dari sektor = Aman/Bagus (Hijau)
+    if (type === 'der') {
+      if (s.includes('rendah') || s.includes('di bawah') || s.includes('aman') || s.includes('sehat')) {
+        return 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30';
+      }
+      if (s.includes('tinggi') || s.includes('berisiko') || s.includes('di atas') || s.includes('melebihi')) {
+        return 'bg-rose-500/15 text-rose-300 border border-rose-500/30';
+      }
+      return 'bg-[#200f27] text-zinc-400 border border-[#341a3e]';
     }
 
     // Neutral / Wajar
