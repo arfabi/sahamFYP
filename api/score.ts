@@ -13,29 +13,36 @@ function buildScoringPrompt(
 ): string {
   return `
 Kamu adalah AI News Scorer untuk sistem otomasi konten @sahamfyp.
-Tugasmu adalah memberikan SCORE 0-10 apakah sebuah berita saham layak dijadikan konten carousel Instagram.
+Tugasmu adalah memberikan SCORE 0-10 apakah sebuah berita saham layak dijadikan konten carousel Instagram untuk investor pasar modal Indonesia (IHSG).
+
+## ATURAN MUTLAK & BATASAN PASAR SAHAM INDONESIA (IHSG):
+1. Konten @sahamfyp KHUSUS untuk PASAR SAHAM INDONESIA (BEI / IDX / IHSG).
+2. Jika berita adalah politik luar negeri, geopolitik internasional, diplomasi antar negara (seperti AS, China, Trump, Xi Jinping, dsb), atau teknologi global tanpa emiten saham Indonesia yang terdampak langsung, MAKA SCORE MAKSIMAL ADALAH 3 (WAJIB DECISION: "PASS").
+3. Berita TANPA ticker emiten saham Indonesia spesifik TIDAK BOLEH mendapatkan score di atas 5 (Wajib PASS).
+4. Score 9-10 (GENERATE) HANYA untuk berita dengan emiten IHSG spesifik + catalyst jelas + data kuantitatif nyata (angka/rupiah/persen) + berita fresh.
 
 ## KRITERIA SCORING (OBJECTIVE, JANGAN HALUSINASI)
 
 ### BOOSTER (Tambah Score):
-- **Catalyst jelas** (dividen, rights issue, IPO, akuisisi, merger, contract win, earnings beat): +2
+- **Catalyst emiten jelas** (dividen, rights issue, IPO, akuisisi, merger, contract win, earnings beat): +2
 - **Data kuantitatif ada** (angka spesifik, persentase, nilai transaksi): +1
-- **Ticker saham jelas** (bukan vague/sector-only): +1
-- **Berita fresh** (hari ini/ kemarin, bukan news lama): +1
-- **Dampak langsung ke harga saham** (bukan fluff macro): +2
+- **Ticker saham Indonesia jelas & spesifik** (bukan vague/sector-only): +1
+- **Berita fresh** (hari ini / kemarin, bukan news lama): +1
+- **Dampak langsung ke harga/fundamental saham IHSG** (bukan fluff macro): +2
 
 ### PENALTI (Kurang Score):
-- **Fluff tanpa angka** ("IHSH konsolidate", "pasar mixed"): -2
+- **Bukan berita saham Indonesia / Geopolitik luar negeri tanpa emiten BEI**: -5 (AUTO PASS)
+- **Tidak ada ticker saham Indonesia spesifik**: -3
+- **Fluff tanpa angka** ("IHSG konsolidate", "pasar mixed"): -2
 - **Rumor / belum terkonfirmasi**: -2
 - **News lama / sudah priced in**: -2
-- **Tidak ada ticker spesifik**: -1
-- **Ticker Saham lebih dari 1** : -1
-- **Macro vague tanpa dampak langsung ke saham**: -1
+- **Ticker Saham lebih dari 1**: -1
+- **Macro vague tanpa dampak langsung ke saham**: -2
 
 ## ATURAN KETAT:
-1. Score 9-10 = GENERATE (berita berefek langsung + ada data + fresh)
-2. Score 7-8 = PASS (relevant tapi kurang catalyst/data)
-3. Score 0-6 = PASS (fluff, rumor, atau tidak actionable)
+1. Score 9-10 = GENERATE (Wajib: Ada emiten IHSG spesifik + berefek langsung ke harga/kinerja + ada data kuantitatif + fresh)
+2. Score 7-8 = PASS (Relevant dengan saham tapi kurang catalyst kuat / kurang data kuantitatif)
+3. Score 0-6 = PASS (Fluff, rumor, geopolitik global tanpa ticker IHSG, atau tidak actionable)
 
 ## INPUT BERITA:
 - Judul: ${title}
@@ -86,7 +93,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { title, content, category, ticker, reason } = body;
 
-    // --- AUTO PASS UNTUK PDF ---
+    // --- AUTO PASS UNTUK PDF & KATEGORI SKIP ---
     if (title?.includes('PDF Document') || content?.includes('Dokumen PDF')) {
       console.log(`[Score] URL PDF terdeteksi. Melewati berita.`);
       return res.status(200).json({
@@ -97,7 +104,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         dataQuality: 'low',
       });
     }
-    // ---------------------------
+
+    if (category === 'SKIP') {
+      console.log(`[Score] Kategori SKIP terdeteksi. Melewati berita.`);
+      return res.status(200).json({
+        score: 0,
+        decision: 'PASS',
+        reason: 'Kategori berita diklasifikasikan sebagai SKIP.',
+        catalyst: null,
+        dataQuality: 'low',
+      });
+    }
+    // -------------------------------------------
 
     // --- CEK DUPLIKASI BERITA BERDASARKAN TICKER HARI INI ---
     if (ticker && ticker !== 'null') {
