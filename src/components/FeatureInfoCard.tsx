@@ -57,27 +57,27 @@ export default function FeatureInfoCard({
   };
 
   return (
-    <div className="bg-gradient-to-r from-amber-50/70 via-white to-slate-50 border border-amber-200/80 rounded-2xl shadow-sm overflow-hidden transition-all duration-200">
+    <div className="bg-gradient-to-r from-[#170c18] via-[#120914] to-[#1c0d1e] border border-[#33182f] rounded-2xl shadow-md shadow-rose-950/20 overflow-hidden transition-all duration-200">
       {/* Header bar (always visible, clickable to toggle) */}
       <div
         onClick={toggleExpand}
-        className="flex items-center justify-between px-5 py-3.5 cursor-pointer select-none hover:bg-amber-100/30 transition-colors"
+        className="flex items-center justify-between px-5 py-3.5 cursor-pointer select-none hover:bg-rose-500/5 transition-colors"
       >
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-rose-500/20 to-orange-500/20 border border-rose-500/30 text-rose-400 flex items-center justify-center shrink-0 shadow-xs">
             {icon || <Info className="w-4 h-4" />}
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-sm font-bold text-slate-800 tracking-tight">{title}</h3>
+              <h3 className="text-sm font-bold text-white tracking-tight">{title}</h3>
               {badge && (
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30">
                   {badge}
                 </span>
               )}
             </div>
             {!isExpanded && (
-              <p className="text-xs text-slate-500 truncate mt-0.5 max-w-xl">
+              <p className="text-xs text-rose-200/60 truncate mt-0.5 max-w-xl">
                 {description}
               </p>
             )}
@@ -87,7 +87,7 @@ export default function FeatureInfoCard({
         <button
           type="button"
           aria-label={isExpanded ? 'Tutup panduan fitur' : 'Buka panduan fitur'}
-          className="flex items-center gap-1.5 text-xs font-semibold text-amber-700 hover:text-amber-800 bg-amber-100/60 hover:bg-amber-100 px-3 py-1.5 rounded-xl transition shrink-0 ml-3"
+          className="flex items-center gap-1.5 text-xs font-semibold text-rose-300 hover:text-white bg-[#1c0d1e] hover:bg-rose-500/20 border border-[#33182f] hover:border-rose-500/40 px-3 py-1.5 rounded-xl transition shrink-0 ml-3"
         >
           <span>{isExpanded ? 'Tutup Info' : 'Pelajari Fitur'}</span>
           {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -96,20 +96,20 @@ export default function FeatureInfoCard({
 
       {/* Expanded details */}
       {isExpanded && (
-        <div className="px-5 pb-5 pt-1 border-t border-amber-100 space-y-4">
-          <p className="text-xs md:text-sm text-slate-600 leading-relaxed">
+        <div className="px-5 pb-5 pt-1 border-t border-[#251323] space-y-4">
+          <p className="text-xs md:text-sm text-slate-300 leading-relaxed">
             {description}
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {/* 🎯 Fungsi */}
             {functionality && (
-              <div className="bg-white/90 p-3.5 rounded-xl border border-slate-200/80 shadow-xs flex flex-col gap-1.5">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <div className="bg-[#0e0710] p-3.5 rounded-xl border border-[#2b1429] flex flex-col gap-1.5">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-rose-300">
+                  <Sparkles className="w-3.5 h-3.5 text-rose-400" />
                   <span>Fungsi Utama</span>
                 </div>
-                <p className="text-xs text-slate-600 leading-relaxed">
+                <p className="text-xs text-slate-300/90 leading-relaxed">
                   {functionality}
                 </p>
               </div>
@@ -117,12 +117,12 @@ export default function FeatureInfoCard({
 
             {/* 📡 Asal Data */}
             {dataSource && (
-              <div className="bg-white/90 p-3.5 rounded-xl border border-slate-200/80 shadow-xs flex flex-col gap-1.5">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
-                  <Database className="w-3.5 h-3.5 text-blue-500" />
+              <div className="bg-[#0e0710] p-3.5 rounded-xl border border-[#2b1429] flex flex-col gap-1.5">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-sky-300">
+                  <Database className="w-3.5 h-3.5 text-sky-400" />
                   <span>Asal Data</span>
                 </div>
-                <p className="text-xs text-slate-600 leading-relaxed">
+                <p className="text-xs text-slate-300/90 leading-relaxed">
                   {dataSource}
                 </p>
               </div>
@@ -130,12 +130,12 @@ export default function FeatureInfoCard({
 
             {/* 🔄 Pipeline / Alur */}
             {pipeline && (
-              <div className="bg-white/90 p-3.5 rounded-xl border border-slate-200/80 shadow-xs flex flex-col gap-1.5">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
-                  <Workflow className="w-3.5 h-3.5 text-purple-500" />
+              <div className="bg-[#0e0710] p-3.5 rounded-xl border border-[#2b1429] flex flex-col gap-1.5">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-purple-300">
+                  <Workflow className="w-3.5 h-3.5 text-purple-400" />
                   <span>Alur Otomasi / Integrasi</span>
                 </div>
-                <p className="text-xs text-slate-600 leading-relaxed">
+                <p className="text-xs text-slate-300/90 leading-relaxed">
                   {pipeline}
                 </p>
               </div>
@@ -152,10 +152,10 @@ export default function FeatureInfoCard({
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 hover:text-amber-800 bg-amber-100/50 hover:bg-amber-100 px-2.5 py-1 rounded-lg border border-amber-200/60 transition"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-rose-300 hover:text-white bg-[#170c18] hover:bg-rose-500/20 px-2.5 py-1 rounded-lg border border-[#33182f] hover:border-rose-500/40 transition"
                 >
                   <span>{link.label}</span>
-                  <ExternalLink className="w-3 h-3 text-amber-500" />
+                  <ExternalLink className="w-3 h-3 text-rose-400" />
                 </a>
               ))}
             </div>
