@@ -15,7 +15,12 @@ import {
   Tag,
   Building2,
   Share2,
-  Check
+  Check,
+  Activity,
+  BarChart2,
+  AlertTriangle,
+  Target,
+  Zap
 } from 'lucide-react';
 
 export default function StockDetailPage() {
@@ -125,6 +130,14 @@ export default function StockDetailPage() {
     return `${parsed >= 0 ? '+' : ''}${parsed.toFixed(2)}%`;
   };
 
+  const fmtVolume = (v: number | null | undefined) => {
+    if (v == null) return '-';
+    if (v >= 1e9) return `${(v / 1e9).toFixed(2)} Miliar lbr`;
+    if (v >= 1e6) return `${(v / 1e6).toFixed(2)} Juta lbr`;
+    if (v >= 1e3) return `${(v / 1e3).toFixed(0)} Ribu lbr`;
+    return `${v.toLocaleString('id-ID')} lbr`;
+  };
+
   // Helper pewarnaan sinyal: Hijau (unggul), Merah (buruk), Default (wajar)
   const getSignalBadgeStyle = (signal: string | null | undefined, type: 'per' | 'pbv' | 'roe' | 'der') => {
     if (!signal) return 'bg-[#200f27] text-zinc-400 border border-[#341a3e]';
@@ -187,9 +200,37 @@ export default function StockDetailPage() {
   }
 
   const c = candidate;
-  const tech = c.technical_json || {};
+  const tech = typeof c?.technical_json === 'string'
+    ? (() => { try { return JSON.parse(c.technical_json); } catch { return {}; } })()
+    : (c?.technical_json || {});
   const tags: string[] = c.news_tags || [];
-  const displayPrice = tech.last || c.price;
+  const displayPrice = tech.last || c.price || 0;
+
+  // Technical Calculations & Safe Mappings
+  const ma20 = tech.ma20;
+  const ma50 = tech.ma50;
+  const ma200 = tech.ma200;
+  const high52w = tech.high52w;
+  const chg1d = tech.chg1d;
+  const chg5d = tech.chg5d;
+  const chg20d = tech.chg20d;
+
+  const pctVsMa20 = tech.pct_vs_ma20 != null ? tech.pct_vs_ma20 : (displayPrice && ma20 ? ((displayPrice - ma20) / ma20) * 100 : null);
+  const pctVsMa50 = tech.pct_vs_ma50 != null ? tech.pct_vs_ma50 : (displayPrice && ma50 ? ((displayPrice - ma50) / ma50) * 100 : null);
+  const pctVsMa200 = tech.pct_vs_ma200 != null ? tech.pct_vs_ma200 : (displayPrice && ma200 ? ((displayPrice - ma200) / ma200) * 100 : null);
+  const pctFromHigh52w = tech.pctFromHigh52w != null ? tech.pctFromHigh52w : (displayPrice && high52w ? ((displayPrice - high52w) / high52w) * 100 : null);
+
+  const crossSignal = tech.crossSignal || (tech.golden_cross ? 'Golden Cross 🟢' : null);
+  const supportLevel = tech.support || (ma20 ? `Rp ${fmtNum(ma20, 0)} (MA20)` : null);
+  const resistanceLevel = tech.resistance || (high52w ? `Rp ${fmtNum(high52w, 0)} (52W High)` : null);
+  const vibeCheck = tech.vibeCheck || tech.vibe_check;
+  const triggerText = tech.trigger;
+  const lastVolume = tech.lastVolume;
+  const avgVol20 = tech.avgVol20;
+  const volumeSignal = tech.volumeSignal;
+  const volumeRatio = (lastVolume && avgVol20) ? (lastVolume / avgVol20) : null;
+  const tldrText = tech.tldr;
+  const warningText = tech.warning;
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-20">
@@ -235,6 +276,17 @@ export default function StockDetailPage() {
               <span className="px-2.5 py-1 text-xs font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30 rounded-lg">
                 Analisis Lengkap AI CIO
               </span>
+              {crossSignal && (
+                <span className={`px-2.5 py-1 text-xs font-bold rounded-lg border ${
+                  crossSignal.toLowerCase().includes('bullish') || crossSignal.includes('🟢')
+                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                    : crossSignal.toLowerCase().includes('bearish') || crossSignal.includes('🔴') || crossSignal.toLowerCase().includes('death')
+                    ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+                    : 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                }`}>
+                  {crossSignal}
+                </span>
+              )}
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-black text-white mt-3 tracking-tight">
@@ -244,15 +296,38 @@ export default function StockDetailPage() {
             <div className="flex items-center gap-6 mt-3 text-sm text-zinc-300 flex-wrap">
               <div>
                 <span className="text-zinc-500 text-xs block">Harga Terakhir:</span>
-                <span className="font-mono text-amber-400 text-xl font-black">
-                  Rp {fmtNum(displayPrice, 0)}
-                </span>
+                <div className="flex items-baseline gap-2">
+                  <span className="font-mono text-amber-400 text-xl font-black">
+                    Rp {fmtNum(displayPrice, 0)}
+                  </span>
+                  {chg1d != null && (
+                    <span className={`text-xs font-mono font-bold ${chg1d >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {fmtPct(chg1d)} (1D)
+                    </span>
+                  )}
+                </div>
               </div>
               {c.market_cap && (
                 <div>
                   <span className="text-zinc-500 text-xs block">Market Cap:</span>
                   <span className="font-mono text-white text-base font-bold">
                     Rp {fmtNum(c.market_cap / 1e12, 2)} Triliun
+                  </span>
+                </div>
+              )}
+              {supportLevel && (
+                <div>
+                  <span className="text-zinc-500 text-xs block">Support Terdekat:</span>
+                  <span className="font-mono text-emerald-400 text-sm font-bold">
+                    {supportLevel}
+                  </span>
+                </div>
+              )}
+              {resistanceLevel && (
+                <div>
+                  <span className="text-zinc-500 text-xs block">Resistance Terdekat:</span>
+                  <span className="font-mono text-rose-400 text-sm font-bold">
+                    {resistanceLevel}
                   </span>
                 </div>
               )}
@@ -467,7 +542,7 @@ export default function StockDetailPage() {
             </span>
             <p className="text-xs text-zinc-300 leading-relaxed font-medium">
               {tech.why_interesting ||
-                'Valuasi kompetitif di industrinya didukung momentum rilis data keuangan dan katalis ekspansi operasional.'}
+                (triggerText ? triggerText : `Valuasi ${c.pe_signal || 'kompetitif'} di industri ${c.sector || 'terkait'} didukung katalis pergerakan harga terkini.`)}
             </p>
           </div>
           <div className="p-4 rounded-xl bg-[#180c1d] border border-[#281329]">
@@ -486,63 +561,220 @@ export default function StockDetailPage() {
             </span>
             <p className="text-xs text-zinc-300 leading-relaxed font-medium">
               {tech.what_next ||
-                'Uji level resistance terdekat dengan konfirmasi volume beli yang stabil dari investor domestik maupun institusi.'}
+                (supportLevel
+                  ? `Menguji area resistance ${resistanceLevel || 'terdekat'} dengan batas support di ${supportLevel}.`
+                  : 'Uji level resistance terdekat dengan konfirmasi volume beli yang stabil.')}
             </p>
           </div>
         </div>
       </div>
 
-      {/* 6. Indikator Teknikal & Moving Averages */}
-      <div className="bg-[#130a17]/90 rounded-2xl border border-[#251323] p-5 sm:p-6 shadow-xl space-y-4">
-        <h2 className="text-sm font-bold text-white flex items-center gap-2">
-          <span>📈</span> Konfirmasi Indikator Teknikal (Moving Average)
-        </h2>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-          <div className="p-3 bg-[#180c1d] rounded-xl border border-[#281329] text-center">
-            <span className="text-[11px] text-zinc-400 block">MA 20 (1 Bln)</span>
-            <span className="font-mono font-bold text-white text-sm block mt-1">
-              {tech.ma20 ? `Rp ${fmtNum(tech.ma20, 0)}` : '-'}
-            </span>
-            <span className="text-[10px] text-zinc-500 block mt-0.5">{fmtPct(tech.pct_vs_ma20)}</span>
+      {/* 6. Indikator Teknikal, Moving Averages & Volume Command Center */}
+      <div className="bg-[#130a17]/90 rounded-2xl border border-[#251323] p-5 sm:p-6 shadow-xl space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#251323] pb-3">
+          <div>
+            <h2 className="text-base font-bold text-white flex items-center gap-2">
+              <Activity className="w-4 h-4 text-rose-400" />
+              <span>Analisis Indikator Teknikal, MA & Volume</span>
+            </h2>
+            <p className="text-xs text-zinc-400 mt-0.5">
+              Moving Average (MA), momentum pergerakan harga, dan likuiditas transaksi harian
+            </p>
           </div>
-          <div className="p-3 bg-[#180c1d] rounded-xl border border-[#281329] text-center">
-            <span className="text-[11px] text-zinc-400 block">MA 50 (Med-term)</span>
-            <span className="font-mono font-bold text-white text-sm block mt-1">
-              {tech.ma50 ? `Rp ${fmtNum(tech.ma50, 0)}` : '-'}
-            </span>
-            <span className="text-[10px] text-zinc-500 block mt-0.5">{fmtPct(tech.pct_vs_ma50)}</span>
-          </div>
-          <div className="p-3 bg-[#180c1d] rounded-xl border border-[#281329] text-center">
-            <span className="text-[11px] text-zinc-400 block">MA 200 (Long-term)</span>
-            <span className="font-mono font-bold text-white text-sm block mt-1">
-              {tech.ma200 ? `Rp ${fmtNum(tech.ma200, 0)}` : '-'}
-            </span>
-            <span className="text-[10px] text-zinc-500 block mt-0.5">{fmtPct(tech.pct_vs_ma200)}</span>
-          </div>
-          <div className="p-3 bg-[#180c1d] rounded-xl border border-[#281329] text-center">
-            <span className="text-[11px] text-zinc-400 block">Golden Cross</span>
-            <span
-              className={`font-bold text-xs block mt-1 ${
-                tech.golden_cross ? 'text-emerald-400' : 'text-zinc-500'
-              }`}
-            >
-              {tech.golden_cross ? '🔥 TERDETEKSI' : 'Belum Konfirmasi'}
-            </span>
-          </div>
-          <div className="p-3 bg-[#180c1d] rounded-xl border border-[#281329] text-center">
-            <span className="text-[11px] text-zinc-400 block">Support Kunci</span>
-            <span className="font-mono font-bold text-emerald-300 text-sm block mt-1">
-              {tech.support ? `Rp ${fmtNum(tech.support, 0)}` : '-'}
-            </span>
-          </div>
-          <div className="p-3 bg-[#180c1d] rounded-xl border border-[#281329] text-center">
-            <span className="text-[11px] text-zinc-400 block">Resistance Kunci</span>
-            <span className="font-mono font-bold text-rose-300 text-sm block mt-1">
-              {tech.resistance ? `Rp ${fmtNum(tech.resistance, 0)}` : '-'}
-            </span>
+          <div className="flex items-center gap-2 flex-wrap">
+            {tech.asOf && (
+              <span className="text-[11px] font-mono text-zinc-400 bg-[#1e0e24] px-2.5 py-1 rounded-lg border border-[#33173d]">
+                📅 Data per: {tech.asOf}
+              </span>
+            )}
+            {crossSignal && (
+              <span className={`px-2.5 py-1 text-xs font-bold rounded-lg border ${
+                crossSignal.toLowerCase().includes('bullish') || crossSignal.includes('🟢')
+                  ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                  : crossSignal.toLowerCase().includes('bearish') || crossSignal.includes('🔴') || crossSignal.toLowerCase().includes('death')
+                  ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+                  : 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+              }`}>
+                {crossSignal}
+              </span>
+            )}
           </div>
         </div>
+
+        {/* 8-Metric Grid: Moving Averages & Price Action */}
+        <div>
+          <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 block mb-2">
+            📊 Level Moving Average & Momentum Harga:
+          </span>
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2.5">
+            <div className="bg-[#180c1d] border border-[#281329] p-3 rounded-xl text-center">
+              <span className="text-[10px] text-zinc-400 block">Harga Terakhir</span>
+              <span className="font-mono font-bold text-amber-400 text-sm block mt-1">
+                Rp {fmtNum(displayPrice, 0)}
+              </span>
+              <span className="text-[10px] text-zinc-500 block mt-0.5">Current</span>
+            </div>
+
+            <div className="bg-[#180c1d] border border-[#281329] p-3 rounded-xl text-center">
+              <span className="text-[10px] text-zinc-400 block">MA 20 (Support)</span>
+              <span className="font-mono font-bold text-blue-400 text-sm block mt-1">
+                {ma20 ? `Rp ${fmtNum(ma20, 0)}` : '-'}
+              </span>
+              <span className={`text-[10px] font-mono font-semibold block mt-0.5 ${
+                pctVsMa20 != null && pctVsMa20 >= 0 ? 'text-emerald-400' : 'text-rose-400'
+              }`}>
+                {fmtPct(pctVsMa20)}
+              </span>
+            </div>
+
+            <div className="bg-[#180c1d] border border-[#281329] p-3 rounded-xl text-center">
+              <span className="text-[10px] text-zinc-400 block">MA 50 (Med-term)</span>
+              <span className="font-mono font-bold text-cyan-400 text-sm block mt-1">
+                {ma50 ? `Rp ${fmtNum(ma50, 0)}` : '-'}
+              </span>
+              <span className={`text-[10px] font-mono font-semibold block mt-0.5 ${
+                pctVsMa50 != null && pctVsMa50 >= 0 ? 'text-emerald-400' : 'text-rose-400'
+              }`}>
+                {fmtPct(pctVsMa50)}
+              </span>
+            </div>
+
+            <div className="bg-[#180c1d] border border-[#281329] p-3 rounded-xl text-center">
+              <span className="text-[10px] text-zinc-400 block">MA 200 (Long-term)</span>
+              <span className="font-mono font-bold text-indigo-300 text-sm block mt-1">
+                {ma200 ? `Rp ${fmtNum(ma200, 0)}` : '-'}
+              </span>
+              <span className={`text-[10px] font-mono font-semibold block mt-0.5 ${
+                pctVsMa200 != null && pctVsMa200 >= 0 ? 'text-emerald-400' : 'text-zinc-500'
+              }`}>
+                {pctVsMa200 != null ? fmtPct(pctVsMa200) : '<200 hari'}
+              </span>
+            </div>
+
+            <div className="bg-[#180c1d] border border-[#281329] p-3 rounded-xl text-center">
+              <span className="text-[10px] text-zinc-400 block">Chg 1 Hari</span>
+              <span className={`font-mono font-bold text-sm block mt-1 ${
+                chg1d != null && chg1d >= 0 ? 'text-emerald-400' : 'text-rose-400'
+              }`}>
+                {fmtPct(chg1d)}
+              </span>
+              <span className="text-[10px] text-zinc-500 block mt-0.5">1D</span>
+            </div>
+
+            <div className="bg-[#180c1d] border border-[#281329] p-3 rounded-xl text-center">
+              <span className="text-[10px] text-zinc-400 block">Chg 5 Hari</span>
+              <span className={`font-mono font-bold text-sm block mt-1 ${
+                chg5d != null && chg5d >= 0 ? 'text-emerald-400' : 'text-rose-400'
+              }`}>
+                {fmtPct(chg5d)}
+              </span>
+              <span className="text-[10px] text-zinc-500 block mt-0.5">1 Minggu</span>
+            </div>
+
+            <div className="bg-[#180c1d] border border-[#281329] p-3 rounded-xl text-center">
+              <span className="text-[10px] text-zinc-400 block">Chg 20 Hari</span>
+              <span className={`font-mono font-bold text-sm block mt-1 ${
+                chg20d != null && chg20d >= 0 ? 'text-emerald-400' : 'text-rose-400'
+              }`}>
+                {fmtPct(chg20d)}
+              </span>
+              <span className="text-[10px] text-zinc-500 block mt-0.5">1 Bulan</span>
+            </div>
+
+            <div className="bg-[#180c1d] border border-[#281329] p-3 rounded-xl text-center">
+              <span className="text-[10px] text-zinc-400 block">52W High</span>
+              <span className="font-mono font-bold text-amber-300 text-sm block mt-1">
+                {high52w ? `Rp ${fmtNum(high52w, 0)}` : '-'}
+              </span>
+              <span className="text-[10px] font-mono text-zinc-400 block mt-0.5">
+                {fmtPct(pctFromHigh52w)}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Volume & Likuiditas Card */}
+        <div className="p-4 bg-[#180c1d] rounded-xl border border-[#281329]">
+          <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
+              <BarChart2 className="w-4 h-4 text-purple-400" />
+              <span>Analisis Volume Transaksi & Likuiditas:</span>
+            </span>
+            {volumeSignal && (
+              <span className={`px-2.5 py-0.5 text-xs font-bold rounded-full capitalize border ${
+                volumeSignal === 'rame'
+                  ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                  : volumeSignal === 'sepi'
+                  ? 'bg-zinc-700/30 text-zinc-400 border-zinc-700/50'
+                  : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+              }`}>
+                Volume: {volumeSignal === 'rame' ? '🔥 Rame (Breakout)' : volumeSignal === 'sepi' ? '💤 Sepi' : 'Normal'}
+              </span>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="p-3 bg-[#1e0e24] rounded-lg border border-[#301639]">
+              <span className="text-[11px] text-zinc-400 block">Volume Hari Ini:</span>
+              <span className="font-mono font-bold text-white text-base block mt-0.5">
+                {fmtVolume(lastVolume)}
+              </span>
+            </div>
+            <div className="p-3 bg-[#1e0e24] rounded-lg border border-[#301639]">
+              <span className="text-[11px] text-zinc-400 block">Rata-rata 20 Hari:</span>
+              <span className="font-mono font-bold text-zinc-300 text-base block mt-0.5">
+                {fmtVolume(avgVol20)}
+              </span>
+            </div>
+            <div className="p-3 bg-[#1e0e24] rounded-lg border border-[#301639]">
+              <span className="text-[11px] text-zinc-400 block">Aktivitas Likuiditas:</span>
+              <span className="font-mono font-bold text-amber-400 text-base block mt-0.5">
+                {volumeRatio ? `${volumeRatio.toFixed(1)}x` : '-'} dari rata-rata
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Trigger, TLDR & Risk Warnings */}
+        {(triggerText || tldrText || warningText) && (
+          <div className="space-y-3 pt-2">
+            {triggerText && (
+              <div className="p-4 bg-[#1b0d23] rounded-xl border border-amber-500/30">
+                <span className="text-xs font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1.5 mb-1.5">
+                  <Target className="w-4 h-4 text-amber-400" />
+                  <span>Trading Trigger & Level Kunci:</span>
+                </span>
+                <p className="text-xs sm:text-sm text-zinc-200 leading-relaxed font-medium">
+                  {triggerText}
+                </p>
+              </div>
+            )}
+
+            {tldrText && (
+              <div className="p-4 bg-[#180c1d] rounded-xl border border-[#281329]">
+                <span className="text-xs font-bold uppercase tracking-wider text-sky-400 flex items-center gap-1.5 mb-1.5">
+                  <Zap className="w-4 h-4 text-sky-400" />
+                  <span>TL;DR Ringkasan AI:</span>
+                </span>
+                <p className="text-xs text-zinc-300 leading-relaxed font-medium">
+                  {tldrText}
+                </p>
+              </div>
+            )}
+
+            {warningText && (
+              <div className="p-4 bg-rose-950/25 rounded-xl border border-rose-800/40">
+                <span className="text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5 mb-1.5">
+                  <AlertTriangle className="w-4 h-4 text-rose-400" />
+                  <span>Awas / Catatan Risiko Teknikal:</span>
+                </span>
+                <p className="text-xs text-rose-200 leading-relaxed font-medium">
+                  {warningText}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* 7. Kamus Saham Gen Z & Vibe Check */}
@@ -565,7 +797,7 @@ export default function StockDetailPage() {
               🎯 Vibe Check & Risk Note:
             </span>
             <p className="text-xs text-zinc-200 leading-relaxed font-medium">
-              {tech.vibe_check ||
+              {vibeCheck ||
                 'Volatilitas jangka pendek wajar mengikuti arah gerak IHSG. Disarankan money management bertahap (bukan all-in) dan pasang stop loss di bawah level support.'}
             </p>
           </div>

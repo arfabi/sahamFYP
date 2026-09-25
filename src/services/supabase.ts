@@ -175,7 +175,7 @@ export const generatedPostsApi = {
       .from('generated_posts')
       .select('*, content_logs(url, title, category, ticker)')
       .eq('id', id)
-      .single();
+      .maybeSingle();
     if (error) throw error;
     return data;
   },
@@ -273,6 +273,27 @@ export const automationPostsApi = {
       .limit(limit);
     if (error) throw error;
     return data;
+  },
+
+  async getById(id: string) {
+    const { data, error } = await supabase
+      .from('automation_posts')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+    if (error) throw error;
+    return data;
+  },
+
+  async update(id: string, data: Partial<AutomationPost>) {
+    const { data: result, error } = await supabase
+      .from('automation_posts')
+      .update(data)
+      .eq('id', id)
+      .select()
+      .maybeSingle();
+    if (error) throw error;
+    return result;
   },
 
   async delete(id: string) {

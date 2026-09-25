@@ -225,6 +225,32 @@ export default function UnifiedMarketBrief() {
     return num.toLocaleString('id-ID', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
   };
 
+  const fmtPct = (val: any) => {
+    if (val == null || val === 'N/A' || val === '') return '-';
+    if (typeof val === 'number') return `${val >= 0 ? '+' : ''}${val.toFixed(2)}%`;
+    const str = String(val).trim();
+    if (str.endsWith('%')) {
+      const parsed = parseFloat(str.slice(0, -1));
+      if (!isNaN(parsed)) return `${parsed >= 0 ? '+' : ''}${parsed.toFixed(2)}%`;
+      return str;
+    }
+    const parsed = parseFloat(str);
+    if (isNaN(parsed)) return str;
+    return `${parsed >= 0 ? '+' : ''}${parsed.toFixed(2)}%`;
+  };
+
+  const getTech = (cand: TriggerCandidate) => {
+    if (!cand.technical_json) return {};
+    if (typeof cand.technical_json === 'string') {
+      try {
+        return JSON.parse(cand.technical_json);
+      } catch {
+        return {};
+      }
+    }
+    return cand.technical_json;
+  };
+
   const filteredCandidates = candidates.filter((c) => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
@@ -559,59 +585,99 @@ export default function UnifiedMarketBrief() {
                         <th className="py-3 px-4">Perusahaan</th>
                         <th className="py-3 px-4">Sektor</th>
                         <th className="py-3 px-4 text-right">Harga Terakhir</th>
+                        <th className="py-3 px-4 text-center">Sinyal & Tren Teknikal</th>
                         <th className="py-3 px-4">Berita Utama & Katalis</th>
                         <th className="py-3 px-4 text-center">Aksi</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#200f24]">
-                      {filteredCandidates.map((c) => (
-                        <tr
-                          key={c.id}
-                          onClick={() => navigate(`/marketbrief/${c.id}`)}
-                          className="hover:bg-[#1d0e24] cursor-pointer transition-colors group"
-                        >
-                          <td className="py-3 px-4">
-                            <span className="font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2.5 py-1 rounded-lg font-mono text-xs shadow-xs group-hover:border-amber-400/60 transition">
-                              {c.ticker}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 font-semibold text-white max-w-[200px]" title={c.company_name || ''}>
-                            {c.company_name || '-'}
-                          </td>
-                          <td className="py-3 px-4 text-xs text-zinc-400 font-medium">
-                            {c.sector || '-'}
-                          </td>
-                          <td className="py-3 px-4 text-right font-mono font-bold text-amber-400 text-base">
-                            Rp {fmtNum(c.price, 0)}
-                          </td>
-                          <td className="py-3 px-4 max-w-md">
-                            <p className="text-xs text-zinc-200 font-medium line-clamp-1" title={c.news_title || ''}>
-                              {c.news_title || '-'}
-                            </p>
-                            {c.news_tags && c.news_tags.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mt-1">
-                                {c.news_tags.slice(0, 3).map((t, i) => (
-                                  <span key={i} className="text-[10px] bg-[#240f2b] text-zinc-400 border border-[#381a42] px-1.5 py-0.5 rounded">
-                                    #{t}
-                                  </span>
-                                ))}
+                      {filteredCandidates.map((c) => {
+                        const tech = getTech(c);
+                        const chg1d = tech.chg1d;
+                        const isUp = typeof chg1d === 'number' && chg1d > 0;
+                        const isDown = typeof chg1d === 'number' && chg1d < 0;
+
+                        return (
+                          <tr
+                            key={c.id}
+                            onClick={() => navigate(`/marketbrief/${c.id}`)}
+                            className="hover:bg-[#1d0e24] cursor-pointer transition-colors group"
+                          >
+                            <td className="py-3 px-4">
+                              <span className="font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2.5 py-1 rounded-lg font-mono text-xs shadow-xs group-hover:border-amber-400/60 transition">
+                                {c.ticker}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 font-semibold text-white max-w-[200px]" title={c.company_name || ''}>
+                              {c.company_name || '-'}
+                            </td>
+                            <td className="py-3 px-4 text-xs text-zinc-400 font-medium">
+                              {c.sector || '-'}
+                            </td>
+                            <td className="py-3 px-4 text-right">
+                              <div className="font-mono font-bold text-amber-400 text-base">
+                                Rp {fmtNum(c.price || tech.last, 0)}
                               </div>
-                            )}
-                          </td>
-                          <td className="py-3 px-4 text-center">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/marketbrief/${c.id}`);
-                              }}
-                              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 text-white font-bold text-xs shadow-sm hover:opacity-95 transition cursor-pointer flex items-center gap-1.5 mx-auto"
-                            >
-                              <span>Detail Analisa</span>
-                              <ArrowRight className="w-3.5 h-3.5" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
+                              {chg1d != null && (
+                                <span className={`text-[11px] font-mono font-semibold block ${isUp ? 'text-emerald-400' : isDown ? 'text-rose-400' : 'text-zinc-400'}`}>
+                                  {fmtPct(chg1d)} (1D)
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              {tech.crossSignal ? (
+                                <div className="inline-flex flex-col items-center gap-1">
+                                  <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${
+                                    tech.crossSignal.toLowerCase().includes('bullish') || tech.crossSignal.includes('🟢')
+                                      ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                                      : tech.crossSignal.toLowerCase().includes('bearish') || tech.crossSignal.includes('🔴') || tech.crossSignal.toLowerCase().includes('death')
+                                      ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+                                      : 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                                  }`}>
+                                    {tech.crossSignal}
+                                  </span>
+                                  <div className="flex items-center justify-center gap-1.5 text-[10px] text-zinc-400 font-mono">
+                                    {tech.ma20 && <span>Supp: Rp {fmtNum(tech.ma20, 0)}</span>}
+                                    {tech.volumeSignal && (
+                                      <span className="capitalize px-1.5 py-0.5 bg-[#200e26] border border-[#371641] rounded text-zinc-300">
+                                        Vol: {tech.volumeSignal}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              ) : (
+                                <span className="text-xs text-zinc-500">-</span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4 max-w-md">
+                              <p className="text-xs text-zinc-200 font-medium line-clamp-1" title={c.news_title || ''}>
+                                {c.news_title || '-'}
+                              </p>
+                              {c.news_tags && c.news_tags.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {c.news_tags.slice(0, 3).map((t, i) => (
+                                    <span key={i} className="text-[10px] bg-[#240f2b] text-zinc-400 border border-[#381a42] px-1.5 py-0.5 rounded">
+                                      #{t}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/marketbrief/${c.id}`);
+                                }}
+                                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 text-white font-bold text-xs shadow-sm hover:opacity-95 transition cursor-pointer flex items-center gap-1.5 mx-auto"
+                              >
+                                <span>Detail Analisa</span>
+                                <ArrowRight className="w-3.5 h-3.5" />
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

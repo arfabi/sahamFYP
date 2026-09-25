@@ -24,19 +24,27 @@ export default function PostDetailPage() {
     setError(null);
     try {
       // 1. Try finding in automation_posts
-      const autoPost = await automationPostsApi.getById(postId);
-      if (autoPost) {
-        setPost(autoPost);
-        setPostType('automation');
-        return;
+      try {
+        const autoPost = await automationPostsApi.getById(postId);
+        if (autoPost) {
+          setPost(autoPost);
+          setPostType('automation');
+          return;
+        }
+      } catch (err) {
+        console.warn('automationPostsApi.getById lookup warning:', err);
       }
 
       // 2. Try finding in generated_posts
-      const manualPost = await generatedPostsApi.getById(postId);
-      if (manualPost) {
-        setPost(manualPost);
-        setPostType('manual');
-        return;
+      try {
+        const manualPost = await generatedPostsApi.getById(postId);
+        if (manualPost) {
+          setPost(manualPost);
+          setPostType('manual');
+          return;
+        }
+      } catch (err) {
+        console.warn('generatedPostsApi.getById lookup warning:', err);
       }
 
       setError('Postingan tidak ditemukan.');
