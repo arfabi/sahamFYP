@@ -1,6 +1,7 @@
 // Posts - daftar semua postingan dalam SATU list (scheduled | published | failed | generated).
 // Header menyediakan shortcut ke Content Generator & Manual Editor, filter tanggal, dan pagination.
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { generatedPostsApi, automationPostsApi, type GeneratedPost, type AutomationPost } from '../services/supabase';
 import PostListRow from './PostListRow';
 import AutomationPostRow from './AutomationPostRow';
@@ -35,6 +36,7 @@ function getFirstDayOfMonthStr(): string {
 }
 
 export default function Posts({ onNavigate }: { onNavigate?: (page: string) => void }) {
+  const navigate = useNavigate();
   const [manualPosts, setManualPosts] = useState<GeneratedPost[]>([]);
   const [autoPosts, setAutoPosts] = useState<AutomationPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -469,7 +471,7 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
               <AutomationPostCard
                 key={p.id}
                 post={p}
-                onSelect={() => setSelectedPost({ post: p, type: 'automation' })}
+                onSelect={() => navigate(`/post/detail/${p.id}`)}
               />
             ))}
           </div>
@@ -480,7 +482,7 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
                 <AutomationPostRow
                   key={p.id}
                   post={p}
-                  onSelect={() => setSelectedPost({ post: p, type: 'automation' })}
+                  onSelect={() => navigate(`/post/detail/${p.id}`)}
                 />
               ))}
             </div>
@@ -516,7 +518,7 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
               <ManualPostCard
                 key={p.id}
                 post={p}
-                onSelect={() => setSelectedPost({ post: p, type: 'manual' })}
+                onSelect={() => navigate(`/post/detail/${p.id}`)}
               />
             ))}
           </div>
@@ -527,7 +529,7 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
                 <PostListRow
                   key={p.id}
                   post={p}
-                  onSelect={() => setSelectedPost({ post: p, type: 'manual' })}
+                  onSelect={() => navigate(`/post/detail/${p.id}`)}
                 />
               ))}
             </div>

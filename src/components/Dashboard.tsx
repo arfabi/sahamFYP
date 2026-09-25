@@ -1,37 +1,28 @@
 // ============================================================
-// Dashboard Layout - Grouped navigation (content pipeline)
-// SOURCES -> ANALYSIS -> CREATE -> PUBLISHING (+ Settings utility)
+// Dashboard Layout - Grouped navigation with real URL slugs
+// React Router DOM v6 integration (/news, /marketbrief, /post)
 // ============================================================
 
-import React, { useState } from 'react';
+import React from 'react';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import Overview from './Overview';
 import ContentGenerator from './ContentGenerator';
 import ManualEditor from './ManualEditor';
 import NewsMonitoring from './NewsMonitoring';
-import DailyMarketBrief from './DailyMarketBrief';
-import StockWatchlist from './StockWatchlist';
 import UnifiedMarketBrief from './UnifiedMarketBrief';
+import StockDetailPage from './StockDetailPage';
+import NewsDetailPage from './NewsDetailPage';
 import Posts from './Posts';
+import PostDetailPage from './PostDetailPage';
 import Channels from './Channels';
 
 import type { AuthUser } from '../services/auth';
 
-export type DashboardPage =
-  | 'overview'
-  | 'news-monitoring'
-  | 'unified-market-brief'
-  | 'daily-market-brief'
-  | 'stock-watchlist'
-  | 'generator'
-  | 'manual'
-  | 'accounts'
-  | 'posts';
-
 interface NavItem {
-  id: DashboardPage;
+  id: string;
+  path: string;
   label: string;
   icon: string;
-  /** 'soon' = non-interactive; 'beta' = shows a badge */
   badge?: 'soon' | 'beta';
 }
 
@@ -44,35 +35,29 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: 'HOME',
     items: [
-      { id: 'overview', label: 'Dashboard Overview', icon: '📊' },
+      { id: 'overview', path: '/overview', label: 'Dashboard Overview', icon: '📊' },
     ],
   },
-  { label: 'SOURCES', items: [{ id: 'news-monitoring', label: 'News Monitoring', icon: '📡' }] },
+  {
+    label: 'SOURCES',
+    items: [
+      { id: 'news', path: '/news', label: 'News Monitoring', icon: '📡' },
+    ],
+  },
   {
     label: 'ANALYSIS',
     items: [
-      { id: 'unified-market-brief', label: 'Market Brief & Watchlist', icon: '⚡', badge: 'beta' },
-      { id: 'daily-market-brief', label: 'Market Brief (Lama)', icon: '📈' },
-      { id: 'stock-watchlist', label: 'Stock Watchlist (Lama)', icon: '👁️' },
+      { id: 'marketbrief', path: '/marketbrief', label: 'Market Brief', icon: '⚡' },
     ],
   },
   {
     label: 'PUBLISHING',
     items: [
-      { id: 'accounts', label: 'Accounts', icon: '🔗' },
-      { id: 'posts', label: 'Posts', icon: '🗂️' },
+      { id: 'accounts', path: '/accounts', label: 'Accounts', icon: '🔗' },
+      { id: 'posts', path: '/post', label: 'Posts', icon: '🗂️' },
     ],
   },
 ];
-
-function findNavItem(id?: string): NavItem | undefined {
-  if (!id) return undefined;
-  for (const g of NAV_GROUPS) {
-    const found = g.items.find((i) => i.id === id);
-    if (found) return found;
-  }
-  return undefined;
-}
 
 interface DashboardProps {
   user: AuthUser;
@@ -80,36 +65,22 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ user, onLogout }: DashboardProps) {
-  const [activePage, setActivePage] = useState<DashboardPage>('overview');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
-  const toggleGroup = (label: string) =>
-    setOpenGroups((o) => ({ ...o, [label]: !o[label] }));
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const renderPage = () => {
-    switch (activePage) {
-      case 'overview':
-        return <Overview onNavigate={(p) => setActivePage(p as DashboardPage)} />;
-      case 'news-monitoring':
-        return <NewsMonitoring />;
-      case 'unified-market-brief':
-        return <UnifiedMarketBrief />;
-      case 'daily-market-brief':
-        return <DailyMarketBrief />;
-      case 'stock-watchlist':
-        return <StockWatchlist />;
-      case 'generator':
-        return <ContentGenerator />;
-      case 'manual':
-        return <ManualEditor />;
-      case 'accounts':
-        return <Channels onNavigate={(p) => setActivePage(p as DashboardPage)} />;
-      case 'posts':
-        return <Posts onNavigate={(p) => setActivePage(p as DashboardPage)} />;
-      default:
-        return <Overview onNavigate={(p) => setActivePage(p as DashboardPage)} />;
+  const getActiveItem = () => {
+    const p = location.pathname;
+    for (const g of NAV_GROUPS) {
+      for (const item of g.items) {
+        if (p === item.path || (item.path !== '/overview' && p.startsWith(item.path))) {
+          return item;
+        }
+      }
     }
+    return NAV_GROUPS[0].items[0];
   };
+
+  const activeItem = getActiveItem();
 
   return (
     <div className="h-screen bg-[#0a060c] text-slate-100 flex overflow-hidden font-sans selection:bg-rose-500 selection:text-white">
@@ -147,13 +118,16 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                 </div>
                 {group.items.map((item) => {
                   const disabled = item.badge === 'soon';
-                  const active = activePage === item.id;
+                  const active =
+                    location.pathname === item.path ||
+                    (item.path !== '/overview' && location.pathname.startsWith(item.path));
+
                   return (
                     <button
                       key={item.id}
-                      onClick={() => (disabled ? undefined : setActivePage(item.id))}
+                      onClick={() => (disabled ? undefined : navigate(item.path))}
                       disabled={disabled}
-                      className={`flex w-full items-center justify-between px-3 py-2 text-xs sm:text-sm rounded-xl font-medium transition ${
+                      className={`flex w-full items-center justify-between px-3 py-2 text-xs sm:text-sm rounded-xl font-medium transition cursor-pointer ${
                         active
                           ? 'bg-gradient-to-r from-rose-500/20 via-orange-500/15 to-transparent text-white border border-rose-500/40 shadow-sm shadow-rose-500/10 font-bold'
                           : disabled
@@ -184,15 +158,15 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         </nav>
       </aside>
 
-      {/* Main Content */}
+      {/* Main Content Area */}
       <main className="flex-1 flex flex-col overflow-y-auto bg-[#0a060c]">
         {/* Topbar - persistent di semua modul/menu */}
         <header className="bg-[#0a060c]/85 backdrop-blur-md border-b border-[#251323] sticky top-0 z-30">
           <div className="flex items-center justify-between px-6 py-3.5">
             <div className="flex items-center gap-2.5">
-              <span className="text-lg">{findNavItem(activePage)?.icon || '📄'}</span>
+              <span className="text-lg">{activeItem?.icon || '📄'}</span>
               <span className="text-sm font-bold text-white tracking-wide">
-                {findNavItem(activePage)?.label || 'Pages'}
+                {activeItem?.label || 'Dashboard'}
               </span>
               <span className="text-xs text-rose-300/40 hidden sm:inline">• SahamFYP Autonomous OS</span>
             </div>
@@ -208,7 +182,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
               </div>
               <button
                 onClick={onLogout}
-                className="px-3 py-1.5 bg-[#170c18] hover:bg-rose-500/15 border border-[#33182f] hover:border-rose-500/40 text-slate-300 hover:text-rose-300 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 active:scale-95 shadow-xs"
+                className="px-3 py-1.5 bg-[#170c18] hover:bg-rose-500/15 border border-[#33182f] hover:border-rose-500/40 text-slate-300 hover:text-rose-300 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 active:scale-95 shadow-xs cursor-pointer"
                 title="Logout"
               >
                 <span>🚪</span>
@@ -218,7 +192,33 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
           </div>
         </header>
 
-        <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto">{renderPage()}</div>
+        {/* Dynamic Route Pages */}
+        <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto">
+          <Routes>
+            <Route path="/" element={<Navigate to="/overview" replace />} />
+            <Route path="/overview" element={<Overview onNavigate={(p) => navigate(`/${p}`)} />} />
+            
+            {/* News Routes */}
+            <Route path="/news" element={<NewsMonitoring />} />
+            <Route path="/news/:id" element={<NewsDetailPage />} />
+
+            {/* Market Brief & Watchlist Routes (Unified) */}
+            <Route path="/marketbrief" element={<UnifiedMarketBrief />} />
+            <Route path="/marketbrief/:id" element={<StockDetailPage />} />
+
+            {/* Posts Routes */}
+            <Route path="/post" element={<Posts onNavigate={(p) => navigate(`/${p}`)} />} />
+            <Route path="/post/detail/:id" element={<PostDetailPage />} />
+
+            {/* Content Pipeline */}
+            <Route path="/generator" element={<ContentGenerator />} />
+            <Route path="/manual" element={<ManualEditor />} />
+            <Route path="/accounts" element={<Channels onNavigate={(p) => navigate(`/${p}`)} />} />
+
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/overview" replace />} />
+          </Routes>
+        </div>
       </main>
     </div>
   );

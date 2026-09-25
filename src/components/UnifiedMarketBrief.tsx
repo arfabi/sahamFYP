@@ -4,9 +4,23 @@
 // menjadi satu modul terpadu.
 // ============================================================
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import FeatureInfoCard from './FeatureInfoCard';
+import {
+  Calendar as CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+  TrendingUp,
+  TrendingDown,
+  ArrowRight,
+  Sparkles,
+  Search,
+  ExternalLink,
+  Layers,
+  X
+} from 'lucide-react';
 
 interface TriggerLog {
   id: string;
@@ -64,10 +78,12 @@ interface TriggerMover {
 
 interface TriggerNews {
   id: string;
-  news_index: number;
-  title: string;
-  tags: string[];
+  title: string | null;
+  body: string | null;
+  thumbnail_url: string | null;
+  source_url: string | null;
   symbols: string[];
+  tags: string[];
   sector: string | null;
   is_selected: boolean;
 }
@@ -79,22 +95,56 @@ interface TriggerSkipped {
 }
 
 export default function UnifiedMarketBrief() {
+  const navigate = useNavigate();
+
   const [logs, setLogs] = useState<TriggerLog[]>([]);
   const [selectedLog, setSelectedLog] = useState<TriggerLog | null>(null);
   const [candidates, setCandidates] = useState<TriggerCandidate[]>([]);
   const [movers, setMovers] = useState<TriggerMover[]>([]);
   const [news, setNews] = useState<TriggerNews[]>([]);
   const [skipped, setSkipped] = useState<TriggerSkipped[]>([]);
-  
+
+  // Foreign Flow state from Sectors API
+  const [foreignFlow, setForeignFlow] = useState<{
+    totalBuy: number;
+    totalSell: number;
+    netFlow: number;
+  } | null>(null);
+
+  // Big Calendar Picker Modal state
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [calendarViewDate, setCalendarViewDate] = useState<Date>(() => new Date());
+
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'candidates' | 'news' | 'skipped'>('candidates');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeModalCandidate, setActiveModalCandidate] = useState<TriggerCandidate | null>(null);
 
   useEffect(() => {
     fetchLogs();
+    fetchForeignFlowData();
   }, []);
+
+  const fetchForeignFlowData = async () => {
+    try {
+      const apiKey = import.meta.env.VITE_SECTORS_API_KEY;
+      if (!apiKey) return;
+      const res = await fetch('https://api.sectors.app/v2/foreign-flow/', {
+        headers: { Authorization: apiKey },
+      });
+      if (!res.ok) return;
+      const json = await res.json();
+      const list = json.results || [];
+      if (list.length > 0) {
+        const totalBuy = list.reduce((a: number, b: any) => a + (b.foreign_buy_idr || 0), 0);
+        const totalSell = list.reduce((a: number, b: any) => a + (b.foreign_sell_idr || 0), 0);
+        const netFlow = list.reduce((a: number, b: any) => a + (b.net_foreign_inflow || 0), 0);
+        setForeignFlow({ totalBuy, totalSell, netFlow });
+      }
+    } catch (err) {
+      console.warn('Foreign Flow fetch error:', err);
+    }
+  };
 
   const fetchLogs = async () => {
     setLoading(true);
@@ -103,7 +153,7 @@ export default function UnifiedMarketBrief() {
         .from('sector_trigger_logs')
         .select('*')
         .order('trigger_date', { ascending: false })
-        .limit(30);
+        .limit(60);
 
       if (error) throw error;
       const list = data || [];
@@ -129,9 +179,28 @@ export default function UnifiedMarketBrief() {
         supabase.from('sector_trigger_skipped').select('*').eq('log_id', log.id),
       ]);
 
-      setCandidates(candRes.data || []);
+      const cands = candRes.data || [];
+      setCandidates(cands);
       setMovers((movRes.data as TriggerMover[]) || []);
-      setNews((newsRes.data as TriggerNews[]) || []);
+
+      let fetchedNews = (newsRes.data as TriggerNews[]) || [];
+      // Fallback: If sector_trigger_news is empty for this session, extract candidates' news so tab isn't empty!
+      if (fetchedNews.length === 0 && cands.length > 0) {
+        fetchedNews = cands
+          .filter((c) => c.news_title)
+          .map((c, idx) => ({
+            id: c.id,
+            title: c.news_title,
+            body: c.news_body,
+            thumbnail_url: null,
+            source_url: null,
+            symbols: [c.ticker],
+            tags: c.news_tags || [],
+            sector: c.sector,
+            is_selected: true,
+          }));
+      }
+      setNews(fetchedNews);
       setSkipped(skipRes.data || []);
     } catch (e) {
       console.error('loadLogDetail error:', e);
@@ -156,21 +225,6 @@ export default function UnifiedMarketBrief() {
     return num.toLocaleString('id-ID', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
   };
 
-  const signalBadge = (s: string | null) => {
-    if (!s) return <span className="text-zinc-500 text-xs">-</span>;
-    let bg = 'bg-[#200f27] text-zinc-400 border border-[#341a3e]';
-    if (s.includes('murah') || s.includes('atas') || s.includes('wajar')) {
-      bg = 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30';
-    } else if (s.includes('mahal') || s.includes('berisiko') || s.includes('bawah')) {
-      bg = 'bg-rose-500/15 text-rose-300 border border-rose-500/30';
-    }
-    return (
-      <span className={`inline-block px-2.5 py-0.5 rounded-md text-xs font-semibold whitespace-nowrap ${bg}`}>
-        {s}
-      </span>
-    );
-  };
-
   const filteredCandidates = candidates.filter((c) => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
@@ -181,56 +235,92 @@ export default function UnifiedMarketBrief() {
     );
   });
 
+  // Calendar Helpers: Group logs by date
+  const logsByDate = useMemo(() => {
+    const map: Record<string, TriggerLog[]> = {};
+    for (const l of logs) {
+      if (!l.trigger_date) continue;
+      const key = l.trigger_date.split('T')[0];
+      if (!map[key]) map[key] = [];
+      map[key].push(l);
+    }
+    return map;
+  }, [logs]);
+
+  // Calendar days generation for month
+  const calendarDays = useMemo(() => {
+    const year = calendarViewDate.getFullYear();
+    const month = calendarViewDate.getMonth();
+    const firstDayIndex = new Date(year, month, 1).getDay(); // 0 is Sunday
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    // Adjust for Monday-first: (day + 6) % 7
+    const adjustedFirstDay = (firstDayIndex + 6) % 7;
+
+    const days: ({ day: number; dateStr: string; logs: TriggerLog[] } | null)[] = [];
+    for (let i = 0; i < adjustedFirstDay; i++) {
+      days.push(null);
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      days.push({
+        day: d,
+        dateStr,
+        logs: logsByDate[dateStr] || [],
+      });
+    }
+    return days;
+  }, [calendarViewDate, logsByDate]);
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24">
+      <div className="flex items-center justify-center py-32">
         <div className="animate-spin w-8 h-8 border-4 border-rose-500 border-t-transparent rounded-full" />
-        <span className="ml-3 text-zinc-300 font-medium">Memuat Market Brief & Watchlist...</span>
+        <span className="ml-3 text-zinc-300 font-medium">Memuat Market Brief...</span>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* 1. Header & Unified Session Selector */}
+      {/* 1. Header & Interactive Session Selector */}
       <div className="flex flex-wrap items-center justify-between gap-4 bg-[#130a17]/70 backdrop-blur-md p-5 rounded-2xl border border-[#251323]">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-xs">
-              MODUL TERPADU
+              MODUL RESMI TERPADU
             </span>
             <span className="text-xs text-rose-400 font-semibold">• Makro Sesi + Analisis Saham</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-white flex items-center gap-2.5 tracking-tight">
-            <span>⚡</span> Market Brief & Watchlist
+            <span>⚡</span> Market Brief
           </h1>
           <p className="text-xs sm:text-sm text-zinc-400 mt-1">
             Riwayat kondisi pasar harian terintegrasi dengan daftar saham terpilih & analisis mendalam
           </p>
         </div>
 
-        {/* Session Run Selector Dropdown */}
-        <div className="flex items-center gap-2 bg-[#180b1d] p-2 rounded-xl border border-[#2d142d] shadow-sm">
-          <span className="text-xs font-bold text-zinc-400 uppercase px-2">Sesi:</span>
-          <select
-            value={selectedLog?.id || ''}
-            onChange={(e) => {
-              const found = logs.find((l) => l.id === e.target.value);
-              if (found) loadLogDetail(found);
-            }}
-            className="px-3 py-1.5 border border-[#3d1947] rounded-lg text-sm bg-[#130917] font-medium text-white focus:outline-none focus:ring-2 focus:ring-rose-500 cursor-pointer"
+        {/* Interactive Session Button with Calendar Picker Trigger */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsCalendarOpen(true)}
+            className="flex items-center gap-2.5 px-4 py-2.5 bg-[#180b1d] hover:bg-[#230f29] border border-[#3b1845] hover:border-rose-500/50 rounded-xl text-xs sm:text-sm font-bold text-white shadow-md transition cursor-pointer group"
+            title="Klik untuk membuka Kalender Pemilih Sesi"
           >
-            {logs.map((l) => (
-              <option key={l.id} value={l.id} className="bg-[#130917] text-white">
-                {formatDate(l.trigger_date)} · {l.session === 'open' ? '☀️ Open (08:00 WIB)' : '🌙 Close (16:30 WIB)'} · {l.status.toUpperCase()}
-              </option>
-            ))}
-          </select>
+            <CalendarIcon className="w-4 h-4 text-rose-400 group-hover:scale-110 transition-transform" />
+            <span>
+              {selectedLog ? formatDate(selectedLog.trigger_date) : 'Pilih Sesi'} ·{' '}
+              {selectedLog?.session === 'open' ? '☀️ Sesi Open' : '🌙 Sesi Close'}
+            </span>
+            <span className="text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2 py-0.5 rounded-md font-mono">
+              PILIH TANGGAL ▼
+            </span>
+          </button>
 
           <button
             onClick={fetchLogs}
-            className="p-2 hover:bg-[#250f2e] text-zinc-300 hover:text-white rounded-lg transition cursor-pointer"
-            title="Refresh"
+            className="p-2.5 bg-[#180b1d] hover:bg-[#230f29] text-zinc-300 hover:text-white rounded-xl border border-[#2d142d] transition cursor-pointer"
+            title="Refresh Data"
           >
             🔄
           </button>
@@ -245,16 +335,14 @@ export default function UnifiedMarketBrief() {
         functionality="Menyajikan sinyal beli/jual berbasis data riil tanpa halusinasi, komparasi terhadap rata-rata sektor (PER, PBV, ROE, DER), serta analogi edukasi finansial ramah pemula."
         dataSource="Diekstrak langsung dari tabel sector_trigger_logs & sector_trigger_candidates dengan data terverifikasi BEI dan Sectors.app v2 API."
         pipeline="Dijalankan terjadwal 2x sehari (08:00 WIB Sesi Open & 16:30 WIB Sesi Close) oleh cron workflow n8n."
-        links={[
-          { label: 'Sectors.app Financials API', url: 'https://sectors.app/api' }
-        ]}
+        links={[{ label: 'Sectors.app Financials API', url: 'https://sectors.app/api' }]}
       />
 
       {selectedLog && (
         <>
-          {/* 2. KPI Cards Bar */}
+          {/* 2. KPI Cards Bar: 1. IHSG, 2. Emiten Terpilih, 3. Berita Di-Scan, 4. FOREIGN FLOW */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
-            {/* IHSG Card */}
+            {/* 1. IHSG Card */}
             <div className="bg-[#130a17]/80 hover:bg-[#1a0e20] backdrop-blur-md rounded-2xl p-4 border border-[#251323] shadow-lg transition">
               <span className="text-xs text-zinc-400 font-semibold uppercase tracking-wider block">Indeks IHSG</span>
               <div className="flex items-baseline gap-2 mt-1">
@@ -273,7 +361,7 @@ export default function UnifiedMarketBrief() {
               </span>
             </div>
 
-            {/* Emiten Watchlist Terpilih */}
+            {/* 2. Emiten Watchlist Terpilih */}
             <div className="bg-[#130a17]/80 hover:bg-[#1a0e20] backdrop-blur-md rounded-2xl p-4 border border-[#251323] shadow-lg transition">
               <span className="text-xs text-zinc-400 font-semibold uppercase tracking-wider block">Emiten Terpilih</span>
               <span className="text-2xl font-black text-amber-400 mt-1 block">
@@ -282,31 +370,53 @@ export default function UnifiedMarketBrief() {
               <span className="text-[11px] text-zinc-500 mt-1 block">Lolos seleksi AI CIO</span>
             </div>
 
-            {/* Berita Di-Scan */}
+            {/* 3. Berita Di-Scan */}
             <div className="bg-[#130a17]/80 hover:bg-[#1a0e20] backdrop-blur-md rounded-2xl p-4 border border-[#251323] shadow-lg transition">
-              <span className="text-xs text-zinc-400 font-semibold uppercase tracking-wider block">Berita Terindeks</span>
+              <span className="text-xs text-zinc-400 font-semibold uppercase tracking-wider block">Berita Di-Scan</span>
               <span className="text-2xl font-black text-sky-400 mt-1 block">
                 {selectedLog.news_fetched || 0} Artikel
               </span>
-              <span className="text-[11px] text-zinc-500 mt-1 block">BEI & media nasional</span>
+              <span className="text-[11px] text-zinc-500 mt-1 block">BEI & media nasional dipindai</span>
             </div>
 
-            {/* Status & Credits */}
+            {/* 4. FOREIGN FLOW (Menggantikan Status & Biaya sesuai Permintaan) */}
             <div className="bg-[#130a17]/80 hover:bg-[#1a0e20] backdrop-blur-md rounded-2xl p-4 border border-[#251323] shadow-lg transition flex flex-col justify-between">
               <div>
-                <span className="text-xs text-zinc-400 font-semibold uppercase tracking-wider block">Status & Biaya</span>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                    {selectedLog.status.toUpperCase()}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-zinc-400 font-semibold uppercase tracking-wider block">
+                    Foreign Flow
                   </span>
-                  <span className="text-xs text-purple-300 font-mono font-bold bg-purple-500/15 px-2 py-0.5 rounded border border-purple-500/30">
-                    {selectedLog.credits_used} cr
+                  <span className="text-[10px] text-purple-300 font-bold bg-purple-500/15 border border-purple-500/30 px-1.5 py-0.5 rounded">
+                    Sectors API
+                  </span>
+                </div>
+                <div className="mt-1">
+                  <span className="text-[11px] text-zinc-500 font-medium block">Net Foreign Flow:</span>
+                  <span
+                    className={`text-xl font-black font-mono block ${
+                      foreignFlow && foreignFlow.netFlow >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                    }`}
+                  >
+                    {foreignFlow
+                      ? `${foreignFlow.netFlow >= 0 ? '+' : ''}Rp ${(foreignFlow.netFlow / 1e9).toFixed(1)} M`
+                      : 'Memuat...'}
                   </span>
                 </div>
               </div>
-              <span className="text-[11px] text-zinc-500 mt-1 truncate font-mono">
-                {selectedLog.session === 'open' ? 'Sesi Open' : 'Sesi Close'}
-              </span>
+              <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-[#251323] text-[11px]">
+                <div>
+                  <span className="text-zinc-500 block">Buy Foreign:</span>
+                  <span className="font-mono font-bold text-emerald-400">
+                    {foreignFlow ? `Rp ${(foreignFlow.totalBuy / 1e9).toFixed(1)} M` : '-'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-zinc-500 block">Sell Foreign:</span>
+                  <span className="font-mono font-bold text-rose-400">
+                    {foreignFlow ? `Rp ${(foreignFlow.totalSell / 1e9).toFixed(1)} M` : '-'}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -325,7 +435,7 @@ export default function UnifiedMarketBrief() {
             </div>
           )}
 
-          {/* 4. Top Movers Quick Bar */}
+          {/* 4. Top Movers Quick Bar with NAMA PT LENGKAP */}
           {movers.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {(['top_gainers', 'top_losers'] as const).map((cls) => {
@@ -333,23 +443,34 @@ export default function UnifiedMarketBrief() {
                 if (!list.length) return null;
                 const isGainer = cls === 'top_gainers';
                 return (
-                  <div key={cls} className="bg-[#130a17]/80 backdrop-blur-md rounded-2xl p-4 border border-[#251323] shadow-lg">
-                    <h3 className={`text-xs font-bold uppercase tracking-wider mb-2.5 flex items-center gap-1.5 ${isGainer ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  <div
+                    key={cls}
+                    className="bg-[#130a17]/80 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-[#251323] shadow-lg"
+                  >
+                    <h3
+                      className={`text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-1.5 ${
+                        isGainer ? 'text-emerald-400' : 'text-rose-400'
+                      }`}
+                    >
                       <span>{isGainer ? '🚀 Top 5 Gainers' : '🔻 Top 5 Losers'}</span>
                     </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {list.slice(0, 4).map((m) => (
-                        <div key={m.id} className="flex items-center justify-between p-2 rounded-xl bg-[#1a0e21] border border-[#281329] text-xs">
-                          <div>
-                            <span className="font-mono font-bold text-white bg-[#281132] border border-[#3b1949] px-1.5 py-0.5 rounded mr-1.5">
+                    <div className="space-y-2">
+                      {list.slice(0, 5).map((m) => (
+                        <div
+                          key={m.id}
+                          className="flex items-center justify-between p-2.5 rounded-xl bg-[#1a0e21] border border-[#281329] text-xs hover:border-[#3d1938] transition"
+                        >
+                          <div className="flex items-center gap-2 min-w-0 pr-2">
+                            <span className="font-mono font-bold text-white bg-[#281132] border border-[#3b1949] px-2 py-0.5 rounded shrink-0">
                               {m.symbol}
                             </span>
-                            <span className="text-zinc-400 truncate max-w-[90px] inline-block align-bottom font-medium">
-                              {m.company_name}
+                            {/* NAMA PT LENGKAP (Tanpa pemotongan) */}
+                            <span className="text-zinc-300 font-medium whitespace-normal leading-tight">
+                              {m.company_name || m.symbol}
                             </span>
                           </div>
                           <span
-                            className={`font-mono font-bold ${
+                            className={`font-mono font-bold shrink-0 ${
                               m.price_change != null && m.price_change >= 0 ? 'text-emerald-400' : 'text-rose-400'
                             }`}
                           >
@@ -416,7 +537,7 @@ export default function UnifiedMarketBrief() {
               )}
             </div>
 
-            {/* TAB CONTENT 1: Candidates Watchlist Table */}
+            {/* TAB CONTENT 1: Candidates Watchlist Table (Kolom Sinyal Disembunyikan Sesuai Permintaan) */}
             {activeTab === 'candidates' && (
               <div className="bg-[#130a17]/80 backdrop-blur-md rounded-2xl border border-[#251323] shadow-xl overflow-hidden">
                 <div className="p-4 border-b border-[#251323] bg-[#170b1d]/60 flex items-center justify-between">
@@ -425,7 +546,7 @@ export default function UnifiedMarketBrief() {
                       <span>📋</span> Kandidat Saham Pilihan AI
                     </h2>
                     <p className="text-xs text-zinc-400 mt-0.5">
-                      Klik salah satu baris untuk membuka Analisis Detail (Katalis 3W, Fundamental vs Sektor & Teknikal)
+                      Klik salah satu baris atau tombol "Detail Analisa" untuk membuka halaman analisis penuh emiten
                     </p>
                   </div>
                 </div>
@@ -437,11 +558,7 @@ export default function UnifiedMarketBrief() {
                         <th className="py-3 px-4">Ticker</th>
                         <th className="py-3 px-4">Perusahaan</th>
                         <th className="py-3 px-4">Sektor</th>
-                        <th className="py-3 px-4 text-right">Harga</th>
-                        <th className="py-3 px-2 text-center">PER Signal</th>
-                        <th className="py-3 px-2 text-center">PBV Signal</th>
-                        <th className="py-3 px-2 text-center">ROE Signal</th>
-                        <th className="py-3 px-2 text-center">DER Signal</th>
+                        <th className="py-3 px-4 text-right">Harga Terakhir</th>
                         <th className="py-3 px-4">Berita Utama & Katalis</th>
                         <th className="py-3 px-4 text-center">Aksi</th>
                       </tr>
@@ -450,36 +567,32 @@ export default function UnifiedMarketBrief() {
                       {filteredCandidates.map((c) => (
                         <tr
                           key={c.id}
-                          onClick={() => setActiveModalCandidate(c)}
-                          className="hover:bg-[#1d0e24] cursor-pointer transition-colors"
+                          onClick={() => navigate(`/marketbrief/${c.id}`)}
+                          className="hover:bg-[#1d0e24] cursor-pointer transition-colors group"
                         >
                           <td className="py-3 px-4">
-                            <span className="font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2.5 py-1 rounded-lg font-mono text-xs shadow-xs">
+                            <span className="font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2.5 py-1 rounded-lg font-mono text-xs shadow-xs group-hover:border-amber-400/60 transition">
                               {c.ticker}
                             </span>
                           </td>
-                          <td className="py-3 px-4 font-semibold text-white max-w-[170px] truncate" title={c.company_name || ''}>
+                          <td className="py-3 px-4 font-semibold text-white max-w-[200px]" title={c.company_name || ''}>
                             {c.company_name || '-'}
                           </td>
                           <td className="py-3 px-4 text-xs text-zinc-400 font-medium">
                             {c.sector || '-'}
                           </td>
-                          <td className="py-3 px-4 text-right font-mono font-bold text-white">
-                            {fmtNum(c.price, 0)}
+                          <td className="py-3 px-4 text-right font-mono font-bold text-amber-400 text-base">
+                            Rp {fmtNum(c.price, 0)}
                           </td>
-                          <td className="py-3 px-2 text-center">{signalBadge(c.pe_signal)}</td>
-                          <td className="py-3 px-2 text-center">{signalBadge(c.pbv_signal)}</td>
-                          <td className="py-3 px-2 text-center">{signalBadge(c.roe_signal)}</td>
-                          <td className="py-3 px-2 text-center">{signalBadge(c.der_signal)}</td>
-                          <td className="py-3 px-4 max-w-[260px]">
-                            <p className="text-xs text-zinc-300 font-medium truncate" title={c.news_title || ''}>
+                          <td className="py-3 px-4 max-w-md">
+                            <p className="text-xs text-zinc-200 font-medium line-clamp-1" title={c.news_title || ''}>
                               {c.news_title || '-'}
                             </p>
                             {c.news_tags && c.news_tags.length > 0 && (
                               <div className="flex flex-wrap gap-1 mt-1">
-                                {c.news_tags.slice(0, 2).map((t, i) => (
+                                {c.news_tags.slice(0, 3).map((t, i) => (
                                   <span key={i} className="text-[10px] bg-[#240f2b] text-zinc-400 border border-[#381a42] px-1.5 py-0.5 rounded">
-                                    {t}
+                                    #{t}
                                   </span>
                                 ))}
                               </div>
@@ -489,70 +602,66 @@ export default function UnifiedMarketBrief() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setActiveModalCandidate(c);
+                                navigate(`/marketbrief/${c.id}`);
                               }}
-                              className="px-3 py-1.5 bg-gradient-to-r from-rose-500 to-amber-500 hover:opacity-95 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-950/40 transition cursor-pointer"
+                              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 text-white font-bold text-xs shadow-sm hover:opacity-95 transition cursor-pointer flex items-center gap-1.5 mx-auto"
                             >
-                              Detail Analisa
+                              <span>Detail Analisa</span>
+                              <ArrowRight className="w-3.5 h-3.5" />
                             </button>
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
-                  {filteredCandidates.length === 0 && (
-                    <div className="p-10 text-center text-zinc-500 text-sm">
-                      Tidak ada kandidat saham yang sesuai dengan filter pencarian.
-                    </div>
-                  )}
                 </div>
               </div>
             )}
 
-            {/* TAB CONTENT 2: News Feed */}
+            {/* TAB CONTENT 2: News List */}
             {activeTab === 'news' && (
               <div className="bg-[#130a17]/80 backdrop-blur-md rounded-2xl border border-[#251323] p-5 shadow-lg space-y-3">
-                <h3 className="font-bold text-white text-sm mb-3">Daftar Berita Terindeks ({news.length})</h3>
-                <div className="space-y-2.5 max-h-[500px] overflow-y-auto">
-                  {news.map((n) => (
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-bold text-white text-sm">Arsip Berita Sesi Ini ({news.length} artikel)</h3>
+                  <span className="text-xs text-zinc-400">BEI & Media Partner</span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[600px] overflow-y-auto">
+                  {news.map((n, idx) => (
                     <div
-                      key={n.id}
-                      className={`text-sm p-3.5 rounded-xl border transition ${
+                      key={n.id || idx}
+                      onClick={() => navigate(`/news/${n.id}`)}
+                      className={`p-4 rounded-xl border transition cursor-pointer hover:border-rose-500/40 hover:bg-[#1a0e21] ${
                         n.is_selected
-                          ? 'bg-amber-500/10 border-amber-500/30'
-                          : 'bg-[#1a0e21] border-[#281329] hover:bg-[#200f27]'
+                          ? 'bg-gradient-to-r from-[#200f27] to-[#170a1d] border-amber-500/30'
+                          : 'bg-[#180c1d] border-[#281329]'
                       }`}
                     >
-                      <div className="flex items-start gap-2.5">
-                        <span className="text-zinc-500 text-xs mt-0.5 font-mono">{n.news_index}.</span>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            {n.is_selected && (
-                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                                TERPILIH LOLOS
-                              </span>
-                            )}
-                            {n.sector && (
-                              <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-[#240f2b] text-zinc-400 border border-[#381642]">
-                                {n.sector}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-zinc-200 text-xs sm:text-sm font-medium leading-relaxed">{n.title}</p>
-                          <div className="flex items-center gap-2 mt-2">
-                            {n.symbols.slice(0, 4).map((s) => (
-                              <span key={s} className="text-[10px] bg-[#240f2b] text-amber-300 border border-[#381642] px-1.5 py-0.5 rounded font-mono font-bold">
-                                {s}
-                              </span>
-                            ))}
-                            {n.tags.slice(0, 2).map((t) => (
-                              <span key={t} className="text-[10px] bg-rose-500/15 text-rose-300 border border-rose-500/30 px-1.5 py-0.5 rounded font-semibold">
-                                {t}
-                              </span>
-                            ))}
-                          </div>
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {n.symbols?.slice(0, 3).map((s) => (
+                            <span
+                              key={s}
+                              className="text-[10px] font-mono font-bold bg-[#260f2d] text-amber-300 border border-[#3b1845] px-1.5 py-0.5 rounded"
+                            >
+                              {s}
+                            </span>
+                          ))}
                         </div>
+                        {n.is_selected && (
+                          <span className="text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full">
+                            ★ Terpilih AI
+                          </span>
+                        )}
                       </div>
+                      <h4 className="text-xs sm:text-sm font-bold text-white line-clamp-2 leading-snug">
+                        {n.title}
+                      </h4>
+                      {n.body && (
+                        <p className="text-[11px] text-zinc-400 line-clamp-2 mt-1 leading-relaxed">
+                          {n.body}
+                        </p>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -582,319 +691,157 @@ export default function UnifiedMarketBrief() {
         </>
       )}
 
-      {/* 6. Stock Candidate Deep Detail Modal */}
-      {activeModalCandidate && (
-        <CandidateDetailModal
-          candidate={activeModalCandidate}
-          onClose={() => setActiveModalCandidate(null)}
-        />
-      )}
-    </div>
-  );
-}
-
-function CandidateDetailModal({
-  candidate: c,
-  onClose,
-}: {
-  candidate: TriggerCandidate;
-  onClose: () => void;
-}) {
-  const fmtNum = (n: number | null | undefined, d = 2) =>
-    n == null ? '-' : n.toLocaleString('id-ID', { minimumFractionDigits: d, maximumFractionDigits: d });
-
-  const fmtPct = (val: any) => {
-    if (val == null || val === 'N/A' || val === '') return '-';
-    if (typeof val === 'number') {
-      return `${val >= 0 ? '+' : ''}${val.toFixed(2)}%`;
-    }
-    const str = String(val).trim();
-    if (str.endsWith('%')) {
-      const parsed = parseFloat(str.slice(0, -1));
-      if (!isNaN(parsed)) return `${parsed >= 0 ? '+' : ''}${parsed.toFixed(2)}%`;
-      return str;
-    }
-    const parsed = parseFloat(str);
-    if (isNaN(parsed)) return str;
-    return `${parsed >= 0 ? '+' : ''}${parsed.toFixed(2)}%`;
-  };
-
-  const tech = c.technical_json || {};
-  const tags = c.news_tags || [];
-  const displayPrice = tech.last || c.price;
-
-  return (
-    <div
-      className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-[#130a17] rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-[#251323] text-zinc-100"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header Banner */}
-        <div className="bg-gradient-to-r from-[#1c0c22] to-[#140818] text-white p-6 rounded-t-2xl border-b border-[#251323] flex items-start justify-between">
-          <div>
-            <div className="flex items-center gap-3">
-              <span className="px-3 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 font-extrabold font-mono text-base rounded-lg">
-                {c.ticker}
-              </span>
-              <span className="text-xs bg-[#240f2b] text-zinc-300 border border-[#391942] px-2.5 py-1 rounded-md font-semibold">
-                {c.sector || 'Sektor N/A'}
-              </span>
-            </div>
-            <h2 className="text-xl font-black text-white mt-2 tracking-tight">{c.company_name || c.ticker}</h2>
-            <div className="flex items-center gap-4 mt-2 text-sm text-zinc-300">
-              <span>Harga Terakhir: <strong className="font-mono text-amber-400 text-base">Rp {fmtNum(displayPrice, 0)}</strong></span>
-              {c.market_cap && <span>Market Cap: <strong className="text-zinc-200">Rp {fmtNum(c.market_cap / 1e12, 2)} T</strong></span>}
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-lg bg-[#220e28] hover:bg-[#2f1338] text-zinc-400 hover:text-white flex items-center justify-center text-lg font-bold border border-[#381642] cursor-pointer transition"
+      {/* ─── BIG CALENDAR PICKER MODAL (Sesuai Permintaan User) ─── */}
+      {isCalendarOpen && (
+        <div
+          className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4"
+          onClick={() => setIsCalendarOpen(false)}
+        >
+          <div
+            className="bg-[#130a17] border border-[#2e1436] rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 text-zinc-100"
+            onClick={(e) => e.stopPropagation()}
           >
-            ✕
-          </button>
-        </div>
+            {/* Modal Header & Month Navigation */}
+            <div className="flex items-center justify-between border-b border-[#251323] pb-4">
+              <div>
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <CalendarIcon className="w-5 h-5 text-rose-400" />
+                  <span>Pilih Tanggal Sesi Pasar</span>
+                </h3>
+                <p className="text-xs text-zinc-400 mt-0.5">
+                  Klik tanggal untuk memuat data bursa & watchlist sesi tersebut
+                </p>
+              </div>
+              <button
+                onClick={() => setIsCalendarOpen(false)}
+                className="w-8 h-8 rounded-lg bg-[#1e0e22] hover:bg-[#2b1233] text-zinc-400 hover:text-white flex items-center justify-center border border-[#341a3e] transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
 
-        <div className="p-6 space-y-6">
-          {/* Tags & Investment Horizon */}
-          <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-[#180c1d] rounded-xl border border-[#281329]">
-            <div>
-              <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider block mb-1.5">Tags & Sentimen</span>
-              <div className="flex flex-wrap gap-1.5">
-                {tags.map((t, i) => (
-                  <span
-                    key={i}
-                    className={`px-2.5 py-1 rounded-full text-xs font-bold ${
-                      t.toLowerCase().includes('bullish')
-                        ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
-                        : t.toLowerCase().includes('bearish')
-                        ? 'bg-rose-500/15 text-rose-300 border border-rose-500/30'
-                        : 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+            {/* Month & Year Navigation */}
+            <div className="flex items-center justify-between bg-[#180c1d] p-3 rounded-xl border border-[#281329]">
+              <button
+                onClick={() =>
+                  setCalendarViewDate(
+                    new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth() - 1, 1)
+                  )
+                }
+                className="p-1.5 rounded-lg bg-[#220e28] hover:bg-[#2f1338] text-zinc-300 hover:text-white transition cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className="font-bold text-sm text-white capitalize">
+                {calendarViewDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
+              </span>
+              <button
+                onClick={() =>
+                  setCalendarViewDate(
+                    new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth() + 1, 1)
+                  )
+                }
+                className="p-1.5 rounded-lg bg-[#220e28] hover:bg-[#2f1338] text-zinc-300 hover:text-white transition cursor-pointer"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Calendar Day-of-week headers */}
+            <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold text-zinc-500 uppercase">
+              <span>Sen</span>
+              <span>Sel</span>
+              <span>Rab</span>
+              <span>Kam</span>
+              <span>Jum</span>
+              <span className="text-rose-400/60">Sab</span>
+              <span className="text-rose-400/60">Min</span>
+            </div>
+
+            {/* Calendar Grid */}
+            <div className="grid grid-cols-7 gap-1.5">
+              {calendarDays.map((cell, idx) => {
+                if (!cell) {
+                  return <div key={`empty-${idx}`} className="h-14 rounded-xl opacity-0" />;
+                }
+
+                const hasLogs = cell.logs.length > 0;
+                const isCurrentSelected = cell.logs.some((l) => l.id === selectedLog?.id);
+
+                return (
+                  <div
+                    key={cell.dateStr}
+                    onClick={() => {
+                      if (hasLogs) {
+                        loadLogDetail(cell.logs[0]);
+                        setIsCalendarOpen(false);
+                      }
+                    }}
+                    className={`h-14 p-1.5 rounded-xl border flex flex-col justify-between transition text-xs select-none ${
+                      isCurrentSelected
+                        ? 'bg-rose-500/20 border-rose-500/60 ring-2 ring-rose-500/30'
+                        : hasLogs
+                        ? 'bg-[#180c1d] border-[#311639] hover:bg-[#220f28] hover:border-rose-500/40 cursor-pointer'
+                        : 'bg-[#120815]/40 border-transparent text-zinc-600 opacity-40 cursor-not-allowed'
                     }`}
                   >
-                    {t}
-                  </span>
-                ))}
-                {!tags.length && <span className="text-xs text-zinc-500">Tidak ada tag</span>}
-              </div>
-            </div>
-            <div>
-              <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider block mb-1.5">Horizon / Trading Style</span>
-              <span className="px-3 py-1 bg-purple-500/20 text-purple-300 border border-purple-500/30 font-semibold text-xs rounded-lg">
-                ⚡ Swing / Short-term Katalis
-              </span>
-            </div>
-          </div>
+                    <span
+                      className={`font-mono font-bold text-[11px] ${
+                        isCurrentSelected ? 'text-rose-300' : hasLogs ? 'text-white' : 'text-zinc-600'
+                      }`}
+                    >
+                      {cell.day}
+                    </span>
 
-          {/* Berita Utama & Katalis */}
-          {c.news_title && (
-            <div className="bg-amber-500/10 border border-amber-500/25 rounded-xl p-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 mb-1">
-                📰 Berita Utama & Katalis
-              </h3>
-              <p className="font-bold text-white text-base">{c.news_title}</p>
-              {c.news_body && (
-                <p className="text-xs text-zinc-300 mt-2 leading-relaxed">{c.news_body}</p>
-              )}
-            </div>
-          )}
-
-          {/* Data Fundamental Lengkap */}
-          <div>
-            <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-              📊 Data Fundamental vs Rata-Rata Sektor
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-              {/* PER */}
-              <div className="p-3.5 bg-[#180c1d] rounded-xl border border-[#281329] shadow-sm">
-                <span className="text-xs font-medium text-zinc-400 block">PER (Price to Earnings)</span>
-                <span className="text-lg font-extrabold text-white font-mono block mt-1">
-                  {c.pe_ratio != null ? `${fmtNum(c.pe_ratio)}x` : 'N/A'}
-                </span>
-                <span className="text-[11px] text-zinc-500 block mt-0.5 font-mono">
-                  Rata-rata Sektor: {c.avg_sector_pe != null ? `${fmtNum(c.avg_sector_pe)}x` : 'N/A'}
-                </span>
-                <div className="mt-2">
-                  <span className="text-xs font-medium px-2 py-0.5 rounded bg-[#240f2b] text-zinc-300 border border-[#381642] block text-center">
-                    {c.pe_signal ? `${c.pe_signal} dari rata-rata sektor` : '-'}
-                  </span>
-                </div>
-              </div>
-
-              {/* PBV */}
-              <div className="p-3.5 bg-[#180c1d] rounded-xl border border-[#281329] shadow-sm">
-                <span className="text-xs font-medium text-zinc-400 block">PBV (Price to Book Value)</span>
-                <span className="text-lg font-extrabold text-white font-mono block mt-1">
-                  {c.pb_ratio != null ? `${fmtNum(c.pb_ratio)}x` : 'N/A'}
-                </span>
-                <span className="text-[11px] text-zinc-500 block mt-0.5 font-mono">
-                  Rata-rata Sektor: {c.avg_sector_pb || c.avg_sector_pbv ? `${fmtNum(c.avg_sector_pb || c.avg_sector_pbv)}x` : 'N/A'}
-                </span>
-                <div className="mt-2">
-                  <span className="text-xs font-medium px-2 py-0.5 rounded bg-[#240f2b] text-zinc-300 border border-[#381642] block text-center">
-                    {c.pbv_signal ? `${c.pbv_signal} dari rata-rata sektor` : '-'}
-                  </span>
-                </div>
-              </div>
-
-              {/* ROE */}
-              <div className="p-3.5 bg-[#180c1d] rounded-xl border border-[#281329] shadow-sm">
-                <span className="text-xs font-medium text-zinc-400 block">ROE (Return on Equity)</span>
-                <span className="text-lg font-extrabold text-white font-mono block mt-1">
-                  {c.roe != null ? `${fmtNum(c.roe)}%` : 'N/A'}
-                </span>
-                <span className="text-[11px] text-zinc-500 block mt-0.5 font-mono">
-                  Rata-rata Sektor: {c.avg_sector_roe != null ? `${fmtNum(c.avg_sector_roe)}%` : 'N/A'}
-                </span>
-                <div className="mt-2">
-                  <span className="text-xs font-medium px-2 py-0.5 rounded bg-[#240f2b] text-zinc-300 border border-[#381642] block text-center">
-                    {c.roe_signal ? `${c.roe_signal} rata-rata sektor` : '-'}
-                  </span>
-                </div>
-              </div>
-
-              {/* DER */}
-              <div className="p-3.5 bg-[#180c1d] rounded-xl border border-[#281329] shadow-sm">
-                <span className="text-xs font-medium text-zinc-400 block">DER (Debt to Equity)</span>
-                <span className="text-lg font-extrabold text-white font-mono block mt-1">
-                  {c.der != null ? `${fmtNum(c.der)}x` : 'N/A'}
-                </span>
-                <span className="text-[11px] text-zinc-500 block mt-0.5 font-mono">
-                  Rata-rata Sektor: {c.avg_sector_der != null ? `${fmtNum(c.avg_sector_der)}x` : 'N/A'}
-                </span>
-                <div className="mt-2">
-                  <span className="text-xs font-medium px-2 py-0.5 rounded bg-[#240f2b] text-zinc-300 border border-[#381642] block text-center">
-                    {c.der_signal ? `${c.der_signal} dibanding sektor` : '-'}
-                  </span>
-                </div>
-              </div>
+                    {/* Session Indicators */}
+                    {hasLogs && (
+                      <div className="flex gap-1 flex-wrap">
+                        {cell.logs.map((l) => (
+                          <span
+                            key={l.id}
+                            className={`text-[9px] px-1 rounded font-bold ${
+                              l.session === 'open'
+                                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                                : 'bg-purple-500/20 text-purple-300 border border-purple-500/40'
+                            }`}
+                            title={`Sesi ${l.session.toUpperCase()}`}
+                          >
+                            {l.session === 'open' ? '☀️' : '🌙'}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
-            {/* Kamus Fundamental Gen Z Guide Box */}
-            <div className="mt-3 p-4 bg-[#1b0d23] border border-[#2d1437] rounded-xl text-xs space-y-1.5 text-zinc-300">
-              <p className="font-bold text-amber-400 text-xs flex items-center gap-1">💡 Kamus Fundamental Gen Z & Analogi Real Life:</p>
-              <p>• <strong className="text-white">PER (Price to Earnings Ratio)</strong>: Berapa tahun balik modal dari laba per saham. <span className="text-emerald-400 font-semibold">Lebih KECIL dari sektor = LEBIH MURAH</span>.<br/>
-              <span className="text-zinc-500 italic pl-3 inline-block">💬 Analogi: Beli HP Rp15jt, tiap tahun untung Rp1jt → PER = 15x balik modal.</span></p>
-              <p>• <strong className="text-white">PBV (Price to Book Value)</strong>: Bayar berapa kali lipat harga vs aset bersih modal. <span className="text-emerald-400 font-semibold">Lebih KECIL dari sektor = LEBIH DISKON</span>.<br/>
-              <span className="text-zinc-500 italic pl-3 inline-block">💬 Analogi: Harga modal asli Rp1jt tapi bayar Rp3jt (PBV 3x) = bayar ekspektasi/brand.</span></p>
-              <p>• <strong className="text-white">ROE (Return on Equity)</strong>: Efisiensi modal sendiri menghasilkan cuan/profit. <span className="text-emerald-400 font-semibold">Lebih BESAR dari sektor = LEBIH JAGO CUAN</span>.<br/>
-              <span className="text-zinc-500 italic pl-3 inline-block">💬 Analogi: Modal Rp1jt untung Rp200rb (ROE 20%) vs modal Rp5jt cuma untung Rp200rb (ROE 4%).</span></p>
-              <p>• <strong className="text-white">DER (Debt to Equity Ratio)</strong>: Bandingkan total beban utang vs modal bersih sendiri. <span className="text-emerald-400 font-semibold">Lebih KECIL dari sektor = LEBIH AMAN</span>.<br/>
-              <span className="text-zinc-500 italic pl-3 inline-block">💬 Analogi: DER 1x = utang 100% dari modal. DER 3x = utang 3x lipat modal sendiri (risiko tinggi).</span></p>
-            </div>
-          </div>
-
-          {/* Data Technical Lengkap */}
-          <div>
-            <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-              📈 Data Teknikal & Pergerakan Harga
-            </h3>
-            <div className="bg-[#180c1d] border border-[#281329] text-white rounded-xl p-5 space-y-4">
-              {/* Metrics Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2.5">
-                <div className="bg-[#220e28] border border-[#34163e] p-2 rounded-lg text-center">
-                  <span className="text-[10px] text-zinc-400 block">Harga Terakhir</span>
-                  <span className="font-mono font-bold text-amber-400 text-xs">Rp {fmtNum(displayPrice, 0)}</span>
-                </div>
-                <div className="bg-[#220e28] border border-[#34163e] p-2 rounded-lg text-center">
-                  <span className="text-[10px] text-zinc-400 block">MA20 (Support)</span>
-                  <span className="font-mono font-bold text-blue-400 text-xs">{fmtNum(tech.ma20, 0)}</span>
-                </div>
-                <div className="bg-[#220e28] border border-[#34163e] p-2 rounded-lg text-center">
-                  <span className="text-[10px] text-zinc-400 block">MA50 (Trend)</span>
-                  <span className="font-mono font-bold text-cyan-400 text-xs">{fmtNum(tech.ma50, 0)}</span>
-                </div>
-                <div className="bg-[#220e28] border border-[#34163e] p-2 rounded-lg text-center">
-                  <span className="text-[10px] text-zinc-400 block">MA200 (Long)</span>
-                  <span className="font-mono font-bold text-indigo-300 text-xs">{fmtNum(tech.ma200, 0)}</span>
-                </div>
-                <div className="bg-[#220e28] border border-[#34163e] p-2 rounded-lg text-center">
-                  <span className="text-[10px] text-zinc-400 block">Chg 1D</span>
-                  <span className={`font-mono font-bold text-xs ${String(tech.chg1d).includes('-') ? 'text-rose-400' : 'text-emerald-400'}`}>
-                    {fmtPct(tech.chg1d)}
-                  </span>
-                </div>
-                <div className="bg-[#220e28] border border-[#34163e] p-2 rounded-lg text-center">
-                  <span className="text-[10px] text-zinc-400 block">Chg 5D</span>
-                  <span className={`font-mono font-bold text-xs ${String(tech.chg5d).includes('-') ? 'text-rose-400' : 'text-emerald-400'}`}>
-                    {fmtPct(tech.chg5d)}
-                  </span>
-                </div>
-                <div className="bg-[#220e28] border border-[#34163e] p-2 rounded-lg text-center">
-                  <span className="text-[10px] text-zinc-400 block">Chg 20D</span>
-                  <span className={`font-mono font-bold text-xs ${String(tech.chg20d).includes('-') ? 'text-rose-400' : 'text-emerald-400'}`}>
-                    {fmtPct(tech.chg20d)}
-                  </span>
-                </div>
-                <div className="bg-[#220e28] border border-[#34163e] p-2 rounded-lg text-center">
-                  <span className="text-[10px] text-zinc-400 block">High 52W</span>
-                  <span className="font-mono font-bold text-amber-300 text-xs">{fmtNum(tech.high52w, 0)}</span>
-                </div>
+            {/* Quick Helper footer */}
+            <div className="flex items-center justify-between pt-2 border-t border-[#251323] text-xs text-zinc-400">
+              <div className="flex items-center gap-3">
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-amber-400" /> Sesi Open
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-purple-400" /> Sesi Close
+                </span>
               </div>
 
-              {/* Technical Sinyal Cross (Golden/Death Cross) */}
-              {tech.crossSignal && (
-                <div className="bg-[#220e28] px-3.5 py-2 rounded-xl border border-[#34163e] flex items-center justify-between">
-                  <span className="text-xs text-zinc-400 font-medium">MA Crossover Signal:</span>
-                  <span className="text-xs font-bold text-amber-300 font-mono">{tech.crossSignal}</span>
-                </div>
-              )}
-
-              {/* vibeCheck, Trigger, TLDR & Warning Analysis */}
-              {(tech.vibeCheck || tech.trigger || tech.tldr || tech.warning) && (
-                <div className="pt-2 border-t border-[#2d1437] space-y-2.5">
-                  {tech.vibeCheck && (
-                    <div className="bg-[#220e28] p-3 rounded-xl border border-[#34163e]">
-                      <span className="text-[11px] font-semibold text-zinc-400 uppercase block mb-1">Vibe Check Gen Z</span>
-                      <p className="text-sm font-semibold text-amber-300">{tech.vibeCheck}</p>
-                    </div>
-                  )}
-                  {tech.trigger && (
-                    <div className="bg-[#220e28] p-3 rounded-xl border border-[#34163e]">
-                      <span className="text-[11px] font-semibold text-zinc-400 uppercase block mb-1">Trading Trigger & Support/Resistance</span>
-                      <p className="text-xs text-zinc-200 leading-relaxed">{tech.trigger}</p>
-                    </div>
-                  )}
-                  {tech.tldr && (
-                    <div className="bg-[#220e28] p-3 rounded-xl border border-[#34163e]">
-                      <span className="text-[11px] font-semibold text-zinc-400 uppercase block mb-1">TL;DR Ringkasan AI</span>
-                      <p className="text-xs text-zinc-200 leading-relaxed">{tech.tldr}</p>
-                    </div>
-                  )}
-                  {tech.warning && (
-                    <div className="bg-rose-950/30 p-3 rounded-xl border border-rose-800/50">
-                      <span className="text-[11px] font-semibold text-rose-400 uppercase block mb-1">⚠️ Awas / Risk Warning</span>
-                      <p className="text-xs text-rose-200 leading-relaxed">{tech.warning}</p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Kamus Teknikal Gen Z Guide Box */}
-              <div className="p-3 bg-[#1d0e24] border border-[#31163b] rounded-xl text-xs space-y-1.5 text-zinc-300">
-                <p className="font-bold text-amber-300 text-xs flex items-center gap-1">💡 Kamus Teknikal Gen Z & Analogi:</p>
-                <p>• <strong className="text-white">MA20 & MA50 (Moving Average 20 & 50 Hari)</strong>: Garis bantal rata-rata harga 20 & 50 hari terakhir.<br/>
-                <span className="text-zinc-500 italic pl-3 inline-block">💬 Analogi: Batas aman 'napas' harga. Golden Cross 🚀 (MA20 potong ke atas MA50 = sinyal terbang), Death Cross ☠️ (potong ke bawah = sinyal downtrend).</span></p>
-                <p>• <strong className="text-white">Bullish vs Bearish</strong>:<br/>
-                <span className="text-zinc-500 italic pl-3 inline-block">💬 Analogi: Bullish (banteng menyundul ke atas = tren naik), Bearish (beruang mencakar ke bawah = tren lesu/turun).</span></p>
-                <p>• <strong className="text-white">Chg 1D / 5D / 20D & Volume</strong>: Persentase naik-turun harga 1 hari, 1 minggu, 1 bulan bursa.</p>
-              </div>
+              <button
+                onClick={() => {
+                  if (logs.length > 0) {
+                    loadLogDetail(logs[0]);
+                    setIsCalendarOpen(false);
+                  }
+                }}
+                className="text-xs font-bold text-rose-400 hover:text-rose-300 transition cursor-pointer"
+              >
+                Lompat ke Sesi Terbaru ➔
+              </button>
             </div>
           </div>
         </div>
-
-        {/* Footer */}
-        <div className="p-4 bg-[#140818] border-t border-[#251323] rounded-b-2xl flex justify-end">
-          <button
-            onClick={onClose}
-            className="px-6 py-2 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 hover:opacity-95 text-white font-bold text-sm rounded-xl transition shadow-lg shadow-rose-950/40 cursor-pointer"
-          >
-            Tutup
-          </button>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

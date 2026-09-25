@@ -17,6 +17,7 @@ import {
   supabase,
 } from '../services/supabase';
 import TemplateRenderer, { PALETTE } from '../Templates';
+import Breadcrumbs from './Breadcrumbs';
 
 interface PostDetailViewProps {
   post: AutomationPost | GeneratedPost;
@@ -31,35 +32,35 @@ const SOCIAL_CHANNELS = [
     handle: '@sahamfyp.id',
     url: 'https://www.instagram.com/sahamfyp.id/',
     icon: '📸',
-    badgeColor: 'text-pink-700 bg-pink-50 border-pink-200 hover:bg-pink-100',
+    badgeColor: 'text-pink-300 bg-pink-500/10 border-[#3d1938] hover:bg-pink-500/20',
   },
   {
     name: 'TikTok',
     handle: '@sahamfyp.id',
     url: 'https://www.tiktok.com/@sahamfyp.id',
     icon: '🎵',
-    badgeColor: 'text-slate-800 bg-slate-50 border-slate-200 hover:bg-slate-100',
+    badgeColor: 'text-zinc-200 bg-[#1e0e22] border-[#341a3e] hover:bg-[#25102a]',
   },
   {
     name: 'Facebook',
     handle: 'sahamfyp.id',
     url: 'https://www.facebook.com/116968125335221',
     icon: '👥',
-    badgeColor: 'text-blue-700 bg-blue-50 border-blue-200 hover:bg-blue-100',
+    badgeColor: 'text-blue-300 bg-blue-500/10 border-blue-500/30 hover:bg-blue-500/20',
   },
   {
     name: 'Threads',
     handle: '@sahamfyp.id',
     url: 'https://www.threads.net/@sahamfyp.id',
     icon: '🧵',
-    badgeColor: 'text-zinc-800 bg-zinc-50 border-zinc-200 hover:bg-zinc-100',
+    badgeColor: 'text-zinc-300 bg-zinc-800/40 border-zinc-700/50 hover:bg-zinc-800/70',
   },
   {
     name: 'Telegram',
     handle: '@sahamfyp',
     url: 'https://t.me/sahamfyp',
     icon: '✈️',
-    badgeColor: 'text-sky-700 bg-sky-50 border-sky-200 hover:bg-sky-100',
+    badgeColor: 'text-sky-300 bg-sky-500/10 border-sky-500/30 hover:bg-sky-500/20',
   },
 ];
 
@@ -518,27 +519,25 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
       {/* ── Top Bar / Breadcrumb ──────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#130a17]/90 backdrop-blur-md p-4 sm:p-5 rounded-2xl border border-[#251323] shadow-xl">
+        <div className="flex items-center gap-3 flex-wrap">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-xl transition"
+            className="flex items-center gap-2 px-3.5 py-2 bg-[#1a0e21] hover:bg-[#250f2e] text-zinc-300 hover:text-white font-semibold text-xs rounded-xl border border-[#341a3e] transition cursor-pointer"
           >
             <span>←</span>
             <span>Kembali ke Daftar Post</span>
           </button>
-          <div className="h-5 w-px bg-slate-200 hidden sm:block" />
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold px-2.5 py-0.5 rounded-md bg-amber-100 text-amber-800 uppercase tracking-wider">
-                {isAutomation ? (autoPost?.workflow_type || 'Automation').replace(/_/g, ' ') : 'Manual Generator'}
-              </span>
-              <span className="text-xs text-slate-400">ID: {post.id.slice(0, 8)}...</span>
-            </div>
-          </div>
+          <div className="h-5 w-px bg-[#251323] hidden sm:block" />
+          <Breadcrumbs
+            items={[
+              { label: 'Posts', to: '/post' },
+              { label: `Post #${post.id.slice(0, 8)}` },
+            ]}
+          />
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-slate-500">
+        <div className="flex items-center gap-2 text-xs text-zinc-400 font-mono">
           <span>📅 Dibuat: {fmtDate(createdAt)}</span>
         </div>
       </div>
@@ -547,22 +546,22 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* ── LEFT COLUMN: Interactive Carousel Preview ──────── */}
         <div className="lg:col-span-6 space-y-4">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+          <div className="bg-[#130a17]/90 rounded-2xl border border-[#251323] shadow-xl p-5 text-zinc-100">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <span className="text-lg">🖼️</span>
-                <h2 className="font-bold text-slate-800">Slide Carousel Preview</h2>
+                <h2 className="font-bold text-white text-base">Slide Carousel Preview</h2>
               </div>
-              <div className="text-xs font-semibold px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full">
+              <div className="text-xs font-semibold px-2.5 py-1 bg-[#1a0e21] text-zinc-300 border border-[#341a3e] rounded-full">
                 Slide {activeSlide + 1} dari {slides.length || manualSlidesList.length || 1}
               </div>
             </div>
 
             {/* Main Slide Screen (1080x1350 / 4:5 Aspect Ratio Container) */}
-            <div className="relative w-full aspect-[4/5] bg-slate-950 rounded-xl overflow-hidden border border-slate-800 flex items-center justify-center group shadow-inner">
+            <div className="relative w-full aspect-[4/5] bg-[#0a050d] rounded-xl overflow-hidden border border-[#251323] flex items-center justify-center group shadow-inner">
               {loadingMedia ? (
-                <div className="flex flex-col items-center gap-3 text-slate-400">
-                  <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+                <div className="flex flex-col items-center gap-3 text-zinc-400">
+                  <div className="w-8 h-8 border-2 border-rose-500 border-t-transparent rounded-full animate-spin" />
                   <span className="text-xs">Memuat gambar slide...</span>
                 </div>
               ) : slides.length > 0 ? (
@@ -571,7 +570,6 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
                   alt={`Slide ${activeSlide + 1}`}
                   className="w-full h-full object-contain"
                   onError={(e) => {
-                    // Graceful fallback image
                     (e.target as HTMLElement).style.display = 'none';
                   }}
                 />
@@ -600,7 +598,7 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
                   />
                 </div>
               ) : (
-                <div className="text-center p-6 text-slate-500">
+                <div className="text-center p-6 text-zinc-500">
                   <span className="text-3xl block mb-2">📸</span>
                   <p className="text-xs">Belum ada preview slide yang tergenerate.</p>
                 </div>
@@ -615,7 +613,7 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
                         curr > 0 ? curr - 1 : (slides.length || manualSlidesList.length) - 1
                       )
                     }
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white flex items-center justify-center backdrop-blur-sm transition shadow-lg opacity-80 group-hover:opacity-100"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-[#180a1c]/80 hover:bg-[#250f2e] text-white flex items-center justify-center backdrop-blur-sm border border-[#341a3e] transition shadow-lg opacity-80 group-hover:opacity-100 cursor-pointer"
                     title="Slide Sebelumnya"
                   >
                     ‹
@@ -626,7 +624,7 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
                         curr < (slides.length || manualSlidesList.length) - 1 ? curr + 1 : 0
                       )
                     }
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white flex items-center justify-center backdrop-blur-sm transition shadow-lg opacity-80 group-hover:opacity-100"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-[#180a1c]/80 hover:bg-[#250f2e] text-white flex items-center justify-center backdrop-blur-sm border border-[#341a3e] transition shadow-lg opacity-80 group-hover:opacity-100 cursor-pointer"
                     title="Slide Selanjutnya"
                   >
                     ›
@@ -642,20 +640,20 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
                   <button
                     key={`thumb-${idx}`}
                     onClick={() => setActiveSlide(idx)}
-                    className={`relative w-14 h-16 rounded-lg overflow-hidden flex-shrink-0 border-2 transition ${
+                    className={`relative w-14 h-16 rounded-lg overflow-hidden flex-shrink-0 border-2 transition cursor-pointer ${
                       activeSlide === idx
-                        ? 'border-amber-500 scale-105 shadow-md ring-2 ring-amber-400/30'
-                        : 'border-slate-200 opacity-60 hover:opacity-100'
+                        ? 'border-rose-500 scale-105 shadow-md ring-2 ring-rose-400/30'
+                        : 'border-[#251323] opacity-60 hover:opacity-100'
                     }`}
                   >
                     {typeof item === 'string' ? (
                       <img src={item} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-700">
+                      <div className="w-full h-full bg-[#180c1d] flex items-center justify-center text-[10px] font-bold text-zinc-300">
                         #{idx + 1}
                       </div>
                     )}
-                    <div className="absolute bottom-0 inset-x-0 bg-slate-900/70 text-[9px] text-white font-bold text-center py-0.5">
+                    <div className="absolute bottom-0 inset-x-0 bg-black/70 text-[9px] text-white font-bold text-center py-0.5">
                       {idx + 1}
                     </div>
                   </button>
@@ -668,22 +666,22 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
         {/* ── RIGHT COLUMN: Catalyst, Social Media Status & Repliz ── */}
         <div className="lg:col-span-6 space-y-6">
           {/* 1. Status Publikasi & Cek Profil Sosial Media Card */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="bg-[#130a17]/90 rounded-2xl border border-[#251323] shadow-xl p-5 space-y-4 text-zinc-100">
+            <div className="flex items-center justify-between border-b border-[#251323] pb-3">
               <div className="flex items-center gap-2">
                 <span className="text-xl">🚀</span>
                 <div>
-                  <h3 className="font-bold text-slate-800 text-base">Status Publikasi Repliz</h3>
-                  <p className="text-xs text-slate-400">Akun: {accountName}</p>
+                  <h3 className="font-bold text-white text-base">Status Publikasi Repliz</h3>
+                  <p className="text-xs text-zinc-400">Akun: {accountName}</p>
                 </div>
               </div>
               <span
                 className={`px-3 py-1 text-xs font-bold rounded-full ${
                   (currentStatus === 'success' || currentStatus === 'published' || currentStatus === 'completed')
-                    ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                     : (currentStatus === 'failed' || currentStatus === 'error' || currentStatus === 'cancelled')
-                    ? 'bg-red-100 text-red-700 border border-red-200'
-                    : 'bg-amber-100 text-amber-700 border border-amber-200'
+                    ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                    : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                 }`}
               >
                 {(currentStatus === 'success' || currentStatus === 'published' || currentStatus === 'completed')
@@ -697,15 +695,15 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
             {/* Status Information Box */}
             <div className={`p-4 rounded-xl border space-y-2 ${
               (currentStatus === 'success' || currentStatus === 'published' || currentStatus === 'completed')
-                ? 'bg-emerald-50/80 border-emerald-200'
+                ? 'bg-emerald-500/10 border-emerald-500/25'
                 : (currentStatus === 'failed' || currentStatus === 'error' || currentStatus === 'cancelled')
-                ? 'bg-red-50/80 border-red-200'
-                : 'bg-amber-50/80 border-amber-200'
+                ? 'bg-rose-500/10 border-rose-500/25'
+                : 'bg-amber-500/10 border-amber-500/25'
             }`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm font-bold">
                   <span>{(currentStatus === 'success' || currentStatus === 'published' || currentStatus === 'completed') ? '✅' : (currentStatus === 'failed' || currentStatus === 'error' || currentStatus === 'cancelled') ? '❌' : '⏳'}</span>
-                  <span className={(currentStatus === 'success' || currentStatus === 'published' || currentStatus === 'completed') ? 'text-emerald-900' : (currentStatus === 'failed' || currentStatus === 'error' || currentStatus === 'cancelled') ? 'text-red-900' : 'text-amber-900'}>
+                  <span className={(currentStatus === 'success' || currentStatus === 'published' || currentStatus === 'completed') ? 'text-emerald-300' : (currentStatus === 'failed' || currentStatus === 'error' || currentStatus === 'cancelled') ? 'text-rose-300' : 'text-amber-300'}>
                     {(currentStatus === 'success' || currentStatus === 'published' || currentStatus === 'completed')
                       ? 'Postingan Terkonfirmasi Terbit'
                       : (currentStatus === 'failed' || currentStatus === 'error' || currentStatus === 'cancelled')
@@ -715,23 +713,23 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
                 </div>
                 <span className={`text-[11px] font-semibold px-2 py-0.5 rounded uppercase ${
                   (currentStatus === 'success' || currentStatus === 'published' || currentStatus === 'completed')
-                    ? 'bg-emerald-100 text-emerald-800'
+                    ? 'bg-emerald-500/20 text-emerald-300'
                     : (currentStatus === 'failed' || currentStatus === 'error' || currentStatus === 'cancelled')
-                    ? 'bg-red-100 text-red-800'
-                    : 'bg-amber-100 text-amber-800'
+                    ? 'bg-rose-500/20 text-rose-300'
+                    : 'bg-amber-500/20 text-amber-300'
                 }`}>
                   {currentStatus}
                 </span>
               </div>
-              <p className="text-xs text-slate-600 leading-relaxed">
+              <p className="text-xs text-zinc-300 leading-relaxed">
                 {(currentStatus === 'success' || currentStatus === 'published' || currentStatus === 'completed')
                   ? 'Status postingan di Repliz telah SUCCESS. Silakan klik tombol akun media sosial di bawah untuk melihat postingan langsung di profil Anda.'
                   : 'Sistem Repliz membutuhkan waktu antrean sekitar ~10 menit hingga postingan otomatis terbit di media sosial.'}
               </p>
 
               {scheduleId && (
-                <div className="text-[11px] text-slate-500 bg-white/90 p-2 rounded-lg border border-slate-200/80 font-mono mt-1 flex items-center justify-between">
-                  <span>Schedule ID: <strong className="text-slate-800">{scheduleId}</strong></span>
+                <div className="text-[11px] text-zinc-400 bg-[#180c1d] p-2 rounded-lg border border-[#281329] font-mono mt-1 flex items-center justify-between">
+                  <span>Schedule ID: <strong className="text-white">{scheduleId}</strong></span>
                 </div>
               )}
             </div>
@@ -739,10 +737,10 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
             {/* Tombol Cek Profil Sosial Media */}
             <div className="space-y-2 pt-1">
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
                   Cek Langsung di Profil Akun Sosmed:
                 </h4>
-                <span className="text-[11px] text-slate-400">Buka di tab baru ↗</span>
+                <span className="text-[11px] text-zinc-500">Buka di tab baru ↗</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -752,15 +750,15 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
                     href={ch.url}
                     target="_blank"
                     rel="noreferrer"
-                    className={`flex items-center justify-between p-2.5 bg-white hover:bg-slate-50 border rounded-xl transition group shadow-2xs ${ch.badgeColor}`}
+                    className={`flex items-center justify-between p-2.5 rounded-xl border transition group ${ch.badgeColor}`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <span className="text-lg flex-shrink-0">{ch.icon}</span>
                       <div className="min-w-0 text-left">
-                        <div className="text-xs font-bold text-slate-900 group-hover:text-amber-600 transition">
+                        <div className="text-xs font-bold text-white group-hover:text-rose-300 transition">
                           {ch.name}
                         </div>
-                        <div className="text-[11px] text-slate-500 truncate">
+                        <div className="text-[11px] text-zinc-400 truncate">
                           {ch.handle}
                         </div>
                       </div>
@@ -778,11 +776,11 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
               <button
                 onClick={handleSyncRepliz}
                 disabled={syncing || !scheduleId}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-amber-500 hover:bg-amber-600 disabled:bg-slate-200 disabled:text-slate-400 text-slate-950 font-bold text-xs rounded-xl shadow-sm transition cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-gradient-to-r from-rose-500 to-amber-500 hover:opacity-95 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-xs rounded-xl shadow-md transition cursor-pointer"
               >
                 {syncing ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     <span>Mengecek status ke Repliz...</span>
                   </>
                 ) : (
@@ -795,12 +793,12 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
 
               {syncMessage && (
                 <div
-                  className={`mt-3 p-3 rounded-xl text-xs flex items-start gap-2 ${
+                  className={`mt-3 p-3 rounded-xl text-xs flex items-start gap-2 border ${
                     syncMessage.type === 'success'
-                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                      ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
                       : syncMessage.type === 'info'
-                      ? 'bg-blue-50 text-blue-800 border border-blue-200'
-                      : 'bg-red-50 text-red-800 border border-red-200'
+                      ? 'bg-sky-500/15 text-sky-300 border-sky-500/30'
+                      : 'bg-rose-500/15 text-rose-300 border-rose-500/30'
                   }`}
                 >
                   <span className="text-sm">
@@ -813,19 +811,19 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
           </div>
 
           {/* 2. Berita, Katalis & Ringkasan Analisis Card */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="bg-[#130a17]/90 rounded-2xl border border-[#251323] shadow-xl p-5 space-y-4 text-zinc-100">
+            <div className="flex items-center justify-between border-b border-[#251323] pb-3">
               <div className="flex items-center gap-2">
                 <span className="text-xl">
                   {isAutomation && autoPost?.workflow_type === 'daily_market_brief' ? '📈' : '📰'}
                 </span>
                 <div>
-                  <h3 className="font-bold text-slate-800 text-base">
+                  <h3 className="font-bold text-white text-base">
                     {isAutomation && autoPost?.workflow_type === 'daily_market_brief'
                       ? 'Daily Market Brief & Multi-Katalis'
                       : 'Berita & Katalis Terkait'}
                   </h3>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-zinc-400">
                     {isAutomation && autoPost?.workflow_type === 'daily_market_brief'
                       ? 'Kompilasi berita pasar, sentimen IHSG, dan saham pilihan AI'
                       : 'Sumber informasi dasar postingan'}
@@ -835,45 +833,45 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
 
               {/* Status Badge */}
               {isAutomation && autoPost?.workflow_type === 'daily_market_brief' ? (
-                <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-500/15 text-sky-300 border border-sky-500/30">
                   Daily Brief Digest
                 </span>
               ) : newsDetail?.score !== undefined ? (
-                <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
                   Skor AI: {newsDetail.score}/10
                 </span>
               ) : null}
             </div>
 
             {loadingCatalyst ? (
-              <div className="flex items-center justify-center py-8 text-xs text-slate-500 gap-2">
-                <div className="animate-spin w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full" />
+              <div className="flex items-center justify-center py-8 text-xs text-zinc-400 gap-2">
+                <div className="animate-spin w-4 h-4 border-2 border-rose-500 border-t-transparent rounded-full" />
                 <span>Memuat data berita & analisis pasar...</span>
               </div>
             ) : isAutomation && autoPost?.workflow_type === 'daily_market_brief' && dailyBriefData ? (
               /* DAILY MARKET BRIEF MULTI-NEWS & MARKET DIGEST */
               <div className="space-y-4">
                 {/* IHSG & Session KPI Banner */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 bg-[#180c1d] p-3.5 rounded-xl border border-[#281329] text-xs">
                   <div>
-                    <span className="text-slate-400 block font-medium">Sesi Pasar</span>
-                    <span className="text-slate-900 font-bold text-sm mt-0.5 block">
+                    <span className="text-zinc-500 block font-medium">Sesi Pasar</span>
+                    <span className="text-white font-bold text-sm mt-0.5 block">
                       {dailyBriefData.log.session === 'open' ? '☀️ Open (Pagi)' : '🌙 Close (Sore)'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block font-medium">Indeks IHSG</span>
-                    <span className="text-slate-900 font-bold text-sm mt-0.5 block">
+                    <span className="text-zinc-500 block font-medium">Indeks IHSG</span>
+                    <span className="text-white font-mono font-bold text-sm mt-0.5 block">
                       {dailyBriefData.log.ihsg_price
                         ? Number(dailyBriefData.log.ihsg_price).toLocaleString('id-ID', { maximumFractionDigits: 2 })
                         : '-'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block font-medium">Perubahan IHSG</span>
+                    <span className="text-zinc-500 block font-medium">Perubahan IHSG</span>
                     <span
-                      className={`font-bold text-sm mt-0.5 block ${
-                        Number(dailyBriefData.log.ihsg_change) >= 0 ? 'text-emerald-600' : 'text-rose-600'
+                      className={`font-bold font-mono text-sm mt-0.5 block ${
+                        Number(dailyBriefData.log.ihsg_change) >= 0 ? 'text-emerald-400' : 'text-rose-400'
                       }`}
                     >
                       {dailyBriefData.log.ihsg_change != null
@@ -884,8 +882,8 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block font-medium">Saham Terpilih</span>
-                    <span className="text-amber-600 font-bold text-sm mt-0.5 block">
+                    <span className="text-zinc-500 block font-medium">Saham Terpilih</span>
+                    <span className="text-amber-400 font-bold text-sm mt-0.5 block">
                       {dailyBriefData.candidates.length || dailyBriefData.log.tickers_selected || 0} Emiten
                     </span>
                   </div>
@@ -893,12 +891,12 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
 
                 {/* AI Market Reasoning Quote */}
                 {dailyBriefData.log.reasoning && (
-                  <div className="p-3.5 bg-amber-50/80 rounded-xl border border-amber-200/90 text-xs space-y-1">
-                    <div className="flex items-center gap-1.5 font-bold text-amber-900">
+                  <div className="p-3.5 bg-gradient-to-r from-[#200f27] to-[#180c1f] rounded-xl border border-[#33173d] text-xs space-y-1">
+                    <div className="flex items-center gap-1.5 font-bold text-rose-300">
                       <span>🤖</span>
                       <span>Alasan Kurasi Pasar AI:</span>
                     </div>
-                    <p className="text-amber-950/90 leading-relaxed italic">
+                    <p className="text-zinc-200 leading-relaxed italic">
                       "{dailyBriefData.log.reasoning}"
                     </p>
                   </div>
@@ -906,9 +904,9 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
 
                 {/* Selected Candidates & News List */}
                 <div className="space-y-2.5">
-                  <div className="text-xs font-bold text-slate-700 flex items-center justify-between">
+                  <div className="text-xs font-bold text-zinc-400 flex items-center justify-between">
                     <span>Daftar Saham Pilihan & Katalis Berita:</span>
-                    <span className="text-slate-400 font-normal">
+                    <span className="text-zinc-500 font-normal">
                       {dailyBriefData.candidates.length} emiten dianalisis
                     </span>
                   </div>
@@ -938,19 +936,19 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
                     return (
                       <div
                         key={cand.id || idx}
-                        className="p-3.5 bg-slate-50/70 hover:bg-slate-50 transition rounded-xl border border-slate-200/80 space-y-2"
+                        className="p-3.5 bg-[#180c1d] hover:bg-[#200e26] transition rounded-xl border border-[#281329] space-y-2"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex items-center gap-2">
-                            <span className="font-extrabold text-amber-800 bg-amber-100 px-2 py-0.5 rounded text-xs">
+                            <span className="font-extrabold text-amber-300 font-mono bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded text-xs">
                               {candTicker}
                             </span>
-                            <span className="font-bold text-slate-800 text-xs line-clamp-1">
+                            <span className="font-bold text-white text-xs line-clamp-1">
                               {cand.company_name || candTicker}
                             </span>
                           </div>
                           {cand.price && (
-                            <span className="text-xs font-bold text-slate-700 whitespace-nowrap">
+                            <span className="text-xs font-bold font-mono text-zinc-300 whitespace-nowrap">
                               Rp {Number(cand.price).toLocaleString('id-ID')}
                             </span>
                           )}
@@ -958,7 +956,7 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
 
                         {/* News Title & Link */}
                         {(cand.news_title || matchedArticle?.title) && (
-                          <div className="text-xs text-slate-700 font-medium leading-snug">
+                          <div className="text-xs text-zinc-200 font-medium leading-snug">
                             📰 {cand.news_title || matchedArticle?.title}
                           </div>
                         )}
@@ -966,12 +964,12 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
                         {/* Tags / Signals */}
                         <div className="flex flex-wrap items-center gap-1.5 pt-1">
                           {tech?.crossSignal && (
-                            <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
                               {tech.crossSignal}
                             </span>
                           )}
                           {cand.pe_signal && (
-                            <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-600">
+                            <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-[#240f2b] text-zinc-300 border border-[#381642]">
                               PE: {cand.pe_signal}
                             </span>
                           )}
@@ -980,7 +978,7 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
                               href={matchedArticle.source_url}
                               target="_blank"
                               rel="noreferrer"
-                              className="ml-auto text-[11px] font-semibold text-blue-600 hover:underline flex items-center gap-0.5"
+                              className="ml-auto text-[11px] font-semibold text-rose-400 hover:text-rose-300 flex items-center gap-0.5"
                             >
                               Buka Berita ↗
                             </a>
@@ -997,7 +995,7 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
                 {/* News Thumbnail & Title */}
                 <div className="flex items-start gap-3">
                   {newsDetail.thumbnail_url && (
-                    <div className="w-20 h-16 rounded-lg overflow-hidden border border-slate-200 flex-shrink-0">
+                    <div className="w-20 h-16 rounded-lg overflow-hidden border border-[#251323] bg-[#0d070f] flex-shrink-0">
                       <img
                         src={newsDetail.thumbnail_url}
                         alt="News thumb"
@@ -1006,11 +1004,11 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
                     </div>
                   )}
                   <div className="min-w-0">
-                    <h4 className="text-sm font-bold text-slate-900 leading-snug line-clamp-2">
+                    <h4 className="text-sm font-bold text-white leading-snug line-clamp-2">
                       {newsDetail.title || 'Untitled News'}
                     </h4>
-                    <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
-                      <span className="font-medium text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+                    <div className="flex items-center gap-2 text-xs text-zinc-400 mt-1">
+                      <span className="font-medium text-amber-300 bg-amber-500/15 px-1.5 py-0.5 rounded border border-amber-500/30">
                         {newsDetail.sitename || 'Media Partner'}
                       </span>
                       {newsDetail.source_url && (
@@ -1018,7 +1016,7 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
                           href={newsDetail.source_url}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-blue-600 hover:underline flex items-center gap-1"
+                          className="text-rose-400 hover:text-rose-300 flex items-center gap-1"
                         >
                           Buka Artikel ↗
                         </a>
@@ -1029,23 +1027,23 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
 
                 {/* AI Score & Reason / Impact */}
                 {(newsDetail.score !== undefined || newsDetail.reason || newsDetail.description) && (
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-2">
+                  <div className="p-3 bg-[#180c1d] rounded-xl border border-[#281329] text-xs space-y-2">
                     {newsDetail.score !== undefined && (
-                      <div className="flex items-center justify-between text-slate-700">
+                      <div className="flex items-center justify-between text-zinc-300">
                         <span className="font-semibold">Skor Katalis AI:</span>
-                        <span className="font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                        <span className="font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                           {newsDetail.score} / 10 ({newsDetail.decision || 'GENERATE'})
                         </span>
                       </div>
                     )}
                     {newsDetail.reason && (
-                      <div className="text-slate-700">
-                        <span className="font-semibold text-slate-900">Alasan Analisis: </span>
+                      <div className="text-zinc-300">
+                        <span className="font-semibold text-white">Alasan Analisis: </span>
                         {newsDetail.reason}
                       </div>
                     )}
                     {newsDetail.description && (
-                      <div className="text-slate-600 italic">
+                      <div className="text-zinc-400 italic">
                         "{newsDetail.description}"
                       </div>
                     )}
@@ -1054,15 +1052,15 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
               </div>
             ) : (
               /* FALLBACK WHEN NO MATCH FOUND */
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-2">
-                <div className="font-semibold text-slate-800">
+              <div className="p-4 bg-[#180c1d] rounded-xl border border-[#281329] text-xs text-zinc-400 space-y-2">
+                <div className="font-semibold text-white">
                   {isAutomation
                     ? autoPost?.workflow_type === 'daily_market_brief'
                       ? '📈 Daily Market Brief (IHSG, Top Movers & Sektor)'
                       : '📡 Katalis Berita Harian'
                     : `📝 Post Generator: ${manualPost?.badge_text || 'SahamFYP'}`}
                 </div>
-                <p className="text-slate-500 leading-relaxed">
+                <p className="text-zinc-400 leading-relaxed">
                   {isAutomation
                     ? 'Konten ini diproses secara otomatis dari monitoring emiten dan dianalisis menggunakan LLM naskah generator.'
                     : 'Konten dibuat melalui Form Wizard / Manual Editor dengan naskah kustom.'}
@@ -1073,21 +1071,21 @@ export default function PostDetailView({ post, type, onBack, onPostUpdated }: Po
 
           {/* 3. Full Caption Card */}
           {captionText && (
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-3">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="bg-[#130a17]/90 rounded-2xl border border-[#251323] shadow-xl p-5 space-y-3 text-zinc-100">
+              <div className="flex items-center justify-between border-b border-[#251323] pb-3">
                 <div className="flex items-center gap-2">
                   <span className="text-xl">💬</span>
-                  <h3 className="font-bold text-slate-800 text-base">Caption Sosial Media</h3>
+                  <h3 className="font-bold text-white text-base">Caption Sosial Media</h3>
                 </div>
                 <button
                   onClick={() => copyToClipboard(captionText, 'caption')}
-                  className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition"
+                  className="px-3 py-1 bg-[#1a0e21] hover:bg-[#250f2e] text-zinc-300 hover:text-white border border-[#341a3e] text-xs font-semibold rounded-lg transition cursor-pointer"
                 >
                   {copiedCaption ? 'Tersalin! ✓' : 'Salin Caption'}
                 </button>
               </div>
 
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs text-slate-700 whitespace-pre-wrap leading-relaxed max-h-60 overflow-y-auto font-sans">
+              <div className="bg-[#180c1d] p-4 rounded-xl border border-[#281329] text-xs text-zinc-200 whitespace-pre-wrap leading-relaxed max-h-60 overflow-y-auto font-sans">
                 {captionText}
               </div>
             </div>

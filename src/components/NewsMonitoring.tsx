@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   BarChart,
   Bar,
@@ -107,6 +108,7 @@ function getTodayStr() {
 }
 
 export default function NewsMonitoring() {
+  const navigate = useNavigate();
   const [rows, setRows] = React.useState<NewsItem[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
   const [detailItem, setDetailItem] = React.useState<NewsItem | null>(null);
@@ -864,7 +866,7 @@ export default function NewsMonitoring() {
                       )}
 
                       <h3
-                        onClick={() => setDetailItem(r)}
+                        onClick={() => navigate(`/news/${r.id}`)}
                         className="text-sm font-bold text-white leading-snug line-clamp-2 hover:text-rose-300 transition cursor-pointer"
                         title={r.title || ''}
                       >
@@ -948,8 +950,8 @@ export default function NewsMonitoring() {
                   {/* Card Action Footer */}
                   <div className="pt-4 mt-3 border-t border-[#251323] flex items-center justify-between text-xs">
                     <button
-                      onClick={() => setDetailItem(r)}
-                      className="px-3 py-1.5 rounded-xl bg-[#1c0d1e] hover:bg-rose-500/15 border border-[#33182f] hover:border-rose-500/40 text-rose-300 text-xs font-semibold transition flex items-center gap-1"
+                      onClick={() => navigate(`/news/${r.id}`)}
+                      className="px-3 py-1.5 rounded-xl bg-[#1c0d1e] hover:bg-rose-500/15 border border-[#33182f] hover:border-rose-500/40 text-rose-300 text-xs font-semibold transition flex items-center gap-1 cursor-pointer"
                     >
                       <span>Lihat Detail</span>
                       <ChevronRight className="w-3.5 h-3.5" />
@@ -1050,8 +1052,8 @@ export default function NewsMonitoring() {
                         </td>
                         <td className="py-3 px-4 text-center whitespace-nowrap">
                           <button
-                            onClick={() => setDetailItem(r)}
-                            className="px-2.5 py-1 rounded-lg bg-[#1c0d1e] hover:bg-rose-500/20 border border-[#33182f] text-rose-300 text-xs font-semibold transition"
+                            onClick={() => navigate(`/news/${r.id}`)}
+                            className="px-2.5 py-1 rounded-lg bg-[#1c0d1e] hover:bg-rose-500/20 border border-[#33182f] text-rose-300 text-xs font-semibold transition cursor-pointer"
                           >
                             Detail
                           </button>

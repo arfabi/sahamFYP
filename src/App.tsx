@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter } from 'react-router-dom';
 import Dashboard from './components/Dashboard';
 import LoginPage from './components/LoginPage';
 import LandingPage from './components/LandingPage';
@@ -62,22 +63,21 @@ export default function App() {
     );
   }
 
-  if (!user) {
-    if (authView === 'login') {
-      return (
+  return (
+    <BrowserRouter>
+      {user ? (
+        <Dashboard user={user} onLogout={handleLogout} />
+      ) : authView === 'login' ? (
         <LoginPage
           onLoginSuccess={handleLoginSuccess}
           onBackToLanding={() => setAuthView('landing')}
         />
-      );
-    }
-    return (
-      <LandingPage
-        onGoToLogin={() => setAuthView('login')}
-        onEnterDemo={handleEnterDemo}
-      />
-    );
-  }
-
-  return <Dashboard user={user} onLogout={handleLogout} />;
+      ) : (
+        <LandingPage
+          onGoToLogin={() => setAuthView('login')}
+          onEnterDemo={handleEnterDemo}
+        />
+      )}
+    </BrowserRouter>
+  );
 }
