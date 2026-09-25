@@ -1,28 +1,20 @@
 // ============================================================
 // Server-side LLM client — OpenAI-compatible Chat Completions API
-// Provider default: Sumopod (https://ai.sumopod.com)
+// Multi-Key Pool & Smart Load Balancing / Failover
 //
-//   POST {BASE_URL}/chat/completions
-//   Authorization: Bearer <SUMOPOD_API_KEY>
-//   body: { model, messages: [{ role: 'user', content }], temperature, max_tokens }
+// Mendukung Google AI Studio, Sumopod, Groq, DeepSeek, OpenRouter, OpenAI, dll.
 //
-// Env vars (non-prefixed, dibaca serverless functions saja):
-//   SUMOPOD_API_KEY   — wajib, dari dashboard Sumopod
-//   SUMOPOD_BASE_URL  — opsional, default https://ai.sumopod.com/v1
-//   SUMOPOD_MODEL     — opsional, default gemini/gemini-3.1-flash-lite
-//   (OPENAI_API_KEY / OPENAI_BASE_URL / OPENAI_MODEL dipakai sebagai fallback)
+// Fitur Multi-Key:
+//   1. Masukkan multiple API keys dipisah koma di SUMOPOD_API_KEY / OPENAI_API_KEY
+//      atau via SUMOPOD_API_KEY_1, SUMOPOD_API_KEY_2, SUMOPOD_API_KEY_3 (dsb).
+//   2. Smart Round-Robin: Membagi beban request secara seimbang ke seluruh key.
+//   3. Auto-Failover: Jika satu key terkena Rate Limit (HTTP 429) atau Quota Exceeded (403),
+//      sistem otomatis menandai key tersebut dalam cool-down 60 detik dan
+//      langsung mengalihkan request ke key berikutnya tanpa error di user!
 // ============================================================
 
 const DEFAULT_BASE_URL = 'https://ai.sumopod.com/v1';
 const DEFAULT_MODEL = 'gemini/gemini-3.1-flash-lite';
-
-const LLM_API_KEY = process.env.SUMOPOD_API_KEY || process.env.OPENAI_API_KEY || '';
-const LLM_BASE_URL = (
-  process.env.SUMOPOD_BASE_URL ||
-  process.env.OPENAI_BASE_URL ||
-  DEFAULT_BASE_URL
-).replace(/\/+$/, '');
-const LLM_MODEL = process.env.SUMOPOD_MODEL || process.env.OPENAI_MODEL || DEFAULT_MODEL;
 
 export interface ChatOptions {
   /** Minta output JSON valid (response_format: json_object) */
@@ -61,21 +53,105 @@ class LlmRequestError extends Error {
   }
 }
 
-export function isLlmConfigured(): boolean {
-  return !!LLM_API_KEY;
+// --- Multi-Key Pool & Cool-down Management ---
+const keyCooldowns = new Map<string, number>();
+let roundRobinIndex = 0;
+
+/** Ambil seluruh API Key yang terkonfigurasi di environment */
+export function getAllApiKeys(): string[] {
+  const rawList: string[] = [];
+
+  // 1. Dari SUMOPOD_API_KEY, OPENAI_API_KEY, atau GEMINI_API_KEY (bisa dipisah koma/titik koma)
+  const mainKeys = [
+    process.env.SUMOPOD_API_KEY,
+    process.env.OPENAI_API_KEY,
+    process.env.GEMINI_API_KEY,
+  ];
+
+  for (const raw of mainKeys) {
+    if (raw) {
+      const split = raw.split(/[,;\n]/).map(k => k.trim()).filter(Boolean);
+      rawList.push(...split);
+    }
+  }
+
+  // 2. Dari indexed env vars (SUMOPOD_API_KEY_1, SUMOPOD_API_KEY_2, GEMINI_API_KEY_1, dsb)
+  for (let i = 1; i <= 10; i++) {
+    const k1 = process.env[`SUMOPOD_API_KEY_${i}`]?.trim();
+    if (k1) rawList.push(k1);
+    const k2 = process.env[`OPENAI_API_KEY_${i}`]?.trim();
+    if (k2) rawList.push(k2);
+    const k3 = process.env[`GEMINI_API_KEY_${i}`]?.trim();
+    if (k3) rawList.push(k3);
+  }
+
+  // Deduplikasi
+  return Array.from(new Set(rawList));
 }
 
-export function getLlmConfig(): { configured: boolean; baseUrl: string; model: string } {
+export function maskKey(key: string): string {
+  if (!key) return '(empty)';
+  if (key.length <= 8) return `${key.slice(0, 3)}...`;
+  return `${key.slice(0, 6)}...${key.slice(-4)}`;
+}
+
+export function isLlmConfigured(): boolean {
+  return getAllApiKeys().length > 0;
+}
+
+export function getLlmConfig(): {
+  configured: boolean;
+  baseUrl: string;
+  model: string;
+  totalKeys: number;
+  activeKeys: number;
+} {
+  const keys = getAllApiKeys();
+  const now = Date.now();
+  const activeKeys = keys.filter(k => (keyCooldowns.get(k) || 0) <= now).length;
+
   return {
-    configured: isLlmConfigured(),
-    baseUrl: LLM_BASE_URL,
-    model: LLM_MODEL,
+    configured: keys.length > 0,
+    baseUrl: (
+      process.env.SUMOPOD_BASE_URL ||
+      process.env.OPENAI_BASE_URL ||
+      DEFAULT_BASE_URL
+    ).replace(/\/+$/, ''),
+    model: process.env.SUMOPOD_MODEL || process.env.OPENAI_MODEL || DEFAULT_MODEL,
+    totalKeys: keys.length,
+    activeKeys,
   };
 }
 
+/** Urutkan key pool: round-robin awal, dahulukan yang tidak sedang cool-down */
+function getOrderedCandidateKeys(): string[] {
+  const keys = getAllApiKeys();
+  if (keys.length === 0) return [];
+
+  const now = Date.now();
+  const n = keys.length;
+
+  // Dapatkan urutan round-robin
+  const start = (roundRobinIndex++) % n;
+  const rotated: string[] = [];
+  for (let i = 0; i < n; i++) {
+    rotated.push(keys[(start + i) % n]);
+  }
+
+  // Pisahkan yang aktif vs yang dalam cool-down
+  const active = rotated.filter(k => (keyCooldowns.get(k) || 0) <= now);
+  const cooling = rotated.filter(k => (keyCooldowns.get(k) || 0) > now);
+
+  // Jalankan yang aktif dulu, jika semua cooling, pakai urutan waktu cool-down tercepat
+  cooling.sort((a, b) => (keyCooldowns.get(a) || 0) - (keyCooldowns.get(b) || 0));
+
+  return [...active, ...cooling];
+}
+
 function buildPayload(prompt: string, options: ChatOptions): ChatPayload {
+  const model = options.model || process.env.SUMOPOD_MODEL || process.env.OPENAI_MODEL || DEFAULT_MODEL;
   const payload: ChatPayload = {
-    model: options.model || LLM_MODEL,
+    model,
     messages: [{ role: 'user', content: prompt }],
     temperature: options.temperature ?? 0.7,
     max_tokens: options.maxTokens ?? 4096,
@@ -88,12 +164,12 @@ function buildPayload(prompt: string, options: ChatOptions): ChatPayload {
   return payload;
 }
 
-async function requestChat(payload: ChatPayload): Promise<string> {
-  const response = await fetch(`${LLM_BASE_URL}/chat/completions`, {
+async function requestWithKey(baseUrl: string, apiKey: string, payload: ChatPayload): Promise<string> {
+  const response = await fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${LLM_API_KEY}`,
+      'Authorization': `Bearer ${apiKey}`,
     },
     body: JSON.stringify(payload),
   });
@@ -119,32 +195,83 @@ async function requestChat(payload: ChatPayload): Promise<string> {
   return content;
 }
 
-/** Kirim prompt ke LLM, kembalikan raw text response */
+/** Kirim prompt ke LLM dengan multi-key routing, load balancing & failover */
 export async function chatComplete(prompt: string, options: ChatOptions = {}): Promise<string> {
-  if (!LLM_API_KEY) {
-    throw new Error('LLM API key not configured (set SUMOPOD_API_KEY)');
+  const candidateKeys = getOrderedCandidateKeys();
+  if (candidateKeys.length === 0) {
+    throw new Error('LLM API key not configured (set SUMOPOD_API_KEY or OPENAI_API_KEY)');
   }
+
+  const baseUrl = (
+    process.env.SUMOPOD_BASE_URL ||
+    process.env.OPENAI_BASE_URL ||
+    DEFAULT_BASE_URL
+  ).replace(/\/+$/, '');
 
   const payload = buildPayload(prompt, options);
 
-  try {
-    return await requestChat(payload);
-  } catch (error) {
-    // Sebagian gateway/model tidak mendukung response_format: json_object
-    // → retry sekali tanpa json mode
-    const jsonModeUnsupported =
-      options.json === true &&
-      error instanceof LlmRequestError &&
-      error.status === 400 &&
-      /response_format|json_object|json mode/i.test(error.message);
+  let lastError: any = null;
 
-    if (!jsonModeUnsupported) throw error;
+  for (let i = 0; i < candidateKeys.length; i++) {
+    const currentKey = candidateKeys[i];
+    const masked = maskKey(currentKey);
 
-    console.warn('[LLM] json mode tidak didukung model, retry tanpa response_format');
-    const fallbackPayload: ChatPayload = { ...payload };
-    delete fallbackPayload.response_format;
-    return requestChat(fallbackPayload);
+    try {
+      try {
+        const result = await requestWithKey(baseUrl, currentKey, payload);
+        // Hapus status cooldown jika berhasil
+        keyCooldowns.delete(currentKey);
+        return result;
+      } catch (err: any) {
+        // Fallback untuk model yang tidak support json_object mode
+        const jsonModeUnsupported =
+          options.json === true &&
+          err instanceof LlmRequestError &&
+          err.status === 400 &&
+          /response_format|json_object|json mode/i.test(err.message);
+
+        if (jsonModeUnsupported) {
+          console.warn(`[LLM Pool] json mode tidak didukung model di key ${masked}, retry tanpa response_format`);
+          const fallbackPayload: ChatPayload = { ...payload };
+          delete fallbackPayload.response_format;
+          const result = await requestWithKey(baseUrl, currentKey, fallbackPayload);
+          keyCooldowns.delete(currentKey);
+          return result;
+        }
+
+        throw err;
+      }
+    } catch (error: any) {
+      lastError = error;
+      const status = error instanceof LlmRequestError ? error.status : 0;
+      const errorMsg = error?.message || String(error);
+
+      // Tangani Rate Limit (429) atau Quota Exceeded (403) atau 5xx
+      const isRateLimitOrQuota =
+        status === 429 ||
+        status === 403 ||
+        /quota|rate limit|too many requests|resource has been exhausted|blocked/i.test(errorMsg);
+
+      const isServerError = status >= 500 && status < 600;
+
+      if (isRateLimitOrQuota || isServerError) {
+        // Beri cool-down 60 detik untuk key ini
+        keyCooldowns.set(currentKey, Date.now() + 60_000);
+        console.warn(
+          `[LLM Pool] Key ${masked} terkendala status ${status || 'ERR'} (${isRateLimitOrQuota ? 'Rate Limit/Quota' : 'Server Error'}). ` +
+          `Masuk cool-down 60s. Auto-failover ke key berikutnya (${i + 1}/${candidateKeys.length})...`
+        );
+        // Lanjutkan mencoba key berikutnya di loop
+        continue;
+      }
+
+      // Jika error 400 atau error klien lainnya yang bukan rate limit, langsung throw
+      throw error;
+    }
   }
+
+  // Jika seluruh key telah dicoba dan semuanya gagal
+  throw new Error(`[LLM Pool] Seluruh API Key (${candidateKeys.length}) gagal diproses. Error terakhir: ${lastError?.message || lastError}`);
 }
 
 /** Buang markdown code fence & ambil objek JSON pertama dari response LLM */
@@ -167,7 +294,7 @@ export function extractJson(raw: string): any {
     try {
       return JSON.parse(candidate);
     } catch {
-      // Coba bersihkan trailing commas & unescaped control chars (e.g. raw newlines dalam string)
+      // Coba bersihkan trailing commas & unescaped control chars
       try {
         const sanitized = candidate
           .replace(/,\s*([\}\]])/g, '$1') // remove trailing commas
@@ -185,8 +312,7 @@ export function extractJson(raw: string): any {
     // Strip unfinished trailing tokens/keys
     partial = partial.replace(/,\s*"[^"]*"?\s*:\s*([^"\{\[\s,]+)?$/, '');
     partial = partial.replace(/,\s*$/, '');
-    
-    // Count unclosed quotes and brackets
+
     let openBraces = 0;
     let openBrackets = 0;
     let inString = false;
