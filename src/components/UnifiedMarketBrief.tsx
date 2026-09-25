@@ -36,6 +36,7 @@ interface TriggerLog {
   status: string;
   error_message: string | null;
   created_at: string;
+  foreign_flow_json?: any | null;
 }
 
 interface TriggerCandidate {
@@ -104,13 +105,6 @@ export default function UnifiedMarketBrief() {
   const [news, setNews] = useState<TriggerNews[]>([]);
   const [skipped, setSkipped] = useState<TriggerSkipped[]>([]);
 
-  // Foreign Flow state from Sectors API
-  const [foreignFlow, setForeignFlow] = useState<{
-    totalBuy: number;
-    totalSell: number;
-    netFlow: number;
-  } | null>(null);
-
   // Big Calendar Picker Modal state
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [calendarViewDate, setCalendarViewDate] = useState<Date>(() => new Date());
@@ -120,31 +114,46 @@ export default function UnifiedMarketBrief() {
   const [activeTab, setActiveTab] = useState<'candidates' | 'news' | 'skipped'>('candidates');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Read Foreign Flow directly from the selected session log in the Database
+  const foreignFlowData = useMemo(() => {
+    if (!selectedLog?.foreign_flow_json) return null;
+    let data = selectedLog.foreign_flow_json;
+    if (typeof data === 'string') {
+      try {
+        data = JSON.parse(data);
+      } catch (e) {
+        return null;
+      }
+    }
+    // If format is { net_foreign_flow, net_buy, net_sell, is_inflow, raw }
+    if (data.net_foreign_flow !== undefined || data.raw !== undefined) {
+      const net = data.net_foreign_flow || (data.raw?.net_total ? `Rp ${(data.raw.net_total / 1e9).toFixed(1)} M` : '-');
+      const buy = data.net_buy || (data.raw?.net_buy ? `Rp ${(data.raw.net_buy / 1e9).toFixed(1)} M` : '-');
+      const sell = data.net_sell || (data.raw?.net_sell ? `Rp ${(data.raw.net_sell / 1e9).toFixed(1)} M` : '-');
+      const isInflow = data.is_inflow ?? ((data.raw?.net_total ?? 0) >= 0);
+      return {
+        net,
+        buy,
+        sell,
+        isInflow,
+      };
+    }
+    // If format is { totalBuy, totalSell, netFlow }
+    if (data.netFlow !== undefined) {
+      const isInflow = data.netFlow >= 0;
+      return {
+        net: `${isInflow ? '+' : ''}Rp ${(data.netFlow / 1e9).toFixed(1)} M`,
+        buy: `Rp ${(data.totalBuy / 1e9).toFixed(1)} M`,
+        sell: `Rp ${(data.totalSell / 1e9).toFixed(1)} M`,
+        isInflow,
+      };
+    }
+    return null;
+  }, [selectedLog]);
+
   useEffect(() => {
     fetchLogs();
-    fetchForeignFlowData();
   }, []);
-
-  const fetchForeignFlowData = async () => {
-    try {
-      const apiKey = import.meta.env.VITE_SECTORS_API_KEY;
-      if (!apiKey) return;
-      const res = await fetch('https://api.sectors.app/v2/foreign-flow/', {
-        headers: { Authorization: apiKey },
-      });
-      if (!res.ok) return;
-      const json = await res.json();
-      const list = json.results || [];
-      if (list.length > 0) {
-        const totalBuy = list.reduce((a: number, b: any) => a + (b.foreign_buy_idr || 0), 0);
-        const totalSell = list.reduce((a: number, b: any) => a + (b.foreign_sell_idr || 0), 0);
-        const netFlow = list.reduce((a: number, b: any) => a + (b.net_foreign_inflow || 0), 0);
-        setForeignFlow({ totalBuy, totalSell, netFlow });
-      }
-    } catch (err) {
-      console.warn('Foreign Flow fetch error:', err);
-    }
-  };
 
   const fetchLogs = async () => {
     setLoading(true);
@@ -406,6 +415,7 @@ export default function UnifiedMarketBrief() {
             </div>
 
             {/* 4. FOREIGN FLOW (Menggantikan Status & Biaya sesuai Permintaan) */}
+            {/* 2. Foreign Flow (from Database session log) */}
             <div className="bg-[#130a17]/80 hover:bg-[#1a0e20] backdrop-blur-md rounded-2xl p-4 border border-[#251323] shadow-lg transition flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between">
@@ -413,33 +423,37 @@ export default function UnifiedMarketBrief() {
                     Foreign Flow
                   </span>
                   <span className="text-[10px] text-purple-300 font-bold bg-purple-500/15 border border-purple-500/30 px-1.5 py-0.5 rounded">
-                    Sectors API
+                    Database BEI
                   </span>
                 </div>
                 <div className="mt-1">
                   <span className="text-[11px] text-zinc-500 font-medium block">Net Foreign Flow:</span>
-                  <span
-                    className={`text-xl font-black font-mono block ${
-                      foreignFlow && foreignFlow.netFlow >= 0 ? 'text-emerald-400' : 'text-rose-400'
-                    }`}
-                  >
-                    {foreignFlow
-                      ? `${foreignFlow.netFlow >= 0 ? '+' : ''}Rp ${(foreignFlow.netFlow / 1e9).toFixed(1)} M`
-                      : 'Memuat...'}
-                  </span>
+                  {foreignFlowData ? (
+                    <span
+                      className={`text-xl font-black font-mono block ${
+                        foreignFlowData.isInflow ? 'text-emerald-400' : 'text-rose-400'
+                      }`}
+                    >
+                      {foreignFlowData.net}
+                    </span>
+                  ) : (
+                    <span className="text-sm font-semibold text-zinc-400 block mt-1">
+                      Belum Tercatat di Sesi Ini
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-[#251323] text-[11px]">
                 <div>
                   <span className="text-zinc-500 block">Buy Foreign:</span>
                   <span className="font-mono font-bold text-emerald-400">
-                    {foreignFlow ? `Rp ${(foreignFlow.totalBuy / 1e9).toFixed(1)} M` : '-'}
+                    {foreignFlowData ? foreignFlowData.buy : '-'}
                   </span>
                 </div>
                 <div>
                   <span className="text-zinc-500 block">Sell Foreign:</span>
                   <span className="font-mono font-bold text-rose-400">
-                    {foreignFlow ? `Rp ${(foreignFlow.totalSell / 1e9).toFixed(1)} M` : '-'}
+                    {foreignFlowData ? foreignFlowData.sell : '-'}
                   </span>
                 </div>
               </div>

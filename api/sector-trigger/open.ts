@@ -501,20 +501,48 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       return null;
     });
 
-    // Insert main log to database
-    const { data: logData, error: logError } = await supabaseServer
+    const foreignFlowSummary = brokerFlowSummary ? {
+      net_foreign_flow: brokerFlowSummary.formatted.net,
+      net_buy:          brokerFlowSummary.formatted.buy,
+      net_sell:         brokerFlowSummary.formatted.sell,
+      is_inflow:        brokerFlowSummary.isInflow,
+      raw: {
+        net_total: brokerFlowSummary.netTotal,
+        net_buy:   brokerFlowSummary.netBuy,
+        net_sell:  brokerFlowSummary.netSell,
+      }
+    } : null;
+
+    // Insert main log to database (with foreign_flow_json)
+    const logInsertPayload: any = {
+      session: 'open',
+      trigger_date: today,
+      data_date: dataDate,
+      ihsg_price: ihs?.price ?? null,
+      ihsg_change: ihs?.change ?? null,
+      news_fetched: newsResults.length,
+      status: 'success'
+    };
+    if (foreignFlowSummary) {
+      logInsertPayload.foreign_flow_json = foreignFlowSummary;
+    }
+
+    let { data: logData, error: logError } = await supabaseServer
       .from('sector_trigger_logs')
-      .insert({
-        session: 'open',
-        trigger_date: today,
-        data_date: dataDate,
-        ihsg_price: ihs?.price ?? null,
-        ihsg_change: ihs?.change ?? null,
-        news_fetched: newsResults.length,
-        status: 'success'
-      })
+      .insert(logInsertPayload)
       .select()
       .single();
+
+    if (logError && logError.message?.includes('foreign_flow_json')) {
+      delete logInsertPayload.foreign_flow_json;
+      const retry = await supabaseServer
+        .from('sector_trigger_logs')
+        .insert(logInsertPayload)
+        .select()
+        .single();
+      logData = retry.data;
+      logError = retry.error;
+    }
 
     if (logError) {
       console.error('[SectorTrigger Open] Log insert error:', logError);
@@ -847,18 +875,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     if (naskah?.slides && Array.isArray(naskah.slides)) {
       const total = naskah.slides.length;
 
-      // Prepare foreignFlowSummary object untuk diinject ke slide
-      const foreignFlowSummary = brokerFlowSummary ? {
-        net_foreign_flow: brokerFlowSummary.formatted.net,
-        net_buy:          brokerFlowSummary.formatted.buy,
-        net_sell:         brokerFlowSummary.formatted.sell,
-        is_inflow:        brokerFlowSummary.isInflow,
-        raw: {
-          net_total: brokerFlowSummary.netTotal,
-          net_buy:   brokerFlowSummary.netBuy,
-          net_sell:  brokerFlowSummary.netSell,
-        }
-      } : null;
+      // Use foreignFlowSummary prepared earlier
 
       naskah.slides = naskah.slides.map((slide: any, idx: number) => ({
         ...slide,
