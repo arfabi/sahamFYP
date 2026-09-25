@@ -10,6 +10,7 @@ import ManualEditor from './ManualEditor';
 import NewsMonitoring from './NewsMonitoring';
 import DailyMarketBrief from './DailyMarketBrief';
 import StockWatchlist from './StockWatchlist';
+import UnifiedMarketBrief from './UnifiedMarketBrief';
 import Posts from './Posts';
 import Channels from './Channels';
 
@@ -18,6 +19,7 @@ import type { AuthUser } from '../services/auth';
 export type DashboardPage =
   | 'overview'
   | 'news-monitoring'
+  | 'unified-market-brief'
   | 'daily-market-brief'
   | 'stock-watchlist'
   | 'generator'
@@ -49,8 +51,9 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: 'ANALYSIS',
     items: [
-      { id: 'daily-market-brief', label: 'Market Brief', icon: '📈' },
-      { id: 'stock-watchlist', label: 'Stock Watchlist', icon: '👁️' },
+      { id: 'unified-market-brief', label: 'Market Brief & Watchlist', icon: '⚡', badge: 'beta' },
+      { id: 'daily-market-brief', label: 'Market Brief (Lama)', icon: '📈' },
+      { id: 'stock-watchlist', label: 'Stock Watchlist (Lama)', icon: '👁️' },
     ],
   },
   {
@@ -89,6 +92,8 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         return <Overview onNavigate={(p) => setActivePage(p as DashboardPage)} />;
       case 'news-monitoring':
         return <NewsMonitoring />;
+      case 'unified-market-brief':
+        return <UnifiedMarketBrief />;
       case 'daily-market-brief':
         return <DailyMarketBrief />;
       case 'stock-watchlist':
@@ -160,9 +165,16 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                         <span className="text-base">{item.icon}</span>
                         <span>{item.label}</span>
                       </span>
-                      {active && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shadow-sm shadow-rose-500 animate-pulse" />
-                      )}
+                      <div className="flex items-center gap-1.5">
+                        {item.badge === 'beta' && (
+                          <span className="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-gradient-to-r from-rose-500/20 to-orange-500/20 text-rose-300 border border-rose-500/40 shadow-sm shadow-rose-500/10">
+                            BETA
+                          </span>
+                        )}
+                        {active && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shadow-sm shadow-rose-500 animate-pulse" />
+                        )}
+                      </div>
                     </button>
                   );
                 })}
