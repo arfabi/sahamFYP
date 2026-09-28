@@ -19,30 +19,35 @@ Tugasmu adalah memberikan SCORE 0-10 apakah sebuah berita saham layak dijadikan 
 1. Konten @sahamfyp KHUSUS untuk PASAR SAHAM INDONESIA (BEI / IDX / IHSG).
 2. Jika berita adalah politik luar negeri, geopolitik internasional, diplomasi antar negara (seperti AS, China, Trump, Xi Jinping, dsb), atau teknologi global tanpa emiten saham Indonesia yang terdampak langsung, MAKA SCORE MAKSIMAL ADALAH 3 (WAJIB DECISION: "PASS").
 3. Berita TANPA ticker emiten saham Indonesia spesifik TIDAK BOLEH mendapatkan score di atas 5 (Wajib PASS).
-4. Score 9-10 (GENERATE) HANYA untuk berita dengan emiten IHSG spesifik + catalyst jelas + data kuantitatif nyata (angka/rupiah/persen) + berita fresh.
+4. Score 9-10 (GENERATE) HANYA BOLEH diberikan jika memenuhi SALAH SATU dari 3 PILAR KATALIS UTAMA berikut:
+   a. **LABA NAIK SIGNIFIKAN**: Lonjakan laba bersih / pendapatan (YoY / QoQ / turnaround rugi ke laba) dengan data kuantitatif persen atau nominal yang jelas.
+   b. **BUYBACK SAHAM BESAR/SIGNIFIKAN**: Aksi korporasi buyback saham dengan porsi signifikan (>20% saham beredar atau alokasi dana jumbo untuk menopang valuasi emiten). Buyback kecil/MESOP karyawan maksimal score 7.
+   c. **DIVIDEN**: Pengumuman resmi dividen (interim / final / cum date / yield dividen tinggi) dengan angka rupiah per saham (DPS) atau nilai dividen yang jelas.
+5. Jika berita BUKAN mengenai salah satu dari 3 pilar di atas (misal: insider buy/sell kecil, klarifikasi/respons PR manajemen, operasional rutin, kerja sama biasa, atau berita makro/program pemerintah), MAKA SCORE MAKSIMAL ADALAH 7-8 (WAJIB DECISION: "PASS").
 
 ## KRITERIA SCORING (OBJECTIVE, JANGAN HALUSINASI)
 
-### BOOSTER (Tambah Score):
-- **Catalyst emiten jelas** (dividen, rights issue, IPO, akuisisi, merger, contract win, earnings beat): +2
-- **Data kuantitatif ada** (angka spesifik, persentase, nilai transaksi): +1
-- **Ticker saham Indonesia jelas & spesifik** (bukan vague/sector-only): +1
-- **Berita fresh** (hari ini / kemarin, bukan news lama): +1
-- **Dampak langsung ke harga/fundamental saham IHSG** (bukan fluff macro): +2
+### BOOSTER (Hanya jika masuk 3 Pilar Utama):
+- **Laba naik drastis / Turnaround signifikan**: +3
+- **Dividen resmi diumumkan (ada DPS / yield)**: +3
+- **Buyback saham bernilai besar / porsi signifikan**: +3
+- **Data kuantitatif sangat spesifik (rupiah, persentase nyata)**: +1
+- **Berita fresh (hari ini / kemarin)**: +1
 
 ### PENALTI (Kurang Score):
+- **Bukan salah satu dari 3 Pilar (Bukan Laba Naik, Bukan Buyback Besar, Bukan Dividen)**: Maksimal score 7-8 (AUTO PASS)
+- **Insider trading / transaksi direksi bernilai kecil (< Rp 5 Miliar atau < 1% saham)**: Batasi score maksimal 6
+- **Berita tanggapan / klarifikasi manajemen / rumor**: -3
 - **Bukan berita saham Indonesia / Geopolitik luar negeri tanpa emiten BEI**: -5 (AUTO PASS)
 - **Tidak ada ticker saham Indonesia spesifik**: -3
-- **Fluff tanpa angka** ("IHSG konsolidate", "pasar mixed"): -2
-- **Rumor / belum terkonfirmasi**: -2
+- **Fluff tanpa angka ("IHSG konsolidasi", "pasar mixed")**: -2
+- **Program makro pemerintah tanpa aksi korporasi emiten langsung**: -2
 - **News lama / sudah priced in**: -2
-- **Ticker Saham lebih dari 1**: -1
-- **Macro vague tanpa dampak langsung ke saham**: -2
 
-## ATURAN KETAT:
-1. Score 9-10 = GENERATE (Wajib: Ada emiten IHSG spesifik + berefek langsung ke harga/kinerja + ada data kuantitatif + fresh)
-2. Score 7-8 = PASS (Relevant dengan saham tapi kurang catalyst kuat / kurang data kuantitatif)
-3. Score 0-6 = PASS (Fluff, rumor, geopolitik global tanpa ticker IHSG, atau tidak actionable)
+## ATURAN KETAT SCORE & DECISION:
+1. **Score 9-10 = GENERATE**: Wajib ada emiten IHSG spesifik + fresh + data angka konkret + **HANYA untuk (1) LABA NAIK, (2) BUYBACK >20%/BESAR, atau (3) DIVIDEN**.
+2. **Score 7-8 = PASS**: Berita emiten bagus (akuisisi, merger, kontrak baru, rights issue, insider buy) tapi BUKAN 3 pilar utama di atas.
+3. **Score 0-6 = PASS**: Fluff, klarifikasi PR manajemen, insider buy receh, rumor, berita makro umum, atau berita tanpa angka.
 
 ## INPUT BERITA:
 - Judul: ${title}
