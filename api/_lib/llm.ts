@@ -57,15 +57,14 @@ class LlmRequestError extends Error {
 const keyCooldowns = new Map<string, number>();
 let roundRobinIndex = 0;
 
-/** Ambil seluruh API Key yang terkonfigurasi di environment */
+/** Ambil seluruh API Key khusus News Monitoring & General (GEMINI / Free Pool) */
 export function getAllApiKeys(): string[] {
   const rawList: string[] = [];
 
-  // 1. Dari SUMOPOD_API_KEY, OPENAI_API_KEY, atau GEMINI_API_KEY (bisa dipisah koma/titik koma)
+  // 1. Dari GEMINI_API_KEY atau OPENAI_API_KEY (bisa dipisah koma/titik koma)
   const mainKeys = [
-    process.env.SUMOPOD_API_KEY,
-    process.env.OPENAI_API_KEY,
     process.env.GEMINI_API_KEY,
+    process.env.OPENAI_API_KEY,
   ];
 
   for (const raw of mainKeys) {
@@ -75,14 +74,18 @@ export function getAllApiKeys(): string[] {
     }
   }
 
-  // 2. Dari indexed env vars (SUMOPOD_API_KEY_1, SUMOPOD_API_KEY_2, GEMINI_API_KEY_1, dsb)
+  // 2. Dari indexed env vars (GEMINI_API_KEY_1, GEMINI_API_KEY_2, dsb)
   for (let i = 1; i <= 10; i++) {
-    const k1 = process.env[`SUMOPOD_API_KEY_${i}`]?.trim();
+    const k1 = process.env[`GEMINI_API_KEY_${i}`]?.trim();
     if (k1) rawList.push(k1);
     const k2 = process.env[`OPENAI_API_KEY_${i}`]?.trim();
     if (k2) rawList.push(k2);
-    const k3 = process.env[`GEMINI_API_KEY_${i}`]?.trim();
-    if (k3) rawList.push(k3);
+  }
+
+  // Fallback transisi jika user belum rename SUMOPOD_API_KEY di environment lokal
+  if (rawList.length === 0 && process.env.SUMOPOD_API_KEY) {
+    const split = process.env.SUMOPOD_API_KEY.split(/[,;\n]/).map(k => k.trim()).filter(Boolean);
+    rawList.push(...split);
   }
 
   // Deduplikasi
@@ -99,6 +102,37 @@ export function isLlmConfigured(): boolean {
   return getAllApiKeys().length > 0;
 }
 
+/** Ambil seluruh API Key khusus Daily Brief open.ts (SUMOPOD / Paid LLM) */
+export function getBriefApiKeys(): string[] {
+  const rawList: string[] = [];
+  const briefKeys = [
+    process.env.SUMOPOD_API_KEY,
+    process.env.OPEN_LLM_API_KEY,
+    process.env.BRIEF_LLM_API_KEY,
+    process.env.PAID_LLM_API_KEY,
+  ];
+
+  for (const raw of briefKeys) {
+    if (raw) {
+      const split = raw.split(/[,;\n]/).map(k => k.trim()).filter(Boolean);
+      rawList.push(...split);
+    }
+  }
+
+  for (let i = 1; i <= 5; i++) {
+    const k1 = process.env[`SUMOPOD_API_KEY_${i}`]?.trim();
+    if (k1) rawList.push(k1);
+    const k2 = process.env[`OPEN_LLM_API_KEY_${i}`]?.trim();
+    if (k2) rawList.push(k2);
+  }
+
+  return Array.from(new Set(rawList));
+}
+
+export function isBriefLlmConfigured(): boolean {
+  return getBriefApiKeys().length > 0;
+}
+
 export function getLlmConfig(): {
   configured: boolean;
   baseUrl: string;
@@ -113,11 +147,11 @@ export function getLlmConfig(): {
   return {
     configured: keys.length > 0,
     baseUrl: (
-      process.env.SUMOPOD_BASE_URL ||
+      process.env.GEMINI_BASE_URL ||
       process.env.OPENAI_BASE_URL ||
-      DEFAULT_BASE_URL
+      'https://generativelanguage.googleapis.com/v1beta/openai'
     ).replace(/\/+$/, ''),
-    model: process.env.SUMOPOD_MODEL || process.env.OPENAI_MODEL || DEFAULT_MODEL,
+    model: process.env.GEMINI_MODEL || process.env.OPENAI_MODEL || 'gemini-3.1-flash-lite',
     totalKeys: keys.length,
     activeKeys,
   };
@@ -149,7 +183,7 @@ function getOrderedCandidateKeys(): string[] {
 }
 
 function buildPayload(prompt: string, options: ChatOptions): ChatPayload {
-  const model = options.model || process.env.SUMOPOD_MODEL || process.env.OPENAI_MODEL || DEFAULT_MODEL;
+  const model = options.model || process.env.GEMINI_MODEL || process.env.OPENAI_MODEL || 'gemini-3.1-flash-lite';
   const payload: ChatPayload = {
     model,
     messages: [{ role: 'user', content: prompt }],
@@ -195,17 +229,17 @@ async function requestWithKey(baseUrl: string, apiKey: string, payload: ChatPayl
   return content;
 }
 
-/** Kirim prompt ke LLM dengan multi-key routing, load balancing & failover */
+/** Kirim prompt ke LLM dengan multi-key routing, load balancing & failover (News Monitoring / GEMINI) */
 export async function chatComplete(prompt: string, options: ChatOptions = {}): Promise<string> {
   const candidateKeys = getOrderedCandidateKeys();
   if (candidateKeys.length === 0) {
-    throw new Error('LLM API key not configured (set SUMOPOD_API_KEY or OPENAI_API_KEY)');
+    throw new Error('LLM API key not configured (set GEMINI_API_KEY in environment)');
   }
 
   const baseUrl = (
-    process.env.SUMOPOD_BASE_URL ||
+    process.env.GEMINI_BASE_URL ||
     process.env.OPENAI_BASE_URL ||
-    DEFAULT_BASE_URL
+    'https://generativelanguage.googleapis.com/v1beta/openai'
   ).replace(/\/+$/, '');
 
   const payload = buildPayload(prompt, options);
@@ -368,3 +402,81 @@ export async function generateContent(prompt: string, options: ChatOptions = {})
   const raw = await chatComplete(prompt, options);
   return raw.trim();
 }
+
+/** Kirim prompt ke LLM khusus Daily Brief open.ts (SUMOPOD / Paid LLM) dengan failover dan auto-fallback */
+export async function chatCompleteBrief(prompt: string, options: ChatOptions = {}): Promise<string> {
+  const briefKeys = getBriefApiKeys();
+
+  // Jika env SUMOPOD belum diset, otomatis fallback ke LLM GEMINI default
+  if (briefKeys.length === 0) {
+    console.warn('[LLM Brief] SUMOPOD_API_KEY belum diset. Fallback menggunakan GEMINI_API_KEY default.');
+    return chatComplete(prompt, options);
+  }
+
+  const baseUrl = (
+    process.env.SUMOPOD_BASE_URL ||
+    process.env.OPEN_LLM_BASE_URL ||
+    'https://ai.sumopod.com/v1'
+  ).replace(/\/+$/, '');
+
+  const model =
+    options.model ||
+    process.env.SUMOPOD_MODEL ||
+    process.env.OPEN_LLM_MODEL ||
+    'gemini/gemini-3.1-flash-lite';
+
+  const payload: ChatPayload = {
+    model,
+    messages: [{ role: 'user', content: prompt }],
+    temperature: options.temperature ?? 0.7,
+    max_tokens: options.maxTokens ?? 4096,
+  };
+
+  if (options.json) {
+    payload.response_format = { type: 'json_object' };
+  }
+
+  let lastError: any = null;
+
+  for (let i = 0; i < briefKeys.length; i++) {
+    const currentKey = briefKeys[i];
+    const masked = maskKey(currentKey);
+
+    try {
+      try {
+        const result = await requestWithKey(baseUrl, currentKey, payload);
+        return result;
+      } catch (err: any) {
+        const jsonModeUnsupported =
+          options.json === true &&
+          err instanceof LlmRequestError &&
+          err.status === 400 &&
+          /response_format|json_object|json mode/i.test(err.message);
+
+        if (jsonModeUnsupported) {
+          console.warn(`[LLM Brief] json mode tidak didukung model ${model} di key ${masked}, retry tanpa response_format`);
+          const fallbackPayload: ChatPayload = { ...payload };
+          delete fallbackPayload.response_format;
+          return await requestWithKey(baseUrl, currentKey, fallbackPayload);
+        }
+        throw err;
+      }
+    } catch (error: any) {
+      lastError = error;
+      const status = error instanceof LlmRequestError ? error.status : 0;
+      console.warn(`[LLM Brief] Key ${masked} gagal (status ${status}): ${error?.message || error}.`);
+      continue;
+    }
+  }
+
+  // Jika seluruh key berbayar gagal, fallback ke default LLM agar open.ts tetap jalan
+  console.error(`[LLM Brief] Seluruh key berbayar gagal (${briefKeys.length}). Fallback ke LLM default.`);
+  return chatComplete(prompt, options);
+}
+
+/** Kirim prompt ke LLM khusus Daily Brief + parse hasilnya sebagai JSON */
+export async function generateBriefJson<T = any>(prompt: string, options: ChatOptions = {}): Promise<T> {
+  const raw = await chatCompleteBrief(prompt, { ...options, json: true });
+  return extractJson(raw) as T;
+}
+

@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { validateApiKey } from '../_lib/auth.js';
-import { generateJson } from '../_lib/llm.js';
+import { generateJson, generateBriefJson } from '../_lib/llm.js';
 import { fetchIndexDaily, fetchFilings, fetchNews, fetchTopMovers, fetchDaily, fetchBrokersForeignFlowSummary, getYesterdayDate, getTodayDate } from '../_lib/sectorsMarket.js';
 import { fetchCompanyReport } from '../_lib/sectors.js';
 import { supabaseServer } from '../_lib/supabase.js';
@@ -433,8 +433,8 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     const today = getTodayDate();
     const ihsStart = dateNDaysAgo(IHSG_WINDOW_DAYS);
 
-    // Step 1: Fetch raw data (IHSG + filings + top movers) & query berita dari Supabase sector_trigger_news
-    const [indexData, filingsData, topMovers, dbNewsRes] = await Promise.all([
+    // Step 1: Fetch raw data (IHSG + filings + top movers + berita fresh Sectors API)
+    const [indexData, filingsData, topMovers, sectorsNewsData] = await Promise.all([
       fetchIndexDaily(ihsStart), // Omit end date to avoid timezone future date error
       fetchFilings({ start: yesterday }),
       fetchTopMovers({
@@ -443,41 +443,84 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         nStock: 5,
         minMcapBillion: TOP_MOVERS_MIN_MCAP_BILLION,
       }),
-      supabaseServer
-        .from('sector_trigger_news')
-        .select('*')
-        .gte('published_at', `${yesterday}T00:00:00+07:00`)
-        .order('published_at', { ascending: false })
-        .limit(40),
+      fetchNews({ start: yesterday, end: today, limit: 30 }).catch((e: any) => {
+        console.warn('[SectorTrigger Open] fetchNews Sectors API gagal:', e?.message || e);
+        return { results: [] };
+      }),
     ]);
 
     const filingsArray = Array.isArray(filingsData) ? filingsData : (filingsData?.data || filingsData?.results || []);
-    const rawDbNews = dbNewsRes?.data || [];
+    const sectorsNewsList: any[] = Array.isArray(sectorsNewsData)
+      ? sectorsNewsData
+      : (sectorsNewsData?.results || sectorsNewsData?.data || []);
 
-    // Fallback: Jika Supabase belum terisi berita (misal scraper belum jalan), fallback ke Sectors fetchNews
-    let newsResults: any[] = [];
-    if (rawDbNews.length > 0) {
-      newsResults = rawDbNews.map((n: any) => ({
-        title: n.title,
-        body: n.body || n.description || '',
-        source: n.source_url,
-        thumbnail: n.thumbnail_url,
-        timestamp: n.timestamp || n.published_at,
-        tags: n.tags || (n.category ? [n.category] : []),
-        symbols: (n.symbols || []).map((s: string) => {
-          const clean = String(s).trim().toUpperCase().replace(/\.JK$/i, '');
-          return clean ? `${clean}.JK` : '';
-        }).filter(Boolean),
-        sector: n.sector || null,
-        sub_sector: n.sub_sectors || [],
-        score: n.score,
-        decision: n.decision,
-      }));
-    } else {
-      console.warn('[SectorTrigger Open] Tabel sector_trigger_news kosong hari ini, fallback memanggil Sectors fetchNews...');
-      const fallbackNewsData = await fetchNews({ start: yesterday, limit: 15, tags: NEWS_TAGS }).catch(() => null);
-      newsResults = Array.isArray(fallbackNewsData?.results) ? fallbackNewsData.results : [];
+    // 1. Simpan berita dari Sectors API yang belum tersimpan ke database (sector_trigger_news)
+    if (sectorsNewsList.length > 0) {
+      const sectorsNewsToInsert = sectorsNewsList
+        .filter((n: any) => Boolean(n.source || n.url || n.source_url))
+        .map((n: any, i: number) => {
+          const url = n.source || n.url || n.source_url;
+          const ts = parseWibDate(n.timestamp || n.published_at);
+          const syms = Array.isArray(n.symbols)
+            ? n.symbols
+                .map((s: string) => String(s).trim().toUpperCase().replace(/\.JK$/i, ''))
+                .filter(Boolean)
+                .map((s: string) => `${s}.JK`)
+            : [];
+
+          return {
+            news_index: i + 1,
+            title: n.title || null,
+            body: n.body || n.content || n.description || null,
+            tags: Array.isArray(n.tags) ? n.tags : [],
+            symbols: syms,
+            sector: n.sector || null,
+            sub_sectors: Array.isArray(n.sub_sector) ? n.sub_sector : (Array.isArray(n.sub_sectors) ? n.sub_sectors : []),
+            dimensions: n.dimension || n.dimensions || null,
+            source_url: url,
+            thumbnail_url: n.thumbnail || n.thumbnail_url || n.image || null,
+            timestamp: ts,
+            published_at: ts,
+            raw: n,
+            is_selected: false,
+          };
+        });
+
+      if (sectorsNewsToInsert.length > 0) {
+        const { error: insertErr } = await supabaseServer
+          .from('sector_trigger_news')
+          .upsert(sectorsNewsToInsert, { onConflict: 'source_url', ignoreDuplicates: true });
+
+        if (insertErr) {
+          console.error('[SectorTrigger Open] Error upserting fresh Sectors news to DB:', insertErr);
+        } else {
+          console.log(`[SectorTrigger Open] Berhasil menyimpan/sinkronkan ${sectorsNewsToInsert.length} berita dari Sectors API ke DB.`);
+        }
+      }
     }
+
+    // 2. Gunakan berita terkurasi dari Sectors API sebagai bahan seleksi Daily Market Brief
+    const newsResults = sectorsNewsList.map((n: any) => {
+      const url = n.source || n.url || n.source_url;
+      const syms = (n.symbols || []).map((s: string) => {
+        const clean = String(s).trim().toUpperCase().replace(/\.JK$/i, '');
+        return clean ? `${clean}.JK` : '';
+      }).filter(Boolean);
+
+      return {
+        title: n.title,
+        body: n.body || n.content || n.description || '',
+        source: url,
+        thumbnail: n.thumbnail || n.thumbnail_url,
+        timestamp: n.timestamp || n.published_at,
+        tags: n.tags || [],
+        symbols: syms,
+        sector: n.sector || null,
+        sub_sector: n.sub_sector || n.sub_sectors || [],
+        score: null,
+        decision: null,
+      };
+    });
 
     // IHSG: index-daily returns { index_code, date, price } rows (no change field).
     // Latest trading day = last row of the window; change% computed vs previous row.
@@ -550,45 +593,15 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
     const logId = logData?.id;
 
-    // Sinkronisasi berita ke database
+    // Sinkronisasi log_id pada berita yang diproses hari ini jika belum terisi
     if (logId && newsResults.length > 0) {
-      if (rawDbNews.length === 0) {
-        // Jika berita didapat dari fallback Sectors API, simpan ke database
-        const newsInserts = newsResults.map((n: any, i: number) => ({
-          log_id: logId,
-          news_index: i + 1,
-          title: n.title || null,
-          body: (n as any).body || null,
-          tags: n.tags || [],
-          symbols: n.symbols || [],
-          sector: n.sector || null,
-          sub_sectors: (n as any).sub_sector || [],
-          dimensions: (n as any).dimension || null,
-          source_url: n.source || null,
-          thumbnail_url: (n as any).thumbnail || null,
-          timestamp: parseWibDate(n.timestamp),
-          published_at: parseWibDate(n.timestamp),
-          raw: n,
-          is_selected: false
-        }));
-
-        const { error: newsError } = await supabaseServer
+      const urls = newsResults.map((n: any) => n.source).filter(Boolean);
+      if (urls.length > 0) {
+        await supabaseServer
           .from('sector_trigger_news')
-          .upsert(newsInserts, { onConflict: 'source_url', ignoreDuplicates: true });
-
-        if (newsError) {
-          console.error('[SectorTrigger Open] News insert error:', newsError);
-        }
-      } else {
-        // Berita sudah ada di Supabase, update log_id untuk batch run hari ini jika belum terisi
-        const urls = newsResults.map((n: any) => n.source).filter(Boolean);
-        if (urls.length > 0) {
-          await supabaseServer
-            .from('sector_trigger_news')
-            .update({ log_id: logId })
-            .in('source_url', urls)
-            .is('log_id', null);
-        }
+          .update({ log_id: logId })
+          .in('source_url', urls)
+          .is('log_id', null);
       }
     }
 
@@ -953,7 +966,7 @@ ${JSON.stringify(newsSummary, null, 2)}
 Output HANYA JSON, tanpa markdown.`;
 
   try {
-    const parsed = await generateJson(prompt);
+    const parsed = await generateBriefJson(prompt);
     return {
       tickers: parsed.tickers || [],
       reasoning: parsed.reasoning || '',
@@ -1242,7 +1255,7 @@ ${JSON.stringify(candidatesData, null, 2)}
 
 
   try {
-    return await generateJson(prompt, { maxTokens: 8192 });
+    return await generateBriefJson(prompt, { maxTokens: 8192 });
   } catch (error) {
     console.error('[GenerateSlides] Failed to generate/parse LLM response:', error);
     throw error;

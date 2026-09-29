@@ -21,7 +21,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (!isLlmConfigured()) {
-    return res.status(500).json({ error: 'LLM not configured (SUMOPOD_API_KEY missing)' });
+    return res.status(500).json({ error: 'LLM not configured (GEMINI_API_KEY missing)' });
   }
 
   const prompt = `
