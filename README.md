@@ -218,15 +218,16 @@ SahamFYP dilengkapi dengan **Web Dashboard Monitoring** interaktif yang dideploy
 - **Referensi**: https://repliz.com/ | https://api.repliz.com/public-json
 - **Cara kerja**: Endpoint Vercel API `/api/publish` SahamFYP berperan sebagai orkestrator yang menerima daftar akun yang ingin dituju (`targetAccountIds`). API ini kemudian akan mengecek kredensial dinamis dari database Supabase (`social_accounts`) dan mengirim payload massal ke Repliz secara simultan.
 
-### 3. LLM — Sumopod (OpenAI compatible)
+### 3. LLM — Dual-Engine (Gemini Free Pool & Sumopod Paid)
 
 - **Fungsi**:
-  - **Klasifikasi berita** → kategori & ticker yang relevan
-  - **Scoring** → urgensi/relevansi berita untuk keputusan PASS/GENERATE
-  - **Enrichment ringkasan** → ekstrak topik, insight, dan rekomendasi ticker
-  - **Generate konten** → naskah slide, caption, hashtag, konten IG/TikTok
-- **Referensi**: https://ai.sumopod.com/ | https://sumopod.com/
-- **Cara kerja**: Endpoint OpenAI-compatible `POST {SUMOPOD_BASE_URL}/chat/completions` (default `https://ai.sumopod.com/v1/chat/completions`) dengan header `Authorization: Bearer <SUMOPOD_API_KEY>`. Model default `gemini/gemini-3.1-flash-lite` (ganti via `SUMOPOD_MODEL`). Wrapper server: `api/_lib/llm.ts`; wrapper client (proxy `/api/llm`): `src/services/llm.ts` — API key tidak pernah ter-expose ke bundle browser.
+  - **News Monitoring & Scoring (`/api/score`, `/api/classify`)** → Menggunakan **Google Gemini (Free Multi-Key Pool)** dengan failover otomatis untuk menyaring berita intraday sepanjang hari berdasarkan 3 Pilar Katalis (Laba naik signifikan, Buyback >20%, Dividen resmi).
+  - **Daily Market Brief (`/api/sector-trigger/open`)** → Menggunakan **Sumopod (Paid Dedicated LLM)** berstandar tinggi untuk menyeleksi kandidat saham terbaik dan menyusun naskah carousel visual serta analisis fundamental-teknikal Gen Z.
+- **Referensi**: https://aistudio.google.com/ | https://ai.sumopod.com/
+- **Cara kerja**:
+  - **Gemini Free Pool**: Dikonfigurasi via `GEMINI_API_KEY` (mendukung multiple keys dipisah koma untuk pooling), `GEMINI_BASE_URL` (`https://generativelanguage.googleapis.com/v1beta/openai`), dan `GEMINI_MODEL` (`gemini-3.1-flash-lite`).
+  - **Sumopod Paid**: Dikonfigurasi via `SUMOPOD_API_KEY`, `SUMOPOD_BASE_URL` (`https://ai.sumopod.com/v1`), dan `SUMOPOD_MODEL` (`gemini/gemini-3.1-flash-lite` atau model berbayar lainnya). Dilengkapi auto-fallback ke Gemini jika key Sumopod belum dikonfigurasi.
+  - Wrapper server: `api/_lib/llm.ts`; proxy browser: `/api/llm` — API key tidak pernah ter-expose ke bundle client.
 
 ### 4. Penyimpanan Gambar: Supabase Storage
 
@@ -315,7 +316,11 @@ Dalam satu sesi eksekusi unattended, workflow ini memanggil serangkaian endpoint
 **Alur Eksekusi:**
 ```
 Schedule Trigger (08:00 WIB)
-  → SectorTrigger/open (pilih watchlist saham hari ini, enrich Sectors API & generate naskah LLM)
+  → SectorTrigger/open:
+      1. Fetch berita curated langsung dari Sectors REST API (/v2/news/)
+      2. Otomatis simpan berita baru ke Supabase (sector_trigger_news)
+      3. Seleksi saham watchlist & generate naskah via Paid Dedicated LLM (Sumopod)
+      4. Enrich rasio fundamental & broker foreign flow vs rata-rata sektor
   → Split Out per Slide → Render HTML → Browserless.io (HTML → JPEG 1080×1350)
   → Upload ke Supabase Storage (bucket sfyp-storage) → Collect All URLs
   → Publish ke Repliz (multi-akun: Instagram, Facebook, Threads, X, TikTok)
@@ -544,9 +549,13 @@ Buat file `.env.local` dengan variabel berikut:
 # Sectors.app (REST API — core data source, wajib)
 SECTORS_API_KEY=your_sectors_api_key_here
 
-# LLM (OpenAI-compatible: Sumopod)
-SUMOPOD_API_KEY=your_sumopod_api_key_here
-# Opsional (ada default di api/_lib/llm.ts)
+# 1. LLM — News Monitoring (Google Gemini Free / Multi-Key Pool)
+GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
+GEMINI_MODEL=gemini-3.1-flash-lite
+
+# 2. LLM — Daily Market Brief open.ts (Sumopod / Paid Dedicated LLM)
+SUMOPOD_API_KEY=your_sumopod_paid_api_key_here
 SUMOPOD_BASE_URL=https://ai.sumopod.com/v1
 SUMOPOD_MODEL=gemini/gemini-3.1-flash-lite
 
