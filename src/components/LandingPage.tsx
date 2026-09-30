@@ -197,11 +197,11 @@ export default function LandingPage({
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-head font-extrabold text-lg text-ink tracking-tight">SahamFYP</span>
-                <span className="text-[12px] font-body font-semibold px-2.5 py-0.5 rounded-full bg-card text-muted border border-line hidden sm:inline-block">
+                <span className="text-[13px] font-body font-semibold px-2.5 py-0.5 rounded-full bg-card text-muted border border-line hidden sm:inline-block">
                   Sectors Hackathon
                 </span>
               </div>
-              <p className="text-[12px] text-muted -mt-0.5 hidden sm:block">
+              <p className="text-[13px] text-muted -mt-0.5 hidden sm:block">
                 Gen Z Stock Education & Anti-FOMO Engine
               </p>
             </div>
@@ -211,7 +211,7 @@ export default function LandingPage({
             {inDashboard ? (
               <button
                 onClick={onBackToOverview}
-                className="px-4 py-2 bg-navy hover:bg-[#1c3563] text-on-navy font-body font-semibold rounded-lg text-xs sm:text-sm transition flex items-center gap-1.5 shadow-sm"
+                className="px-4 py-2 bg-navy hover:bg-[#1c3563] text-on-navy font-body font-semibold rounded-lg text-sm sm:text-sm transition flex items-center gap-1.5 shadow-sm"
               >
                 <span>← Kembali ke Dashboard</span>
               </button>
@@ -268,7 +268,7 @@ export default function LandingPage({
 
                 <button
                   onClick={handleLoginClick}
-                  className="px-3.5 sm:px-4 py-2 bg-navy hover:bg-[#1c3563] text-on-navy font-body font-semibold rounded-lg text-xs sm:text-sm transition flex items-center gap-1.5 shadow-sm active:scale-95"
+                  className="px-3.5 sm:px-4 py-2 bg-navy hover:bg-[#1c3563] text-on-navy font-body font-semibold rounded-lg text-sm sm:text-sm transition flex items-center gap-1.5 shadow-sm active:scale-95"
                   title="Pantau log eksekusi n8n, status publish, dan data Sectors API secara real-time"
                 >
                   <BarChart3 className="w-4 h-4" />
@@ -281,81 +281,58 @@ export default function LandingPage({
       </header>
 
       {/* ─── 1. Hero Section (Hook & Janji Produk) ───────────── */}
-      <section className="pt-14 pb-20 md:pt-20 md:pb-24 border-b border-line">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-card border border-line text-muted text-xs font-medium mb-6">
-            <span className="w-2 h-2 rounded-full bg-up animate-pulse" />
-            <span>Autonomous Financial Media • Powered by Sectors REST API</span>
-          </div>
-
-          <h1 className="text-3xl sm:text-5xl md:text-6xl font-head font-extrabold text-ink tracking-tight leading-[1.12]">
-            Make Data Make Sense for Gen-Z
+      <section className="bg-[var(--brand-navy)] text-[var(--brand-cream)]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-16 md:pt-28 md:pb-24">
+          <h1 className="font-head font-extrabold tracking-tight leading-[1.02] text-5xl sm:text-6xl md:text-7xl max-w-4xl">
+            Paham dulu, baru FOMO.
           </h1>
-
-          <p className="mt-6 text-base sm:text-lg text-muted max-w-2xl mx-auto leading-relaxed font-normal">
-            SahamFYP mengubah riset sekuritas 20+ lembar jadi Daily Market Brief visual — lengkap bedah katalis 3W (What, Why, What's Next) dan sistem warning risiko objektif, dirancang untuk <strong>54,4% investor Gen-Z Indonesia</strong> yang butuh data jelas dan mudah dimengerti. Paham dulu, baru FOMO.
+          <p className="mt-6 text-lg md:text-xl max-w-2xl leading-relaxed opacity-90">
+            SahamFYP mengubah riset sekuritas berlembar-lembar menjadi carousel Instagram yang bisa dipahami dalam satu menit. Datanya dari Sectors.app, bukan tebakan.
           </p>
-
-          {/* Call to Actions (Aturan: 1 Tombol Emas Primer per Layar) */}
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5 max-w-md mx-auto">
+          <div className="mt-9 flex flex-col sm:flex-row gap-3.5">
             <a
               href="#product-showcase"
               onClick={(e) => scrollToSection(e, 'product-showcase')}
-              className="w-full sm:w-auto py-3 px-6 bg-gold hover:bg-[#e09c00] text-ink font-body font-semibold rounded-lg text-sm sm:text-base transition shadow-sm flex items-center justify-center gap-2 active:scale-95 focus-visible:outline-3 focus-visible:outline-gold focus-visible:outline-offset-2"
+              className="py-3.5 px-7 bg-gold hover:bg-[#e09c00] text-[#0F1A30] font-body font-semibold rounded-lg text-base transition flex items-center justify-center gap-2 active:scale-95 focus-visible:outline-3 focus-visible:outline-gold focus-visible:outline-offset-2"
             >
               <Smartphone className="w-4 h-4" />
-              <span>Lihat Hasil Postingan</span>
-              <span className="transition-transform">↓</span>
+              <span>Lihat hasil postingan</span>
+              <span>↓</span>
             </a>
-
             {!inDashboard && (
               <button
                 onClick={handleLoginClick}
-                className="w-full sm:w-auto py-3 px-6 bg-navy hover:bg-[#1c3563] text-on-navy font-body font-semibold rounded-lg text-sm sm:text-base transition shadow-sm flex items-center justify-center gap-2 active:scale-95"
+                className="py-3.5 px-7 border border-[var(--brand-cream)]/40 hover:bg-white/10 text-[var(--brand-cream)] font-body font-semibold rounded-lg text-base transition flex items-center justify-center gap-2 active:scale-95"
               >
                 <BarChart3 className="w-4 h-4" />
-                <span>Buka Dashboard</span>
+                <span>Buka dashboard</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             )}
           </div>
-
-          {/* Quick Stats Grid (Tipografi: Archivo / IBM Plex Mono tabular-nums) */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-14 text-left">
-            <div className="bg-card border border-line p-4 rounded-xl">
-              <p className="font-head font-extrabold text-2xl sm:text-3xl text-ink font-mono tabular-nums">54,4%</p>
-              <p className="text-xs text-muted mt-1 font-medium">Investor BEI adalah Gen Z (&lt;30 thn)</p>
-              <p className="text-[12px] text-muted mt-1 italic">Riset Demografi KSEI & BEI</p>
-            </div>
-            <div className="bg-card border border-line p-4 rounded-xl">
-              <p className="font-head font-extrabold text-2xl sm:text-3xl text-up font-mono tabular-nums">100%</p>
-              <p className="text-xs text-muted mt-1 font-medium">Otonom & Unattended Pipeline (n8n)</p>
-            </div>
-            <div className="bg-card border border-line p-4 rounded-xl">
-              <p className="font-head font-extrabold text-2xl sm:text-3xl text-ink font-mono tabular-nums">7+ Endpoint</p>
-              <p className="text-xs text-muted mt-1 font-medium">Sectors REST API Resmi (Tulang Punggung)</p>
-            </div>
-            <div className="bg-card border border-line p-4 rounded-xl">
-              <p className="font-head font-extrabold text-2xl sm:text-3xl text-navy font-mono tabular-nums">5 Kanal</p>
-              <p className="text-xs text-muted mt-1 font-medium">Multi-Publishing Medsos via Repliz API</p>
-            </div>
-          </div>
+          <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-8 mt-16 pt-10 border-t border-white/20">
+            {[
+              ['54,4%', 'investor BEI adalah Gen Z (di bawah 30 tahun)', true],
+              ['100%', 'otonom, tanpa kerja manual (n8n)', false],
+              ['7+', 'endpoint Sectors REST API sebagai sumber data', false],
+              ['5', 'kanal media sosial terbit otomatis', false],
+            ].map(([n, l, hi]) => (
+              <div key={String(n)}>
+                <dd className={`font-head font-extrabold tabular-nums text-4xl md:text-6xl leading-none ${hi ? 'text-gold' : ''}`}>{n}</dd>
+                <dt className="mt-3 text-sm md:text-base opacity-80 leading-snug">{l}</dt>
+              </div>
+            ))}
+          </dl>
         </div>
       </section>
 
       {/* ─── 2. Dilema Gen Z (Masalah Nyata) ──────────────────── */}
-      <section className="py-16 md:py-20 border-b border-line">
+      <section className="py-20 md:py-28 bg-paper">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full border border-line bg-card text-muted">
-              Latar Belakang & Masalah
-            </span>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-head font-extrabold text-ink mt-3">
-              Dilema Gen Z: Beli Saham Modal FOMO vs Riset Sekuritas Kaku
-            </h2>
-            <p className="text-sm sm:text-base text-muted mt-3">
-              Berdasarkan data resmi <strong>Kustodian Sentral Efek Indonesia (KSEI)</strong> dan <strong>Bursa Efek Indonesia (BEI)</strong>, <strong>54,4%</strong> investor pasar modal adalah generasi muda (usia &le;30 tahun). Namun mereka terperangkap di antara dua kutub yang sama-sama merugikan:
-            </p>
+          <div className="max-w-3xl mb-12">
+            <p className="text-base font-semibold text-navy">Masalahnya</p>
+            <h2 className="mt-2 font-head font-extrabold tracking-tight leading-[1.08] text-3xl sm:text-4xl md:text-5xl text-ink">Anak muda mendominasi pasar modal, tapi riset saham belum ditulis untuk mereka</h2>
+            <p className="mt-4 text-base sm:text-lg text-muted leading-relaxed">Menurut data KSEI dan BEI, 54,4% investor adalah Gen Z. Mereka sering membeli karena FOMO, sementara riset sekuritas panjang dan kaku.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
@@ -366,9 +343,9 @@ export default function LandingPage({
                   <ShieldAlert className="w-5 h-5" />
                 </div>
                 <h3 className="text-lg font-head font-bold text-down">1. Realita: Pom-Pom & FOMO Medsos</h3>
-                <p className="text-xs text-muted mt-2 leading-relaxed">
+                <p className="text-sm text-muted mt-2 leading-relaxed">
                   <strong>70% Gen Z</strong> menelan info investasi mentah-mentah dari konten TikTok, Reels, dan grup Telegram pom-pom yang menjanjikan cuan instan <em>"To The Moon"</em>.
-                  <span className="block mt-1 text-[12px] text-muted font-medium">
+                  <span className="block mt-1 text-[13px] text-muted font-medium">
                     *Referensi Jurnal: Rohman & Safiih (2025); Anastasya, Ridha, & Windarsari (2025)
                   </span>
                 </p>
@@ -382,12 +359,12 @@ export default function LandingPage({
                   />
                 </div>
 
-                <div className="mt-4 p-3 bg-paper rounded-lg border border-line text-[12px] text-down">
+                <div className="mt-4 p-3 bg-paper rounded-lg border border-line text-[13px] text-down">
                   ⚠️ <strong>Dampak:</strong> Rata-rata hold saham hanya 1–3 bulan <em>(Sumber: Analisis Transaksi Ritel Pasar Modal BEI)</em>. Sering beli di pucuk harga dan berakhir jadi <em>exit liquidity</em> spekulan.
                 </div>
               </div>
 
-              <div className="mt-6 pt-4 border-t border-line flex items-center gap-2 text-[12px] text-muted font-mono">
+              <div className="mt-6 pt-4 border-t border-line flex items-center gap-2 text-[13px] text-muted font-mono">
                 <span>Status: Cepat tapi Boncos</span>
               </div>
             </div>
@@ -399,7 +376,7 @@ export default function LandingPage({
                   <Newspaper className="w-5 h-5" />
                 </div>
                 <h3 className="text-lg font-head font-bold text-ink">2. Dilema: Riset Sekuritas Kaku</h3>
-                <p className="text-xs text-muted mt-2 leading-relaxed">
+                <p className="text-sm text-muted mt-2 leading-relaxed">
                   Riset sekuritas dan keterbukaan informasi BEI sebetulnya akurat dan resmi. Namun disajikan dalam dokumen PDF 20–30+ lembar dengan tabel abu-abu dan istilah rumit.
                 </p>
 
@@ -412,15 +389,15 @@ export default function LandingPage({
                   />
                 </div>
 
-                <div className="mt-4 p-3 bg-paper rounded-lg border border-line text-[12px] text-muted">
+                <div className="mt-4 p-3 bg-paper rounded-lg border border-line text-[13px] text-muted">
                   ℹ️ <strong>Dampak:</strong> <strong>60%+ investor pemula</strong> tidak membaca riset fundamental karena pusing dan tidak ramah bagi generasi <em>mobile-first</em>.
-                  <span className="block mt-1 text-[12px] text-muted font-medium">
+                  <span className="block mt-1 text-[13px] text-muted font-medium">
                     *Referensi Jurnal: Adinda, Wahid, & Sitorus (2025); Katadata Opini (2025)
                   </span>
                 </div>
               </div>
 
-              <div className="mt-6 pt-4 border-t border-line flex items-center gap-2 text-[12px] text-muted font-mono">
+              <div className="mt-6 pt-4 border-t border-line flex items-center gap-2 text-[13px] text-muted font-mono">
                 <span>Status: Akurat tapi Kaku</span>
               </div>
             </div>
@@ -432,34 +409,34 @@ export default function LandingPage({
                   <Zap className="w-5 h-5" />
                 </div>
                 <h3 className="text-lg font-head font-bold text-ink">3. Solusi: Jembatan SahamFYP</h3>
-                <p className="text-xs text-muted mt-2 leading-relaxed">
+                <p className="text-sm text-muted mt-2 leading-relaxed">
                   Mengambil <strong>kedalaman data riset Sectors API</strong> dan memformatnya menjadi <strong>daya cerna visual media sosial</strong> dengan analogi sehari-hari tanpa mengorbankan akurasi.
                 </p>
 
                 {/* Solusi Preview Box */}
-                <div className="mt-4 p-3.5 rounded-lg bg-paper border border-line text-xs space-y-2">
+                <div className="mt-4 p-3.5 rounded-lg bg-paper border border-line text-sm space-y-2">
                   <div className="flex items-center gap-2 text-up font-semibold">
                     <CheckCircle2 className="w-4 h-4" />
                     <span>Visual Watchlist 8 Slide</span>
                   </div>
-                  <p className="text-[12px] text-muted">
+                  <p className="text-[13px] text-muted">
                     Format carousel 4:5 yang mudah di-swipe di Instagram, TikTok, Threads, dan Facebook.
                   </p>
                   <div className="flex items-center gap-2 text-down font-semibold pt-1">
                     <AlertTriangle className="w-4 h-4" />
                     <span>Anti-FOMO Reality Check</span>
                   </div>
-                  <p className="text-[12px] text-muted">
+                  <p className="text-[13px] text-muted">
                     Jika emiten viral tapi rugi atau utang menumpuk, sistem langsung menyalakan <strong>Red Flag Warning</strong>!
                   </p>
                 </div>
 
-                <div className="mt-4 p-3 bg-[#EAF7EE] rounded-lg border border-[#BDE8CB] text-[12px] text-up">
+                <div className="mt-4 p-3 bg-[#EAF7EE] rounded-lg border border-[#BDE8CB] text-[13px] text-up">
                   ✨ <strong>Hasil:</strong> Edukasi data-driven yang menyenangkan, objektif, dan melindungi portofolio Gen Z.
                 </div>
               </div>
 
-              <div className="mt-6 pt-4 border-t border-line flex items-center gap-2 text-[12px] text-up font-mono font-bold">
+              <div className="mt-6 pt-4 border-t border-line flex items-center gap-2 text-[13px] text-up font-mono font-bold">
                 <span>Status: Valid, Edukatif, Siap Tayang</span>
               </div>
             </div>
@@ -468,16 +445,16 @@ export default function LandingPage({
           {/* Research & Data Reference Table Callout */}
           <div className="mt-10 p-5 sm:p-6 rounded-xl bg-card border border-line">
             <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b border-line">
-              <div className="flex items-center gap-2 text-ink font-head font-bold text-xs uppercase tracking-wider">
+              <div className="flex items-center gap-2 text-ink font-head font-bold text-sm ">
                 <BookOpen className="w-4 h-4 text-navy" />
                 <span>Referensi Jurnal Ilmiah & Data Publikasi Pasar Modal</span>
               </div>
-              <span className="text-[12px] font-mono text-muted">Terverifikasi Akademik & Publikasi Resmi</span>
+              <span className="text-[13px] font-mono text-muted">Terverifikasi Akademik & Publikasi Resmi</span>
             </div>
 
             {/* 1. Jurnal Ilmiah Section */}
             <div className="space-y-3">
-              <p className="text-xs font-semibold text-ink flex items-center gap-1.5">
+              <p className="text-sm font-semibold text-ink flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-navy" />
                 <span>Publikasi Jurnal Ilmiah (Peer-Reviewed)</span>
               </p>
@@ -485,51 +462,51 @@ export default function LandingPage({
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 <div className="p-3.5 rounded-lg bg-paper border border-line flex flex-col justify-between">
                   <div>
-                    <span className="inline-block px-2 py-0.5 rounded text-[12px] font-semibold bg-card text-muted border border-line mb-1.5">
+                    <span className="inline-block px-2 py-0.5 rounded text-[13px] font-semibold bg-card text-muted border border-line mb-1.5">
                       Jurnal Bisman (2025)
                     </span>
-                    <p className="text-ink text-xs font-semibold leading-snug">
+                    <p className="text-ink text-sm font-semibold leading-snug">
                       Mind over media: Moderasi literasi keuangan dalam pengaruh finfluencer dan FOMO terhadap keputusan investasi pada investor pemula.
                     </p>
-                    <p className="text-muted text-[12px] mt-1.5 italic">
+                    <p className="text-muted text-[13px] mt-1.5 italic">
                       Anastasya, L., Ridha, A., & Windarsari, W. R. (2025). <em>Bisman: The Journal of Business and Management</em>, 8(2), 508–523.
                     </p>
                   </div>
-                  <div className="mt-2.5 pt-2 border-t border-line text-[12px] text-muted">
+                  <div className="mt-2.5 pt-2 border-t border-line text-[13px] text-muted">
                     💡 <strong>Fokus:</strong> Bukti empiris peran finfluencer dan FOMO terhadap keputusan investasi pemula serta pentingnya moderasi literasi keuangan.
                   </div>
                 </div>
 
                 <div className="p-3.5 rounded-lg bg-paper border border-line flex flex-col justify-between">
                   <div>
-                    <span className="inline-block px-2 py-0.5 rounded text-[12px] font-semibold bg-card text-muted border border-line mb-1.5">
+                    <span className="inline-block px-2 py-0.5 rounded text-[13px] font-semibold bg-card text-muted border border-line mb-1.5">
                       Jurnal Innobiz (2025)
                     </span>
-                    <p className="text-ink text-xs font-semibold leading-snug">
+                    <p className="text-ink text-sm font-semibold leading-snug">
                       Meningkatkan investor saham Gen Z di Indonesia.
                     </p>
-                    <p className="text-muted text-[12px] mt-1.5 italic">
+                    <p className="text-muted text-[13px] mt-1.5 italic">
                       Adinda, D. N., Wahid, A., & Sitorus, M. (2025). <em>Innovation and Business: Jurnal Ilmu Manajemen, Bisnis dan Keuangan (Innobiz)</em>, 2(2), 13–23.
                     </p>
                   </div>
-                  <div className="mt-2.5 pt-2 border-t border-line text-[12px] text-muted">
+                  <div className="mt-2.5 pt-2 border-t border-line text-[13px] text-muted">
                     💡 <strong>Fokus:</strong> Strategi meningkatkan pemahaman pasar modal dan keterlibatan investor saham Gen Z di Indonesia secara berkelanjutan.
                   </div>
                 </div>
 
                 <div className="p-3.5 rounded-lg bg-paper border border-line flex flex-col justify-between">
                   <div>
-                    <span className="inline-block px-2 py-0.5 rounded text-[12px] font-semibold bg-card text-muted border border-line mb-1.5">
+                    <span className="inline-block px-2 py-0.5 rounded text-[13px] font-semibold bg-card text-muted border border-line mb-1.5">
                       Prosiding Semnas Manajemen (2025)
                     </span>
-                    <p className="text-ink text-xs font-semibold leading-snug">
+                    <p className="text-ink text-sm font-semibold leading-snug">
                       Pengaruh media sosial terhadap keputusan investasi saham di kalangan Generasi Z.
                     </p>
-                    <p className="text-muted text-[12px] mt-1.5 italic">
+                    <p className="text-muted text-[13px] mt-1.5 italic">
                       Rohman, A., & Safiih, A. R. (2025). <em>Prosiding Seminar Nasional Manajemen</em>, 4(1), 366–373.
                     </p>
                   </div>
-                  <div className="mt-2.5 pt-2 border-t border-line text-[12px] text-muted">
+                  <div className="mt-2.5 pt-2 border-t border-line text-[13px] text-muted">
                     💡 <strong>Fokus:</strong> Validasi empiris dominasi paparan media sosial terhadap keputusan transaksi saham kalangan Generasi Z.
                   </div>
                 </div>
@@ -538,7 +515,7 @@ export default function LandingPage({
 
             {/* 2. Data Statistik & Publikasi Katadata */}
             <div className="mt-5 pt-4 border-t border-line space-y-3">
-              <p className="text-xs font-semibold text-ink flex items-center gap-1.5">
+              <p className="text-sm font-semibold text-ink flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-navy" />
                 <span>Publikasi Data Statistik & Analisis Pasar (Katadata)</span>
               </p>
@@ -552,19 +529,19 @@ export default function LandingPage({
                 >
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="px-2 py-0.5 rounded text-[12px] font-semibold bg-card text-muted border border-line">
+                      <span className="px-2 py-0.5 rounded text-[13px] font-semibold bg-card text-muted border border-line">
                         Katadata Databoks (Statistik KSEI / BEI)
                       </span>
                       <ExternalLink className="w-3.5 h-3.5 text-muted group-hover:text-navy transition" />
                     </div>
-                    <p className="text-xs font-bold text-ink group-hover:text-navy transition mt-1">
+                    <p className="text-sm font-bold text-ink group-hover:text-navy transition mt-1">
                       Gen Z dan Milenial Mendominasi Investor Pasar Modal di Indonesia
                     </p>
-                    <p className="text-[12px] text-muted mt-1">
+                    <p className="text-[13px] text-muted mt-1">
                       Data demografi resmi bursa: Gen Z (&lt;30 tahun) mendominasi lebih dari 54%–55% jumlah investor pasar modal Indonesia.
                     </p>
                   </div>
-                  <span className="mt-2.5 text-[12px] text-navy font-mono group-hover:underline flex items-center gap-1">
+                  <span className="mt-2.5 text-[13px] text-navy font-mono group-hover:underline flex items-center gap-1">
                     <span>databoks.katadata.co.id/pasar/statistik/...</span>
                     <span>↗</span>
                   </span>
@@ -578,19 +555,19 @@ export default function LandingPage({
                 >
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="px-2 py-0.5 rounded text-[12px] font-semibold bg-card text-muted border border-line">
+                      <span className="px-2 py-0.5 rounded text-[13px] font-semibold bg-card text-muted border border-line">
                         Katadata Opini (Indepth Analysis)
                       </span>
                       <ExternalLink className="w-3.5 h-3.5 text-muted group-hover:text-navy transition" />
                     </div>
-                    <p className="text-xs font-bold text-ink group-hover:text-navy transition mt-1">
+                    <p className="text-sm font-bold text-ink group-hover:text-navy transition mt-1">
                       Membangun Fondasi Investasi Gen Z Sejak Dini
                     </p>
-                    <p className="text-[12px] text-muted mt-1">
+                    <p className="text-[13px] text-muted mt-1">
                       Analisis urgensi membekali generasi muda dengan literasi fundamental, pengelolaan risiko, dan data pasar riil sebelum melakukan transaksi saham.
                     </p>
                   </div>
-                  <span className="mt-2.5 text-[12px] text-navy font-mono group-hover:underline flex items-center gap-1">
+                  <span className="mt-2.5 text-[13px] text-navy font-mono group-hover:underline flex items-center gap-1">
                     <span>katadata.co.id/indepth/opini/...</span>
                     <span>↗</span>
                   </span>
@@ -602,18 +579,12 @@ export default function LandingPage({
       </section>
 
       {/* ─── 3. Konsep & Arsitektur (Solusi Ringkas) ─────────── */}
-      <section className="py-16 md:py-20 border-b border-line">
+      <section className="py-20 md:py-28 bg-[var(--paper-2)]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-10">
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full border border-line bg-card text-muted">
-              Konsep & Arsitektur
-            </span>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-head font-extrabold text-ink mt-3 leading-tight">
-              Katalis + Data (Sectors.app) + LLM AI + Otomasi = Konten Finansial Berkualitas dan Dipahami Gen Z
-            </h2>
-            <p className="text-sm sm:text-base text-muted mt-3">
-              Diagram alur kerja otonom SahamFYP: menghubungkan LLM AI, Sectors.app REST API, dan n8n orchestrator langsung ke multi-kanal media sosial publik.
-            </p>
+          <div className="max-w-3xl mb-10">
+            <p className="text-base font-semibold text-navy">Solusinya</p>
+            <h2 className="mt-2 font-head font-extrabold tracking-tight leading-[1.08] text-3xl sm:text-4xl md:text-5xl text-ink">Data resmi, AI, dan otomasi mengubah berita mentah jadi konten yang mudah dipahami</h2>
+            <p className="mt-4 text-base sm:text-lg text-muted leading-relaxed">Sectors.app menyediakan datanya, AI membedahnya, n8n mengirimnya ke semua akun. Tanpa kerja manual.</p>
           </div>
 
           {/* Architecture Diagram Card */}
@@ -629,41 +600,41 @@ export default function LandingPage({
             {/* 4 Pillars Summary */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
               <div className="bg-paper p-4 rounded-lg border border-line">
-                <div className="flex items-center gap-2 text-ink font-head font-bold text-xs">
+                <div className="flex items-center gap-2 text-ink font-head font-bold text-sm">
                   <Cpu className="w-4 h-4 text-navy" />
                   <span>1. AI & Reasoning</span>
                 </div>
-                <p className="text-xs text-muted mt-1.5 leading-relaxed">
+                <p className="text-sm text-muted mt-1.5 leading-relaxed">
                   Sumopod / Gemini LLM untuk riset berita, klasifikasi emiten, dan generator naskah edukatif.
                 </p>
               </div>
 
               <div className="bg-paper p-4 rounded-lg border border-line">
-                <div className="flex items-center gap-2 text-ink font-head font-bold text-xs">
+                <div className="flex items-center gap-2 text-ink font-head font-bold text-sm">
                   <Database className="w-4 h-4 text-navy" />
                   <span>2. Sectors.app API</span>
                 </div>
-                <p className="text-xs text-muted mt-1.5 leading-relaxed">
+                <p className="text-sm text-muted mt-1.5 leading-relaxed">
                   Pasokan data resmi sektor, valuasi fundamental (PER, PBV, ROE, DER), serta top changes pasar.
                 </p>
               </div>
 
               <div className="bg-paper p-4 rounded-lg border border-line">
-                <div className="flex items-center gap-2 text-ink font-head font-bold text-xs">
+                <div className="flex items-center gap-2 text-ink font-head font-bold text-sm">
                   <Workflow className="w-4 h-4 text-navy" />
                   <span>3. n8n Orchestration</span>
                 </div>
-                <p className="text-xs text-muted mt-1.5 leading-relaxed">
+                <p className="text-sm text-muted mt-1.5 leading-relaxed">
                   Automasi alur kerja harian tanpa operator: trigger sesi open/close, render gambar, dan logging.
                 </p>
               </div>
 
               <div className="bg-paper p-4 rounded-lg border border-line">
-                <div className="flex items-center gap-2 text-ink font-head font-bold text-xs">
+                <div className="flex items-center gap-2 text-ink font-head font-bold text-sm">
                   <Share2 className="w-4 h-4 text-navy" />
                   <span>4. Multi-Publishing</span>
                 </div>
-                <p className="text-xs text-muted mt-1.5 leading-relaxed">
+                <p className="text-sm text-muted mt-1.5 leading-relaxed">
                   Distribusi otomatis via Repliz API ke Instagram, TikTok, Threads, Facebook, dan Telegram.
                 </p>
               </div>
@@ -675,20 +646,13 @@ export default function LandingPage({
       {/* ─── 4. INTERACTIVE CAROUSEL SHOWCASE (PRODUK UTAMA) ──── */}
       <section
         id="product-showcase"
-        className="py-16 md:py-20 border-b border-line scroll-mt-12"
+        className="py-20 md:py-28 bg-paper scroll-mt-12"
       >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-card border border-line text-muted text-xs font-semibold mb-3">
-              <Sparkles className="w-3.5 h-3.5 text-gold" />
-              <span>Showcase Produk Utama • Live Rendered Pipeline</span>
-            </div>
-            <h2 className="text-2xl sm:text-4xl font-head font-extrabold text-ink">
-              Wujud Nyata Postingan yang Dihasilkan Sistem
-            </h2>
-            <p className="text-sm sm:text-base text-muted mt-3 leading-relaxed">
-              Aset visual beresolusi tinggi (rasio 4:5 / 1080×1350) yang di-generate oleh engine SahamFYP dan diterbitkan secara otonom ke feed Instagram. Klik slide untuk melihat anatomi data:
-            </p>
+          <div className="max-w-3xl mb-10">
+            <p className="text-base font-semibold text-navy">Hasilnya</p>
+            <h2 className="mt-2 font-head font-extrabold tracking-tight leading-[1.08] text-3xl sm:text-4xl md:text-5xl text-ink">Ini postingan yang dihasilkan sistem</h2>
+            <p className="mt-4 text-base sm:text-lg text-muted leading-relaxed">Rasio 4:5 (1080×1350), terbit otomatis di feed Instagram. Klik slide untuk melihat anatomi datanya.</p>
 
             {/* Case Study Switcher Tabs */}
             <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
@@ -701,7 +665,7 @@ export default function LandingPage({
                       setActiveCaseIndex(idx);
                       setActiveSlideIndex(0);
                     }}
-                    className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center gap-2 ${
+                    className={`px-4 py-2 rounded-lg text-sm sm:text-sm font-semibold transition flex items-center gap-2 ${
                       isActive
                         ? 'bg-navy text-on-navy shadow-sm'
                         : 'bg-card hover:bg-paper text-ink border border-line'
@@ -714,7 +678,7 @@ export default function LandingPage({
                       {item.category === 'catalyst' && '⚡'}
                     </span>
                     <span className="font-mono">{item.id === 'market-brief' ? 'Daily Market Brief' : `$${item.ticker}`}</span>
-                    <span className="opacity-80 text-[12px] hidden sm:inline">
+                    <span className="opacity-80 text-[13px] hidden sm:inline">
                       ({item.category === 'brief'
                         ? 'Market Open'
                         : item.category === 'green'
@@ -751,13 +715,13 @@ export default function LandingPage({
                       />
                       <div>
                         <div className="flex items-center gap-1">
-                          <span className="text-xs font-bold text-ink">sahamfyp.id</span>
-                          <span className="w-3.5 h-3.5 rounded-full bg-navy text-[9px] flex items-center justify-center font-bold text-on-navy">✓</span>
+                          <span className="text-sm font-bold text-ink">sahamfyp.id</span>
+                          <span className="w-3.5 h-3.5 rounded-full bg-navy text-xs flex items-center justify-center font-bold text-on-navy">✓</span>
                         </div>
-                        <p className="text-[12px] text-muted -mt-0.5">Sectors API Verified</p>
+                        <p className="text-[13px] text-muted -mt-0.5">Sectors API Verified</p>
                       </div>
                     </div>
-                    <span className="text-[12px] text-muted font-mono bg-paper px-2 py-0.5 rounded-full border border-line">
+                    <span className="text-[13px] text-muted font-mono bg-paper px-2 py-0.5 rounded-full border border-line">
                       {activeSlideIndex + 1}/{currentCase.totalSlides}
                     </span>
                   </div>
@@ -802,15 +766,15 @@ export default function LandingPage({
 
                   {/* Mockup Instagram Feed Caption footer */}
                   <div className="px-4 pt-2.5 pb-1 bg-card border-t border-line">
-                    <div className="flex items-center justify-between text-xs text-muted mb-1.5">
+                    <div className="flex items-center justify-between text-sm text-muted mb-1.5">
                       <div className="flex items-center gap-3">
                         <span className="hover:text-ink cursor-pointer">❤️ Suka</span>
                         <span className="hover:text-ink cursor-pointer">💬 Komentar</span>
                         <span className="hover:text-ink cursor-pointer">↗️ Bagikan</span>
                       </div>
-                      <span className="text-[12px] text-muted">100% Otonom</span>
+                      <span className="text-[13px] text-muted">100% Otonom</span>
                     </div>
-                    <p className="text-[12px] text-ink leading-snug line-clamp-2">
+                    <p className="text-[13px] text-ink leading-snug line-clamp-2">
                       <strong className="text-ink">sahamfyp.id</strong> {currentCase.title} — {currentCase.summary}
                     </p>
                   </div>
@@ -822,10 +786,10 @@ export default function LandingPage({
             <div className="lg:col-span-6 space-y-4">
               <div className="bg-card p-5 rounded-xl border border-line">
                 <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
-                  <span className={`text-[12px] uppercase font-bold tracking-wider px-3 py-0.5 rounded-full border ${currentCase.badgeBg}`}>
+                  <span className={`text-[13px] uppercase font-bold tracking-wider px-3 py-0.5 rounded-full border ${currentCase.badgeBg}`}>
                     {currentCase.badge}
                   </span>
-                  <span className="text-[12px] font-mono text-muted">
+                  <span className="text-[13px] font-mono text-muted">
                     Format: 1080×1350 Carousel
                   </span>
                 </div>
@@ -833,7 +797,7 @@ export default function LandingPage({
                 <h3 className="text-xl sm:text-2xl font-head font-bold text-ink mt-1">
                   {currentCase.id === 'market-brief' ? currentCase.name : `$${currentCase.ticker} — ${currentCase.name}`}
                 </h3>
-                <p className="text-xs sm:text-sm text-muted mt-2 leading-relaxed">
+                <p className="text-sm sm:text-sm text-muted mt-2 leading-relaxed">
                   {currentCase.summary}
                 </p>
               </div>
@@ -841,11 +805,11 @@ export default function LandingPage({
               {/* Anatomy Slide Selector (Click to navigate slide) */}
               <div className="bg-card p-4 sm:p-5 rounded-xl border border-line">
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-xs font-bold text-ink uppercase tracking-wider flex items-center gap-1.5">
+                  <h4 className="text-sm font-bold text-ink  flex items-center gap-1.5">
                     <Database className="w-3.5 h-3.5 text-navy" />
                     <span>Anatomi {currentCase.totalSlides} Slide (Pilih Slide):</span>
                   </h4>
-                  <span className="text-[12px] font-mono text-muted">
+                  <span className="text-[13px] font-mono text-muted">
                     Slide {activeSlideIndex + 1} aktif
                   </span>
                 </div>
@@ -857,14 +821,14 @@ export default function LandingPage({
                       <button
                         key={idx}
                         onClick={() => setActiveSlideIndex(idx)}
-                        className={`text-left p-2.5 rounded-lg border text-xs transition flex items-start gap-2.5 ${
+                        className={`text-left p-2.5 rounded-lg border text-sm transition flex items-start gap-2.5 ${
                           isSelected
                             ? 'bg-navy text-on-navy border-navy shadow-sm'
                             : 'bg-paper hover:bg-card border-line text-ink'
                         }`}
                       >
                         <span
-                          className={`w-5 h-5 rounded flex items-center justify-center text-[12px] font-mono font-bold shrink-0 mt-0.5 ${
+                          className={`w-5 h-5 rounded flex items-center justify-center text-[13px] font-mono font-bold shrink-0 mt-0.5 ${
                             isSelected ? 'bg-paper text-navy' : 'bg-card text-muted border border-line'
                           }`}
                         >
@@ -872,7 +836,7 @@ export default function LandingPage({
                         </span>
                         <div>
                           <p className="font-semibold leading-tight">{lbl.title}</p>
-                          <p className={`text-[12px] mt-0.5 leading-snug line-clamp-1 ${isSelected ? 'text-on-navy/80' : 'text-muted'}`}>
+                          <p className={`text-[13px] mt-0.5 leading-snug line-clamp-1 ${isSelected ? 'text-on-navy/80' : 'text-muted'}`}>
                             {lbl.desc}
                           </p>
                         </div>
@@ -881,8 +845,8 @@ export default function LandingPage({
                   })}
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-line flex items-center justify-between text-xs">
-                  <span className="text-[12px] text-muted">
+                <div className="mt-4 pt-3 border-t border-line flex items-center justify-between text-sm">
+                  <span className="text-[13px] text-muted">
                     Terhubung otomatis ke Instagram, Threads, TikTok & Telegram
                   </span>
                   <a
@@ -902,18 +866,12 @@ export default function LandingPage({
       </section>
 
       {/* ─── 5. Akun Publik 100% Otonom (Bukti Eksekusi) ─────── */}
-      <section id="social-accounts" className="py-16 md:py-20 border-b border-line scroll-mt-10">
+      <section id="social-accounts" className="py-20 md:py-28 bg-[var(--paper-2)] scroll-mt-10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full border border-line bg-card text-muted">
-              Bukti Eksekusi Nyata
-            </span>
-            <h2 className="text-2xl sm:text-4xl font-head font-extrabold text-ink mt-3">
-              Akun Publik yang Berjalan 100% Otonom
-            </h2>
-            <p className="text-sm text-muted mt-2 leading-relaxed">
-              Seluruh kanal media sosial berikut aktif menerima konten hasil automasi pipeline SahamFYP secara berkala tanpa intervensi manual. Silakan kunjungi profil langsung untuk melihat hasil postingan live:
-            </p>
+          <div className="max-w-3xl mb-12">
+            <p className="text-base font-semibold text-navy">Buktinya</p>
+            <h2 className="mt-2 font-head font-extrabold tracking-tight leading-[1.08] text-3xl sm:text-4xl md:text-5xl text-ink">Semua akun ini berjalan otomatis</h2>
+            <p className="mt-4 text-base sm:text-lg text-muted leading-relaxed">Setiap kanal menerima konten dari pipeline SahamFYP secara berkala. Kunjungi profilnya dan lihat sendiri.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -924,7 +882,7 @@ export default function LandingPage({
                   <div className="w-10 h-10 rounded-lg bg-paper border border-line flex items-center justify-center text-navy">
                     <Instagram className="w-5 h-5" />
                   </div>
-                  <span className="text-[12px] font-medium px-2.5 py-0.5 rounded-full bg-paper text-muted border border-line">
+                  <span className="text-[13px] font-medium px-2.5 py-0.5 rounded-full bg-paper text-muted border border-line">
                     Feed Carousel
                   </span>
                 </div>
@@ -932,13 +890,13 @@ export default function LandingPage({
                 <h3 className="text-lg font-head font-bold text-ink">
                   Instagram
                 </h3>
-                <p className="text-xs font-mono text-muted mt-0.5">@sahamfyp.id</p>
+                <p className="text-sm font-mono text-muted mt-0.5">@sahamfyp.id</p>
 
-                <p className="text-xs text-muted mt-2.5 leading-relaxed">
+                <p className="text-sm text-muted mt-2.5 leading-relaxed">
                   Pusat rilis carousel visual resolusi tinggi (1080×1350) untuk ringkasan <strong>Market Open</strong>, bedah katalis 3W (What, Why, What's Next), dan peringatan anti-FOMO harian.
                 </p>
 
-                <div className="mt-4 p-3 bg-paper rounded-lg border border-line text-[12px] text-muted space-y-1">
+                <div className="mt-4 p-3 bg-paper rounded-lg border border-line text-[13px] text-muted space-y-1">
                   <div className="flex items-center justify-between">
                     <span>Jadwal Terbit:</span>
                     <span className="text-ink font-semibold">08:00 WIB & Breaking</span>
@@ -955,7 +913,7 @@ export default function LandingPage({
                   href="https://instagram.com/sahamfyp.id"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-2.5 px-4 bg-navy hover:bg-[#1c3563] text-on-navy font-body font-semibold rounded-lg text-xs transition flex items-center justify-center gap-2"
+                  className="w-full py-2.5 px-4 bg-navy hover:bg-[#1c3563] text-on-navy font-body font-semibold rounded-lg text-sm transition flex items-center justify-center gap-2"
                 >
                   <span>Buka Profil Instagram</span>
                   <ExternalLink className="w-3.5 h-3.5" />
@@ -970,7 +928,7 @@ export default function LandingPage({
                   <div className="w-10 h-10 rounded-lg bg-paper border border-line flex items-center justify-center text-navy">
                     <AtSign className="w-5 h-5" />
                   </div>
-                  <span className="text-[12px] font-medium px-2.5 py-0.5 rounded-full bg-paper text-muted border border-line">
+                  <span className="text-[13px] font-medium px-2.5 py-0.5 rounded-full bg-paper text-muted border border-line">
                     Microblogging
                   </span>
                 </div>
@@ -978,13 +936,13 @@ export default function LandingPage({
                 <h3 className="text-lg font-head font-bold text-ink">
                   Threads
                 </h3>
-                <p className="text-xs font-mono text-muted mt-0.5">@sahamfyp.id</p>
+                <p className="text-sm font-mono text-muted mt-0.5">@sahamfyp.id</p>
 
-                <p className="text-xs text-muted mt-2.5 leading-relaxed">
+                <p className="text-sm text-muted mt-2.5 leading-relaxed">
                   Rilis utas (thread) poin-poin penting katalis bursa saham, ringkasan pergerakan IHSG harian, dan forum diskusi santai bagi investor muda.
                 </p>
 
-                <div className="mt-4 p-3 bg-paper rounded-lg border border-line text-[12px] text-muted space-y-1">
+                <div className="mt-4 p-3 bg-paper rounded-lg border border-line text-[13px] text-muted space-y-1">
                   <div className="flex items-center justify-between">
                     <span>Jadwal Terbit:</span>
                     <span className="text-ink font-semibold">Simultan dg Instagram</span>
@@ -1001,7 +959,7 @@ export default function LandingPage({
                   href="https://www.threads.com/@sahamfyp.id"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-2.5 px-4 bg-navy hover:bg-[#1c3563] text-on-navy font-body font-semibold rounded-lg text-xs transition flex items-center justify-center gap-2"
+                  className="w-full py-2.5 px-4 bg-navy hover:bg-[#1c3563] text-on-navy font-body font-semibold rounded-lg text-sm transition flex items-center justify-center gap-2"
                 >
                   <span>Buka Profil Threads</span>
                   <ExternalLink className="w-3.5 h-3.5" />
@@ -1016,7 +974,7 @@ export default function LandingPage({
                   <div className="w-10 h-10 rounded-lg bg-paper border border-line flex items-center justify-center text-navy">
                     <Music className="w-5 h-5" />
                   </div>
-                  <span className="text-[12px] font-medium px-2.5 py-0.5 rounded-full bg-paper text-muted border border-line">
+                  <span className="text-[13px] font-medium px-2.5 py-0.5 rounded-full bg-paper text-muted border border-line">
                     Slide Mode
                   </span>
                 </div>
@@ -1024,13 +982,13 @@ export default function LandingPage({
                 <h3 className="text-lg font-head font-bold text-ink">
                   TikTok
                 </h3>
-                <p className="text-xs font-mono text-muted mt-0.5">@sahamfyp.id</p>
+                <p className="text-sm font-mono text-muted mt-0.5">@sahamfyp.id</p>
 
-                <p className="text-xs text-muted mt-2.5 leading-relaxed">
+                <p className="text-sm text-muted mt-2.5 leading-relaxed">
                   Format carousel slide interaktif vertikal yang cepat dinavigasi (<em>swipe</em>), menyasar langsung demografi Gen Z pada platform video pendek.
                 </p>
 
-                <div className="mt-4 p-3 bg-paper rounded-lg border border-line text-[12px] text-muted space-y-1">
+                <div className="mt-4 p-3 bg-paper rounded-lg border border-line text-[13px] text-muted space-y-1">
                   <div className="flex items-center justify-between">
                     <span>Jadwal Terbit:</span>
                     <span className="text-ink font-semibold">Pagi & Sore Bursa</span>
@@ -1047,7 +1005,7 @@ export default function LandingPage({
                   href="https://tiktok.com/@sahamfyp.id"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-2.5 px-4 bg-navy hover:bg-[#1c3563] text-on-navy font-body font-semibold rounded-lg text-xs transition flex items-center justify-center gap-2"
+                  className="w-full py-2.5 px-4 bg-navy hover:bg-[#1c3563] text-on-navy font-body font-semibold rounded-lg text-sm transition flex items-center justify-center gap-2"
                 >
                   <span>Buka Profil TikTok</span>
                   <ExternalLink className="w-3.5 h-3.5" />
@@ -1062,7 +1020,7 @@ export default function LandingPage({
                   <div className="w-10 h-10 rounded-lg bg-paper border border-line flex items-center justify-center text-navy">
                     <Facebook className="w-5 h-5" />
                   </div>
-                  <span className="text-[12px] font-medium px-2.5 py-0.5 rounded-full bg-paper text-muted border border-line">
+                  <span className="text-[13px] font-medium px-2.5 py-0.5 rounded-full bg-paper text-muted border border-line">
                     Halaman Publik
                   </span>
                 </div>
@@ -1070,13 +1028,13 @@ export default function LandingPage({
                 <h3 className="text-lg font-head font-bold text-ink">
                   Facebook Page
                 </h3>
-                <p className="text-xs font-mono text-muted mt-0.5">sahamfyp.id</p>
+                <p className="text-sm font-mono text-muted mt-0.5">sahamfyp.id</p>
 
-                <p className="text-xs text-muted mt-2.5 leading-relaxed">
+                <p className="text-sm text-muted mt-2.5 leading-relaxed">
                   Postingan multi-gambar album lengkap dengan caption panjang berisi analisis fundamental, analogi Gen Z, dan disclaimer edukasi resmi.
                 </p>
 
-                <div className="mt-4 p-3 bg-paper rounded-lg border border-line text-[12px] text-muted space-y-1">
+                <div className="mt-4 p-3 bg-paper rounded-lg border border-line text-[13px] text-muted space-y-1">
                   <div className="flex items-center justify-between">
                     <span>Jadwal Terbit:</span>
                     <span className="text-ink font-semibold">Otomatis Terjadwal</span>
@@ -1093,7 +1051,7 @@ export default function LandingPage({
                   href="https://facebook.com/sahamfyp.id"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-2.5 px-4 bg-navy hover:bg-[#1c3563] text-on-navy font-body font-semibold rounded-lg text-xs transition flex items-center justify-center gap-2"
+                  className="w-full py-2.5 px-4 bg-navy hover:bg-[#1c3563] text-on-navy font-body font-semibold rounded-lg text-sm transition flex items-center justify-center gap-2"
                 >
                   <span>Buka Halaman Facebook</span>
                   <ExternalLink className="w-3.5 h-3.5" />
@@ -1108,7 +1066,7 @@ export default function LandingPage({
                   <div className="w-10 h-10 rounded-lg bg-paper border border-line flex items-center justify-center text-navy">
                     <Send className="w-5 h-5" />
                   </div>
-                  <span className="text-[12px] font-medium px-2.5 py-0.5 rounded-full bg-paper text-muted border border-line">
+                  <span className="text-[13px] font-medium px-2.5 py-0.5 rounded-full bg-paper text-muted border border-line">
                     Instant Channel
                   </span>
                 </div>
@@ -1116,13 +1074,13 @@ export default function LandingPage({
                 <h3 className="text-lg font-head font-bold text-ink">
                   Telegram Channel & Broadcast
                 </h3>
-                <p className="text-xs font-mono text-muted mt-0.5">@sahamfyp (t.me/sahamfyp)</p>
+                <p className="text-sm font-mono text-muted mt-0.5">@sahamfyp (t.me/sahamfyp)</p>
 
-                <p className="text-xs text-muted mt-2.5 leading-relaxed">
+                <p className="text-sm text-muted mt-2.5 leading-relaxed">
                   Saluran siaran tercepat: mengirimkan gambar carousel resolusi asli tanpa kompresi, sinyal katalis berita mendadak, serta laporan log eksekusi otomatis pipeline sebagai bukti <em>unattended execution</em> tanpa operator.
                 </p>
 
-                <div className="mt-4 p-3 bg-paper rounded-lg border border-line text-[12px] text-muted grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="mt-4 p-3 bg-paper rounded-lg border border-line text-[13px] text-muted grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div className="flex items-center justify-between">
                     <span>Jadwal Terbit:</span>
                     <span className="text-ink font-semibold">Real-time & Harian</span>
@@ -1139,7 +1097,7 @@ export default function LandingPage({
                   href="https://t.me/sahamfyp"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-2.5 px-4 bg-navy hover:bg-[#1c3563] text-on-navy font-body font-semibold rounded-lg text-xs transition flex items-center justify-center gap-2"
+                  className="w-full py-2.5 px-4 bg-navy hover:bg-[#1c3563] text-on-navy font-body font-semibold rounded-lg text-sm transition flex items-center justify-center gap-2"
                 >
                   <span>Gabung ke Telegram Channel @sahamfyp</span>
                   <ExternalLink className="w-3.5 h-3.5" />
@@ -1151,52 +1109,46 @@ export default function LandingPage({
       </section>
 
       {/* ─── 6. Core Logic & Anti-FOMO Red Flag (Deep Dive) ──── */}
-      <section className="py-16 md:py-20 border-b border-line">
+      <section className="py-20 md:py-28 bg-paper">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
             <div>
-              <span className="text-xs font-semibold px-2.5 py-1 rounded-full border border-line bg-card text-muted">
-                Core Logic & AI Reasoning
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-head font-extrabold text-ink mt-3 leading-snug">
-                Framework Ekstraksi 3W (What, Why, What's Next) & Sistem Deteksi Red Flag
-              </h2>
-              <p className="text-sm sm:text-base text-muted mt-3 leading-relaxed">
-                Bukan sekadar menulis ulang berita (<em>rewrite</em>), AI SahamFYP mengekstrak intisari peristiwa menjadi 3 pilar utama: <strong>What – Why – What's Next</strong>, lalu memvalidasinya dengan metrik keuangan resmi dari Sectors API:
-              </p>
+              <p className="text-base font-semibold text-navy">Cara berpikirnya</p>
+            <h2 className="mt-2 font-head font-extrabold tracking-tight leading-[1.08] text-3xl sm:text-4xl md:text-5xl text-ink">Setiap berita dibedah dengan tiga pertanyaan</h2>
+            <p className="mt-4 text-base sm:text-lg text-muted leading-relaxed">What: apa yang terjadi. Why: kenapa penting. What's Next: apa yang perlu dipantau. Lalu sistem red flag memeriksa risikonya secara objektif.</p>
 
               <div className="space-y-3 mt-6">
                 <div className="flex items-start gap-3 bg-card p-3.5 rounded-lg border border-line">
-                  <div className="w-7 h-7 rounded bg-paper border border-line text-navy font-head font-bold flex items-center justify-center shrink-0 text-xs">
+                  <div className="w-7 h-7 rounded bg-paper border border-line text-navy font-head font-bold flex items-center justify-center shrink-0 text-sm">
                     1
                   </div>
                   <div>
                     <h4 className="text-sm font-head font-bold text-ink">WHAT — Peristiwa Nyata</h4>
-                    <p className="text-xs text-muted mt-0.5">
+                    <p className="text-sm text-muted mt-0.5">
                       Fakta konkret aksi korporasi, keterbukaan informasi (filings) BEI, kontrak baru, atau rilis laporan keuangan emiten.
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3 bg-card p-3.5 rounded-lg border border-line">
-                  <div className="w-7 h-7 rounded bg-paper border border-line text-navy font-head font-bold flex items-center justify-center shrink-0 text-xs">
+                  <div className="w-7 h-7 rounded bg-paper border border-line text-navy font-head font-bold flex items-center justify-center shrink-0 text-sm">
                     2
                   </div>
                   <div>
                     <h4 className="text-sm font-head font-bold text-ink">WHY — Konteks & Pendorong</h4>
-                    <p className="text-xs text-muted mt-0.5">
+                    <p className="text-sm text-muted mt-0.5">
                       Mengapa katalis tersebut terjadi: pemicu industri makro, lonjakan harga komoditas acuan, ekspansi kapasitas, atau restrukturisasi utang.
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3 bg-card p-3.5 rounded-lg border border-line">
-                  <div className="w-7 h-7 rounded bg-paper border border-line text-navy font-head font-bold flex items-center justify-center shrink-0 text-xs">
+                  <div className="w-7 h-7 rounded bg-paper border border-line text-navy font-head font-bold flex items-center justify-center shrink-0 text-sm">
                     3
                   </div>
                   <div>
                     <h4 className="text-sm font-head font-bold text-ink">WHAT'S NEXT — Langkah Selanjutnya & Proyeksi Risiko</h4>
-                    <p className="text-xs text-muted mt-0.5">
+                    <p className="text-sm text-muted mt-0.5">
                       Bukan sekadar dampak sesaat, melainkan apa langkah ke depan bagi investor: verifikasi data fundamental & teknikal Sectors API, level pantauan kunci, dan peringatan risiko jika emiten tidak sehat.
                     </p>
                   </div>
@@ -1212,7 +1164,7 @@ export default function LandingPage({
                   <span className="w-2.5 h-2.5 rounded-full bg-warn inline-block" />
                   <span className="w-2.5 h-2.5 rounded-full bg-down inline-block" />
                 </div>
-                <span className="text-[12px] text-muted font-mono font-medium">Anti-FOMO Guard • Active</span>
+                <span className="text-[13px] text-muted font-mono font-medium">Anti-FOMO Guard • Active</span>
               </div>
 
               <div className="mt-5 space-y-4">
@@ -1221,13 +1173,13 @@ export default function LandingPage({
                     <AlertTriangle className="w-4 h-4" />
                     <span>CONTOH PERINGATAN RED FLAG (WARNING)</span>
                   </div>
-                  <p className="text-xs text-ink mt-2">
+                  <p className="text-sm text-ink mt-2">
                     <em>"Emiten XYZ sedang viral di medsos karena isu merger. Namun data Sectors API mencatat Debt-to-Equity (DER) mencapai 4.8x dan Net Income masih merugi -Rp120 Miliar. Waspada jebakan FOMO!"</em>
                   </p>
                   <div className="mt-3 flex gap-2 flex-wrap">
-                    <span className="text-[12px] bg-card border border-[#F5C2BE] text-down px-2 py-0.5 rounded font-mono font-medium">DER: 4.8x (High)</span>
-                    <span className="text-[12px] bg-card border border-[#F5C2BE] text-down px-2 py-0.5 rounded font-mono font-medium">Valuasi: Bubble</span>
-                    <span className="text-[12px] bg-card border border-[#F5C2BE] text-down px-2 py-0.5 rounded font-mono font-medium">Status: Warning</span>
+                    <span className="text-[13px] bg-card border border-[#F5C2BE] text-down px-2 py-0.5 rounded font-mono font-medium">DER: 4.8x (High)</span>
+                    <span className="text-[13px] bg-card border border-[#F5C2BE] text-down px-2 py-0.5 rounded font-mono font-medium">Valuasi: Bubble</span>
+                    <span className="text-[13px] bg-card border border-[#F5C2BE] text-down px-2 py-0.5 rounded font-mono font-medium">Status: Warning</span>
                   </div>
                 </div>
 
@@ -1236,13 +1188,13 @@ export default function LandingPage({
                     <CheckCircle2 className="w-4 h-4" />
                     <span>CONTOH VALIDASI SEHAT (GREEN LIGHT)</span>
                   </div>
-                  <p className="text-xs text-ink mt-2">
+                  <p className="text-sm text-ink mt-2">
                     <em>"Katalis kontrak baru emiten ABC didukung oleh PER 7.2x (di bawah rata-rata sektor 14.1x) dan ROE konsisten di atas 18%. Fundamental solid dan terverifikasi."</em>
                   </p>
                   <div className="mt-3 flex gap-2 flex-wrap">
-                    <span className="text-[12px] bg-card border border-[#BDE8CB] text-up px-2 py-0.5 rounded font-mono font-medium">PER: 7.2x (Undervalued)</span>
-                    <span className="text-[12px] bg-card border border-[#BDE8CB] text-up px-2 py-0.5 rounded font-mono font-medium">ROE: &gt;18%</span>
-                    <span className="text-[12px] bg-card border border-[#BDE8CB] text-up px-2 py-0.5 rounded font-mono font-medium">Status: Green Light</span>
+                    <span className="text-[13px] bg-card border border-[#BDE8CB] text-up px-2 py-0.5 rounded font-mono font-medium">PER: 7.2x (Undervalued)</span>
+                    <span className="text-[13px] bg-card border border-[#BDE8CB] text-up px-2 py-0.5 rounded font-mono font-medium">ROE: &gt;18%</span>
+                    <span className="text-[13px] bg-card border border-[#BDE8CB] text-up px-2 py-0.5 rounded font-mono font-medium">Status: Green Light</span>
                   </div>
                 </div>
               </div>
@@ -1252,10 +1204,10 @@ export default function LandingPage({
       </section>
 
       {/* ─── 7. Data Source (Sectors.app REST API) ───────────── */}
-      <section className="py-16 md:py-20 border-b border-line">
+      <section className="py-20 md:py-28 bg-[var(--paper-2)]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-card border border-line rounded-xl p-6 sm:p-8">
-            <div className="flex items-center gap-2 text-navy font-head font-bold text-xs uppercase tracking-wider mb-2">
+            <div className="flex items-center gap-2 text-navy font-head font-bold text-sm  mb-2">
               <Database className="w-4 h-4" />
               <span>Core Data Source • Wajib & Tak Tergantikan</span>
             </div>
@@ -1264,39 +1216,39 @@ export default function LandingPage({
               Mengapa Sectors.app REST API Merupakan Jantung SahamFYP?
             </h2>
 
-            <blockquote className="mt-4 p-4 rounded-lg bg-paper border-l-4 border-navy text-ink text-xs sm:text-sm leading-relaxed italic">
+            <blockquote className="mt-4 p-4 rounded-lg bg-paper border-l-4 border-navy text-ink text-sm sm:text-sm leading-relaxed italic">
               "SahamFYP menggunakan Sectors REST API di setiap tahap alur — deteksi ticker, enrichment laporan keuangan & valuasi, ranking top movers berkapitalisasi wajar, hingga foreign flow dan kalkulasi teknikal Moving Average. <strong>Kalau data Sectors.app dicabut, produk ini kehilangan fungsi intinya</strong>: slide 4–6 di semua template konten bergantung penuh pada data tersebut untuk verifikasi faktual. Tanpa Sectors API, sistem hanya jadi rewrite berita tanpa nilai tambah — persis kebalikan dari misi produk ini."
             </blockquote>
 
             <div className="mt-6">
-              <h4 className="text-xs font-bold text-muted uppercase tracking-wider mb-3">
+              <h4 className="text-sm font-bold text-muted  mb-3">
                 Daftar Endpoint Resmi Sectors.app REST API yang Diintegrasikan:
               </h4>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs font-mono">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm font-mono">
                 <div className="bg-paper p-3 rounded-lg border border-line">
                   <span className="text-navy font-bold">/v2/company/report/{'{ticker}'}/</span>
-                  <p className="text-[12px] font-body text-muted mt-1">Laporan keuangan, PER, PBV, ROE, DER, Market Cap</p>
+                  <p className="text-[13px] font-body text-muted mt-1">Laporan keuangan, PER, PBV, ROE, DER, Market Cap</p>
                 </div>
                 <div className="bg-paper p-3 rounded-lg border border-line">
                   <span className="text-navy font-bold">/v2/daily/{'{ticker}'}/</span>
-                  <p className="text-[12px] font-body text-muted mt-1">Harga harian, volume transaksi, pergerakan MA harian</p>
+                  <p className="text-[13px] font-body text-muted mt-1">Harga harian, volume transaksi, pergerakan MA harian</p>
                 </div>
                 <div className="bg-paper p-3 rounded-lg border border-line">
                   <span className="text-navy font-bold">/v2/brokers/top/</span>
-                  <p className="text-[12px] font-body text-muted mt-1">Aktivitas akumulasi dan distribusi broker sekuritas</p>
+                  <p className="text-[13px] font-body text-muted mt-1">Aktivitas akumulasi dan distribusi broker sekuritas</p>
                 </div>
                 <div className="bg-paper p-3 rounded-lg border border-line">
                   <span className="text-navy font-bold">/v2/companies/top-changes/</span>
-                  <p className="text-[12px] font-body text-muted mt-1">Daftar top gainers & losers saham teraktif harian</p>
+                  <p className="text-[13px] font-body text-muted mt-1">Daftar top gainers & losers saham teraktif harian</p>
                 </div>
                 <div className="bg-paper p-3 rounded-lg border border-line">
                   <span className="text-navy font-bold">/v2/news/ & /v2/filings/</span>
-                  <p className="text-[12px] font-body text-muted mt-1">Keterbukaan informasi resmi BEI dan kurasi berita pasar</p>
+                  <p className="text-[13px] font-body text-muted mt-1">Keterbukaan informasi resmi BEI dan kurasi berita pasar</p>
                 </div>
                 <div className="bg-paper p-3 rounded-lg border border-line">
                   <span className="text-navy font-bold">/v2/index-daily/ihsg/</span>
-                  <p className="text-[12px] font-body text-muted mt-1">Data historis performa indeks gabungan IHSG</p>
+                  <p className="text-[13px] font-body text-muted mt-1">Data historis performa indeks gabungan IHSG</p>
                 </div>
               </div>
 
@@ -1305,7 +1257,7 @@ export default function LandingPage({
                   href="https://sectors.app/api"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-navy hover:underline transition"
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-navy hover:underline transition"
                 >
                   <span>Lihat Dokumentasi Sectors.app API</span>
                   <ExternalLink className="w-3.5 h-3.5" />
@@ -1317,18 +1269,12 @@ export default function LandingPage({
       </section>
 
       {/* ─── 8. Dashboard Internal Operator ─────────────────── */}
-      <section className="py-16 md:py-20 border-b border-line">
+      <section className="py-20 md:py-28 bg-paper">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full border border-line bg-card text-muted">
-              Tool Internal Operator & Otomasi Backend
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-head font-extrabold text-ink mt-3">
-              Sistem Operasional Operator End-to-End
-            </h2>
-            <p className="text-sm text-muted mt-2">
-              Cockpit kendali internal untuk kurasi berita pasar, validasi rasio Sectors API, generator konten visual, dan monitoring live status publikasi.
-            </p>
+          <div className="max-w-3xl mb-12">
+            <p className="text-base font-semibold text-navy">Di balik layar</p>
+            <h2 className="mt-2 font-head font-extrabold tracking-tight leading-[1.08] text-3xl sm:text-4xl md:text-5xl text-ink">Satu dashboard untuk mengendalikan semuanya</h2>
+            <p className="mt-4 text-base sm:text-lg text-muted leading-relaxed">Kurasi berita, validasi rasio, pembuat konten visual, dan status publikasi ada di satu tempat.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -1337,7 +1283,7 @@ export default function LandingPage({
                 <Newspaper className="w-5 h-5" />
               </div>
               <h3 className="text-base font-head font-bold text-ink">📡 News Monitoring Real-Time</h3>
-              <p className="text-xs text-muted mt-1.5 leading-relaxed">
+              <p className="text-sm text-muted mt-1.5 leading-relaxed">
                 Memantau feed RSS dari 8 media ekonomi terkemuka (Kontan, Bisnis.com, CNBC, Detik, dll) dan keterbukaan informasi BEI, diklasifikasikan dengan tagging sentimen Bullish/Bearish.
               </p>
             </div>
@@ -1347,7 +1293,7 @@ export default function LandingPage({
                 <BarChart3 className="w-5 h-5" />
               </div>
               <h3 className="text-base font-head font-bold text-ink">📈 Daily Market Brief</h3>
-              <p className="text-xs text-muted mt-1.5 leading-relaxed">
+              <p className="text-sm text-muted mt-1.5 leading-relaxed">
                 Ringkasan pasar sebelum jam bursa buka (08:00 WIB) dan pasca tutup (16:00 WIB), menganalisis kondisi IHSG harian, pergerakan sektor, dan foreign flow secara otomatis.
               </p>
             </div>
@@ -1357,7 +1303,7 @@ export default function LandingPage({
                 <Eye className="w-5 h-5" />
               </div>
               <h3 className="text-base font-head font-bold text-ink">👁️ Stock Watchlist & Evaluasi</h3>
-              <p className="text-xs text-muted mt-1.5 leading-relaxed">
+              <p className="text-sm text-muted mt-1.5 leading-relaxed">
                 Menyaring kandidat saham unggulan dengan perbandingan valuasi terhadap sektornya (PE vs Avg PE Sektor, PBV vs Avg PBV, ROE, DER, dan sinyal teknikal Moving Average).
               </p>
             </div>
@@ -1367,7 +1313,7 @@ export default function LandingPage({
                 <Share2 className="w-5 h-5" />
               </div>
               <h3 className="text-base font-head font-bold text-ink">🗂️ Posts & Live Sync Repliz</h3>
-              <p className="text-xs text-muted mt-1.5 leading-relaxed">
+              <p className="text-sm text-muted mt-1.5 leading-relaxed">
                 Manajemen seluruh konten terbit (otomatis n8n & manual generator) dengan sinkronisasi status antrean jadwal publikasi dan live link media sosial dari Repliz API.
               </p>
             </div>
@@ -1377,7 +1323,7 @@ export default function LandingPage({
                 <TrendingUp className="w-5 h-5" />
               </div>
               <h3 className="text-base font-head font-bold text-ink">✍️ Content Generator AI & Manual</h3>
-              <p className="text-xs text-muted mt-1.5 leading-relaxed">
+              <p className="text-sm text-muted mt-1.5 leading-relaxed">
                 Wizard pembuatan konten visual instan: LLM menyusun naskah carousel slide edukatif, kemudian dirender ke grafis beresolusi tinggi (1080x1350) siap publish.
               </p>
             </div>
@@ -1387,7 +1333,7 @@ export default function LandingPage({
                 <Workflow className="w-5 h-5" />
               </div>
               <h3 className="text-base font-head font-bold text-ink">🤖 100% Otonom via n8n</h3>
-              <p className="text-xs text-muted mt-1.5 leading-relaxed">
+              <p className="text-sm text-muted mt-1.5 leading-relaxed">
                 Dua workflow mandiri (Daily Market Brief & News Monitoring) yang berjalan terjadwal tanpa operator manusia, lengkap dengan bot alert status di Telegram.
               </p>
             </div>
@@ -1395,66 +1341,52 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* ─── 9. Final CTA Banner (Dual Call to Action) ───────── */}
+      {/* ─── 9. Penutup ───────────────────────────────────────── */}
       {!inDashboard && (
-        <section className="py-16 md:py-20 border-b border-line">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center bg-card border border-line rounded-xl p-8 sm:p-12">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-paper border border-line text-muted text-xs font-semibold mb-4">
-              <Sparkles className="w-3.5 h-3.5 text-gold" />
-              <span>Verifikasi Karya SahamFYP</span>
-            </div>
-
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-head font-extrabold text-ink tracking-tight">
-              Edukasi Publik di Medsos atau Buka Dashboard Monitoring
+        <section className="bg-[var(--brand-navy)] text-[var(--brand-cream)]">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+            <h2 className="font-head font-extrabold tracking-tight leading-[1.05] text-4xl sm:text-5xl md:text-6xl">
+              Sudah paham? Lihat hasilnya sendiri.
             </h2>
-            <p className="mt-3 text-sm text-muted max-w-xl mx-auto leading-relaxed">
-              Dua cara verifikasi karya ini: lihat hasil akhirnya di medsos, atau intip langsung dapur otomasinya di dashboard.
+            <p className="mt-5 text-lg opacity-90 max-w-xl leading-relaxed">
+              Buka postingannya di media sosial, atau intip dapur otomasinya di dashboard.
             </p>
-
-            {/* Dual Actions CTA: 1 Gold CTA + 1 Navy CTA */}
-            <div className="mt-7 flex flex-col sm:flex-row items-center justify-center gap-3.5 max-w-md mx-auto">
+            <div className="mt-9 flex flex-col sm:flex-row gap-3.5">
               <a
                 href="#product-showcase"
                 onClick={(e) => scrollToSection(e, 'product-showcase')}
-                className="w-full sm:w-auto py-3 px-6 bg-gold hover:bg-[#e09c00] text-ink font-body font-semibold rounded-lg text-sm transition shadow-sm flex items-center justify-center gap-2 active:scale-95 focus-visible:outline-3 focus-visible:outline-gold focus-visible:outline-offset-2"
+                className="py-3.5 px-7 bg-gold hover:bg-[#e09c00] text-[#0F1A30] font-body font-semibold rounded-lg text-base transition flex items-center justify-center gap-2 active:scale-95 focus-visible:outline-3 focus-visible:outline-gold focus-visible:outline-offset-2"
               >
                 <Smartphone className="w-4 h-4" />
-                <span>Lihat Hasil Postingan</span>
+                <span>Lihat hasil postingan</span>
                 <span>↓</span>
               </a>
-
               <button
                 onClick={handleLoginClick}
-                className="w-full sm:w-auto py-3 px-6 bg-navy hover:bg-[#1c3563] text-on-navy font-body font-semibold rounded-lg text-sm transition shadow-sm flex items-center justify-center gap-2 active:scale-95"
+                className="py-3.5 px-7 border border-[var(--brand-cream)]/40 hover:bg-white/10 text-[var(--brand-cream)] font-body font-semibold rounded-lg text-base transition flex items-center justify-center gap-2 active:scale-95"
               >
                 <BarChart3 className="w-4 h-4" />
-                <span>Buka Dashboard</span>
+                <span>Buka dashboard</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
-
             {onGoToLogin && (
-              <div className="mt-5 text-center">
-                <button
-                  onClick={onGoToLogin}
-                  className="text-muted hover:text-ink text-xs transition underline-offset-4 hover:underline"
-                >
-                  Akses login kredensial operator (opsional) →
-                </button>
-              </div>
+              <button onClick={onGoToLogin} className="mt-6 text-sm opacity-70 hover:opacity-100 underline underline-offset-4">
+                Login operator (opsional)
+              </button>
             )}
           </div>
         </section>
       )}
 
       {/* ─── Footer ─────────────────────────────────────────── */}
-      <footer className="py-8 text-center text-xs text-muted">
+      <footer className="py-8 text-center text-sm text-muted">
         <div className="flex items-center justify-center gap-2 mb-2">
           <img src="/logo-sahamfyp.png" alt="SahamFYP Logo" className="w-5 h-5 rounded-full object-cover border border-line" />
           <span className="font-head font-bold text-ink">SahamFYP</span>
         </div>
         <p>© 2026 SahamFYP. All rights reserved.</p>
-        <p className="mt-1 text-[12px] text-muted max-w-xl mx-auto">
+        <p className="mt-1 text-[13px] text-muted max-w-xl mx-auto">
           Disclaimer: Konten bersifat edukasi & verifikasi data publik pasar modal (DYOR). Bukan nasihat keuangan atau ajakan transaksi efek.
         </p>
       </footer>
