@@ -107,6 +107,17 @@ function getTodayStr() {
   }).format(new Date());
 }
 
+function getDaysAgoStr(days: number = 1) {
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jakarta',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(d);
+}
+
 export default function NewsMonitoring() {
   const navigate = useNavigate();
   const [rows, setRows] = React.useState<NewsItem[]>([]);
@@ -119,7 +130,7 @@ export default function NewsMonitoring() {
   const [tagFilter, setTagFilter] = React.useState<string | null>(null);
   const [sectorFilter, setSectorFilter] = React.useState<string | null>(null);
   const [symbolSearch, setSymbolSearch] = React.useState<string>('');
-  const [startDate, setStartDate] = React.useState<string>(getTodayStr());
+  const [startDate, setStartDate] = React.useState<string>(getDaysAgoStr(1));
   const [endDate, setEndDate] = React.useState<string>(getTodayStr());
   const [availableTags, setAvailableTags] = React.useState<string[]>([]);
   const [availableSectors, setAvailableSectors] = React.useState<string[]>([]);
@@ -133,15 +144,20 @@ export default function NewsMonitoring() {
       if (sectorFilter) query = query.eq('sector', sectorFilter);
       if (tagFilter) query = query.contains('tags', [tagFilter]);
       if (startDate && endDate) {
-        query = query
-          .gte('published_at', `${startDate}T00:00:00+07:00`)
-          .lte('published_at', `${endDate}T23:59:59+07:00`);
+        const start = `${startDate}T00:00:00+07:00`;
+        const end = `${endDate}T23:59:59+07:00`;
+        query = query.or(
+          `and(published_at.gte.${start},published_at.lte.${end}),and(created_at.gte.${start},created_at.lte.${end})`
+        );
       } else if (startDate) {
-        query = query
-          .gte('published_at', `${startDate}T00:00:00+07:00`)
-          .lte('published_at', `${startDate}T23:59:59+07:00`);
+        const start = `${startDate}T00:00:00+07:00`;
+        const end = `${startDate}T23:59:59+07:00`;
+        query = query.or(
+          `and(published_at.gte.${start},published_at.lte.${end}),and(created_at.gte.${start},created_at.lte.${end})`
+        );
       } else if (endDate) {
-        query = query.lte('published_at', `${endDate}T23:59:59+07:00`);
+        const end = `${endDate}T23:59:59+07:00`;
+        query = query.or(`published_at.lte.${end},created_at.lte.${end}`);
       }
 
       query = query.order('published_at', { ascending: false }).limit(200);
@@ -259,7 +275,7 @@ export default function NewsMonitoring() {
     setTagFilter(null);
     setSectorFilter(null);
     setSymbolSearch('');
-    setStartDate(getTodayStr());
+    setStartDate(getDaysAgoStr(1));
     setEndDate(getTodayStr());
   };
 
@@ -268,7 +284,7 @@ export default function NewsMonitoring() {
     tagFilter !== null ||
     sectorFilter !== null ||
     symbolSearch !== '' ||
-    startDate !== getTodayStr() ||
+    startDate !== getDaysAgoStr(1) ||
     endDate !== getTodayStr();
 
   return (
