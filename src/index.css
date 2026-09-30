@@ -2,8 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --paper: #F6F1E7;
+  --card: #FFFCF5;
+  --ink: #0F1A30;
+  --muted: #586074;
+  --line: #DDD5C4;
+  --navy: #14284B;
+  --on-navy: #F6F1E7;
+  --gold: #F2A900;
+  --up: #1B7F55;
+  --down: #C0392B;
+  --warn: #A86A00;
+  --head: 'Archivo', 'Arial Black', system-ui, sans-serif;
+  --body: 'IBM Plex Sans', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0C1424;
+    --card: #131E33;
+    --ink: #F1ECE0;
+    --muted: #9AA4B8;
+    --line: #26334F;
+    --navy: #F6F1E7;
+    --on-navy: #0F1A30;
+    --up: #3FCB8B;
+    --down: #FF7A6B;
+    --warn: #F2B84B;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #0C1424;
+  --card: #131E33;
+  --ink: #F1ECE0;
+  --muted: #9AA4B8;
+  --line: #26334F;
+  --navy: #F6F1E7;
+  --on-navy: #0F1A30;
+  --up: #3FCB8B;
+  --down: #FF7A6B;
+  --warn: #F2B84B;
+}
+
 body {
-  background-color: #f1f5f9;
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
 }
 
 /* Continuous Pipeline Flow Animations */
