@@ -171,24 +171,35 @@ export default function ManualEditor() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-white/80 backdrop-blur-md p-5 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">✏️ Manual Editor</h1>
-          <p className="text-sm text-slate-500 mt-1">Buat konten carousel secara manual</p>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 flex items-center gap-2.5 tracking-tight">
+            <span>✏️</span> Manual Editor
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">Buat konten carousel naskah secara manual & kustom.</p>
         </div>
-        <div className="flex gap-2">
-          <button onClick={handleSaveDraft} disabled={saving}
-            className="px-4 py-2 text-sm bg-slate-100 hover:bg-slate-200 rounded-lg">
-            {saving ? '⏳' : '💾'} Save Draft
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={handleSaveDraft}
+            disabled={saving}
+            className="px-3.5 py-2 text-xs sm:text-sm font-semibold text-slate-700 hover:text-slate-900 bg-white border border-slate-200 rounded-xl hover:border-slate-300 transition shadow-2xs cursor-pointer flex items-center gap-1.5"
+          >
+            <span>{saving ? '⏳' : '💾'}</span> Save Draft
           </button>
-          <button onClick={handleDownload} disabled={downloading}
-            className="px-4 py-2 text-sm bg-amber-500 hover:bg-amber-600 text-white rounded-lg">
-            {downloading ? '⏳' : '📥'} Download
+          <button
+            onClick={handleDownload}
+            disabled={downloading}
+            className="px-4 py-2.5 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 hover:opacity-95 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-rose-500/20 transition cursor-pointer flex items-center gap-1.5"
+          >
+            <span>{downloading ? '⏳' : '📥'}</span> Download
           </button>
           {isReplizConfigured() && (
-            <button onClick={handlePublish} disabled={publishing}
-              className="px-4 py-2 text-sm bg-pink-500 hover:bg-pink-600 text-white rounded-lg">
-              {publishing ? '⏳' : '📱'} Publish
+            <button
+              onClick={handlePublish}
+              disabled={publishing}
+              className="px-4 py-2.5 bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-pink-500/20 transition cursor-pointer flex items-center gap-1.5"
+            >
+              <span>{publishing ? '⏳' : '📱'}</span> Publish
             </button>
           )}
         </div>

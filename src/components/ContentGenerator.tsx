@@ -90,36 +90,54 @@ export default function ContentGenerator() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-800">📝 Content Generator</h1>
-        <p className="text-sm text-slate-500 mt-1">Generate carousel dari berita saham</p>
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-white/80 backdrop-blur-md p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 flex items-center gap-2.5 tracking-tight">
+            <span>📝</span> Content Generator
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Generate naskah carousel otomatis dari tautan berita saham (Scraping + LLM).
+          </p>
+        </div>
       </div>
 
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+      <div className="bg-white rounded-2xl p-6 shadow-xs border border-slate-200/80 max-w-3xl">
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-medium text-slate-700">URL Berita Saham</label>
+            <label className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1.5">
+              URL Berita Saham
+            </label>
             <input
               type="url"
               value={url}
               onChange={e => setUrl(e.target.value)}
               placeholder="https://www.cnbcindonesia.com/market/..."
-              className="w-full mt-1 px-4 py-2.5 border border-slate-200 rounded-lg text-sm"
+              className="w-full px-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-rose-500 focus:outline-none transition shadow-2xs"
             />
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-              <p className="text-sm text-red-600">{error}</p>
+            <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-sm text-rose-700">
+              {error}
             </div>
           )}
 
           <button
             onClick={handleGenerate}
             disabled={loading}
-            className="w-full px-4 py-3 bg-amber-500 hover:bg-amber-600 disabled:bg-slate-300 text-white font-semibold rounded-xl transition"
+            className="w-full px-5 py-3 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 hover:opacity-95 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-md shadow-rose-500/20 transition cursor-pointer flex items-center justify-center gap-2 text-sm"
           >
-            {loading ? 'Generating...' : '✍️ Generate Naskah'}
+            {loading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Memproses & Men-generate Naskah...</span>
+              </>
+            ) : (
+              <>
+                <span>✍️</span>
+                <span>Generate Naskah Carousel</span>
+              </>
+            )}
           </button>
         </div>
       </div>

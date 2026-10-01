@@ -208,31 +208,31 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-[#130a17]/70 backdrop-blur-md p-5 rounded-2xl border border-[#251323]">
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-white/80 backdrop-blur-md p-5 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white flex items-center gap-2.5 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 flex items-center gap-2.5 tracking-tight">
             <span>🗂️</span> Posts
           </h1>
-          <p className="text-xs sm:text-sm text-zinc-300 mt-1">Riwayat publikasi konten (Otomatis & Manual).</p>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">Riwayat publikasi konten (Otomatis & Manual).</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => void fetchPosts()}
             disabled={loading}
-            className="px-3.5 py-2 text-xs sm:text-sm font-semibold text-zinc-300 hover:text-white bg-[#1a0e21] border border-[#341a3e] rounded-xl hover:border-rose-500/40 transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+            className="px-3.5 py-2 text-xs sm:text-sm font-semibold text-slate-700 hover:text-slate-900 bg-white border border-slate-200 rounded-xl hover:border-slate-300 transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
             title="Refresh Data"
           >
             <span>🔄</span> <span className="hidden sm:inline">Refresh</span>
           </button>
           <button
             onClick={() => onNavigate?.('generator')}
-            className="px-4 py-2.5 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 hover:opacity-95 text-white text-xs sm:text-sm font-bold rounded-xl transition flex items-center gap-2 shadow-lg shadow-rose-950/40 cursor-pointer"
+            className="px-4 py-2.5 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 hover:opacity-95 text-white text-xs sm:text-sm font-bold rounded-xl transition flex items-center gap-2 shadow-md shadow-rose-500/20 cursor-pointer"
           >
             <span>📝</span> Content Generator
           </button>
           <button
             onClick={() => onNavigate?.('manual')}
-            className="px-4 py-2.5 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 hover:opacity-95 text-white text-xs sm:text-sm font-bold rounded-xl transition flex items-center gap-2 shadow-lg shadow-rose-950/40 cursor-pointer"
+            className="px-4 py-2.5 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 hover:opacity-95 text-white text-xs sm:text-sm font-bold rounded-xl transition flex items-center gap-2 shadow-md shadow-rose-500/20 cursor-pointer"
           >
             <span>✏️</span> Manual Editor
           </button>
@@ -254,14 +254,14 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
       />
 
       {/* Tabs & View Mode Switcher */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#251323] pb-1">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-1">
         <div className="flex gap-4">
           <button
             onClick={() => setActiveTab('automation')}
             className={`pb-3 px-2 text-sm font-bold border-b-2 transition cursor-pointer ${
               activeTab === 'automation'
-                ? 'border-rose-500 text-rose-400'
-                : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                ? 'border-rose-500 text-rose-600'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
             🤖 Auto Posts ({filteredAuto.length}{autoPosts.length !== filteredAuto.length ? ` / ${autoPosts.length}` : ''})
@@ -270,8 +270,8 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
             onClick={() => setActiveTab('manual')}
             className={`pb-3 px-2 text-sm font-bold border-b-2 transition cursor-pointer ${
               activeTab === 'manual'
-                ? 'border-rose-500 text-rose-400'
-                : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                ? 'border-rose-500 text-rose-600'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
             ✍️ Manual Generator ({filteredManual.length}{manualPosts.length !== filteredManual.length ? ` / ${manualPosts.length}` : ''})
@@ -279,13 +279,13 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
         </div>
 
         {/* View Mode Toggle (Grid Card 3 Kolom vs List) */}
-        <div className="flex items-center gap-1 bg-[#180b1d] p-1 rounded-xl border border-[#2d142d] mb-2">
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 mb-2">
           <button
             onClick={() => setViewMode('grid')}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
               viewMode === 'grid'
-                ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-md shadow-rose-950/40'
-                : 'text-zinc-400 hover:text-white'
+                ? 'bg-white text-slate-900 shadow-xs border border-slate-200/60'
+                : 'text-slate-500 hover:text-slate-900'
             }`}
             title="Tampilan Card 3 Kolom"
           >
@@ -296,8 +296,8 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
             onClick={() => setViewMode('list')}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
               viewMode === 'list'
-                ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-md shadow-rose-950/40'
-                : 'text-zinc-400 hover:text-white'
+                ? 'bg-white text-slate-900 shadow-xs border border-slate-200/60'
+                : 'text-slate-500 hover:text-slate-900'
             }`}
             title="Tampilan List Baris"
           >
@@ -310,13 +310,13 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
       {/* Sub-Filter: News Monitoring vs Daily Brief (Khusus Auto Posts) */}
       {activeTab === 'automation' && (
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Workflow:</span>
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Workflow:</span>
           <button
             onClick={() => setWorkflowFilter('all')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition border cursor-pointer ${
               workflowFilter === 'all'
-                ? 'bg-[#281132] text-white border-rose-500/50 shadow-sm'
-                : 'bg-[#1a0e21] text-zinc-400 border-[#281329] hover:text-white hover:border-rose-500/30'
+                ? 'bg-rose-50 text-rose-700 border-rose-200 shadow-2xs'
+                : 'bg-white text-slate-600 border-slate-200 hover:text-slate-900 hover:border-slate-300'
             }`}
           >
             Semua ({autoPosts.length})
@@ -325,8 +325,8 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
             onClick={() => setWorkflowFilter('news_monitoring')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition border flex items-center gap-1.5 cursor-pointer ${
               workflowFilter === 'news_monitoring'
-                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm'
-                : 'bg-[#1a0e21] text-zinc-400 border-[#281329] hover:text-white hover:border-amber-500/30'
+                ? 'bg-amber-50 text-amber-800 border-amber-300 shadow-2xs'
+                : 'bg-white text-slate-600 border-slate-200 hover:text-slate-900 hover:border-slate-300'
             }`}
           >
             <span>📡</span>
@@ -336,8 +336,8 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
             onClick={() => setWorkflowFilter('daily_market_brief')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition border flex items-center gap-1.5 cursor-pointer ${
               workflowFilter === 'daily_market_brief'
-                ? 'bg-blue-500/20 text-blue-300 border-blue-500/40 shadow-sm'
-                : 'bg-[#1a0e21] text-zinc-400 border-[#281329] hover:text-white hover:border-blue-500/30'
+                ? 'bg-blue-50 text-blue-800 border-blue-300 shadow-2xs'
+                : 'bg-white text-slate-600 border-slate-200 hover:text-slate-900 hover:border-slate-300'
             }`}
           >
             <span>📈</span>
@@ -347,40 +347,40 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
       )}
 
       {/* Date & Search Filter Card */}
-      <div className="bg-[#130a17]/80 backdrop-blur-md p-4 sm:p-5 rounded-2xl border border-[#251323] shadow-lg space-y-4">
+      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
         <div className="flex flex-wrap gap-4 items-end">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">📅 Dari Tanggal</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">📅 Dari Tanggal</label>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="px-3.5 py-2 border border-[#341a3e] rounded-xl bg-[#1a0e21] text-white text-sm focus:ring-2 focus:ring-rose-500 focus:outline-none"
+              className="px-3.5 py-2 border border-slate-200 rounded-xl bg-slate-50/50 text-slate-800 text-sm focus:bg-white focus:ring-2 focus:ring-rose-500 focus:outline-none transition shadow-2xs"
             />
           </div>
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">📅 Sampai Tanggal</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">📅 Sampai Tanggal</label>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="px-3.5 py-2 border border-[#341a3e] rounded-xl bg-[#1a0e21] text-white text-sm focus:ring-2 focus:ring-rose-500 focus:outline-none"
+              className="px-3.5 py-2 border border-slate-200 rounded-xl bg-slate-50/50 text-slate-800 text-sm focus:bg-white focus:ring-2 focus:ring-rose-500 focus:outline-none transition shadow-2xs"
             />
           </div>
           <div className="flex-1 min-w-[200px]">
-            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">🔍 Cari Post</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">🔍 Cari Post</label>
             <input
               type="text"
               placeholder={activeTab === 'automation' ? 'Cari caption, workflow, akun...' : 'Cari badge, handle...'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-3.5 py-2 border border-[#341a3e] rounded-xl bg-[#1a0e21] text-white placeholder-zinc-500 text-sm focus:ring-2 focus:ring-rose-500 focus:outline-none"
+              className="w-full px-3.5 py-2 border border-slate-200 rounded-xl bg-slate-50/50 text-slate-800 placeholder-slate-400 text-sm focus:bg-white focus:ring-2 focus:ring-rose-500 focus:outline-none transition shadow-2xs"
             />
           </div>
           {isFilterActive && (
             <button
               onClick={resetFilters}
-              className="px-4 py-2 text-xs font-bold text-rose-400 hover:text-rose-300 bg-[#250f2e] border border-[#3c1748] rounded-xl transition self-end cursor-pointer"
+              className="px-4 py-2 text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 border border-rose-200 rounded-xl transition self-end cursor-pointer shadow-2xs"
             >
               Reset Filter
             </button>
@@ -388,12 +388,12 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
         </div>
 
         {/* Quick Date Presets */}
-        <div className="flex items-center gap-2 flex-wrap pt-2 text-xs text-zinc-400 border-t border-[#251323]">
-          <span className="font-semibold text-zinc-400 uppercase tracking-wider text-[11px]">Preset Tanggal:</span>
+        <div className="flex items-center gap-2 flex-wrap pt-2 text-xs text-slate-500 border-t border-slate-100">
+          <span className="font-semibold text-slate-500 uppercase tracking-wider text-[11px]">Preset Tanggal:</span>
           <button
             onClick={() => applyPreset('all')}
             className={`px-3 py-1 rounded-lg transition cursor-pointer text-xs font-medium ${
-              !startDate && !endDate ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white font-bold shadow-xs' : 'bg-[#1a0e21] border border-[#281329] hover:text-white text-zinc-400'
+              !startDate && !endDate ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white font-bold shadow-xs' : 'bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-600'
             }`}
           >
             Semua
@@ -403,7 +403,7 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
             className={`px-3 py-1 rounded-lg transition cursor-pointer text-xs font-medium ${
               startDate === getTodayStr() && endDate === getTodayStr()
                 ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white font-bold shadow-xs'
-                : 'bg-[#1a0e21] border border-[#281329] hover:text-white text-zinc-400'
+                : 'bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-600'
             }`}
           >
             Hari Ini
@@ -413,7 +413,7 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
             className={`px-3 py-1 rounded-lg transition cursor-pointer text-xs font-medium ${
               startDate === getDaysAgoStr(7) && endDate === getTodayStr()
                 ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white font-bold shadow-xs'
-                : 'bg-[#1a0e21] border border-[#281329] hover:text-white text-zinc-400'
+                : 'bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-600'
             }`}
           >
             7 Hari Terakhir
@@ -423,7 +423,7 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
             className={`px-3 py-1 rounded-lg transition cursor-pointer text-xs font-medium ${
               startDate === getDaysAgoStr(30) && endDate === getTodayStr()
                 ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white font-bold shadow-xs'
-                : 'bg-[#1a0e21] border border-[#281329] hover:text-white text-zinc-400'
+                : 'bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-600'
             }`}
           >
             30 Hari Terakhir
@@ -433,7 +433,7 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
             className={`px-3 py-1 rounded-lg transition cursor-pointer text-xs font-medium ${
               startDate === getFirstDayOfMonthStr() && endDate === getTodayStr()
                 ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white font-bold shadow-xs'
-                : 'bg-[#1a0e21] border border-[#281329] hover:text-white text-zinc-400'
+                : 'bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-600'
             }`}
           >
             Bulan Ini
@@ -443,24 +443,24 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
 
       {/* Content Section */}
       {loading ? (
-        <div className="text-zinc-400 py-16 text-center animate-pulse bg-[#130a17]/80 backdrop-blur-md rounded-2xl border border-[#251323]">
+        <div className="text-slate-500 py-16 text-center animate-pulse bg-white rounded-2xl border border-slate-200/80 shadow-xs">
           <span className="text-3xl block mb-2">⏳</span>
-          <p className="font-medium">Memuat postingan...</p>
+          <p className="font-medium text-slate-600">Memuat postingan...</p>
         </div>
       ) : activeTab === 'automation' ? (
         autoPosts.length === 0 ? (
-          <div className="text-center py-12 text-zinc-400 bg-[#130a17]/80 backdrop-blur-md rounded-2xl border border-[#251323]">
+          <div className="text-center py-12 text-slate-500 bg-white rounded-2xl border border-slate-200/80 shadow-xs">
             <span className="text-4xl block mb-2">🤖</span>
-            <p className="text-base font-semibold text-zinc-200">Belum ada postingan otomatis dari n8n.</p>
+            <p className="text-base font-semibold text-slate-800">Belum ada postingan otomatis dari n8n.</p>
           </div>
         ) : filteredAuto.length === 0 ? (
-          <div className="text-center py-12 text-zinc-400 bg-[#130a17]/80 backdrop-blur-md rounded-2xl border border-[#251323]">
+          <div className="text-center py-12 text-slate-500 bg-white rounded-2xl border border-slate-200/80 shadow-xs">
             <span className="text-4xl block mb-2">🔍</span>
-            <p className="font-semibold text-zinc-200">Tidak ada postingan otomatis yang sesuai filter tanggal.</p>
-            <p className="text-xs text-zinc-500 mt-1">Coba ubah rentang tanggal atau klik reset filter.</p>
+            <p className="font-semibold text-slate-800">Tidak ada postingan otomatis yang sesuai filter tanggal.</p>
+            <p className="text-xs text-slate-500 mt-1">Coba ubah rentang tanggal atau klik reset filter.</p>
             <button
               onClick={resetFilters}
-              className="mt-4 px-4 py-2 bg-gradient-to-r from-rose-500 to-amber-500 text-white text-xs font-bold rounded-xl hover:opacity-95 transition cursor-pointer"
+              className="mt-4 px-4 py-2 bg-gradient-to-r from-rose-500 to-amber-500 text-white text-xs font-bold rounded-xl hover:opacity-95 transition cursor-pointer shadow-xs"
             >
               Reset Filter
             </button>
@@ -490,24 +490,24 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
         )
       ) : (
         manualPosts.length === 0 ? (
-          <div className="text-center py-12 text-zinc-400 bg-[#130a17]/80 backdrop-blur-md rounded-2xl border border-[#251323]">
+          <div className="text-center py-12 text-slate-500 bg-white rounded-2xl border border-slate-200/80 shadow-xs">
             <span className="text-4xl block mb-2">🗂️</span>
-            <p className="text-base font-semibold text-zinc-200">Belum ada postingan manual. Generate yang pertama dulu.</p>
+            <p className="text-base font-semibold text-slate-800">Belum ada postingan manual. Generate yang pertama dulu.</p>
             <button
               onClick={() => onNavigate?.('generator')}
-              className="mt-4 px-5 py-2.5 bg-gradient-to-r from-rose-500 to-amber-500 text-white rounded-xl font-bold text-xs sm:text-sm hover:opacity-95 transition cursor-pointer"
+              className="mt-4 px-5 py-2.5 bg-gradient-to-r from-rose-500 to-amber-500 text-white rounded-xl font-bold text-xs sm:text-sm hover:opacity-95 transition cursor-pointer shadow-md shadow-rose-500/20"
             >
               📝 Generate Konten
             </button>
           </div>
         ) : filteredManual.length === 0 ? (
-          <div className="text-center py-12 text-zinc-400 bg-[#130a17]/80 backdrop-blur-md rounded-2xl border border-[#251323]">
+          <div className="text-center py-12 text-slate-500 bg-white rounded-2xl border border-slate-200/80 shadow-xs">
             <span className="text-4xl block mb-2">🔍</span>
-            <p className="font-semibold text-zinc-200">Tidak ada postingan manual yang sesuai filter tanggal.</p>
-            <p className="text-xs text-zinc-500 mt-1">Coba ubah rentang tanggal atau klik reset filter.</p>
+            <p className="font-semibold text-slate-800">Tidak ada postingan manual yang sesuai filter tanggal.</p>
+            <p className="text-xs text-slate-500 mt-1">Coba ubah rentang tanggal atau klik reset filter.</p>
             <button
               onClick={resetFilters}
-              className="mt-4 px-4 py-2 bg-gradient-to-r from-rose-500 to-amber-500 text-white text-xs font-bold rounded-xl hover:opacity-95 transition cursor-pointer"
+              className="mt-4 px-4 py-2 bg-gradient-to-r from-rose-500 to-amber-500 text-white text-xs font-bold rounded-xl hover:opacity-95 transition cursor-pointer shadow-xs"
             >
               Reset Filter
             </button>
@@ -539,27 +539,27 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
 
       {/* Pagination Controls */}
       {!loading && totalItems > 0 && (
-        <div className="bg-[#130a17]/80 backdrop-blur-md px-5 py-3.5 rounded-2xl border border-[#251323] shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3 text-xs text-zinc-400">
+        <div className="bg-white px-5 py-3.5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3 text-xs text-slate-500">
             <span>
-              Menampilkan <span className="font-bold text-white">{startIndex + 1}</span> -{' '}
-              <span className="font-bold text-white">{Math.min(startIndex + pageSize, totalItems)}</span> dari{' '}
-              <span className="font-bold text-white">{totalItems}</span> post
+              Menampilkan <span className="font-bold text-slate-900">{startIndex + 1}</span> -{' '}
+              <span className="font-bold text-slate-900">{Math.min(startIndex + pageSize, totalItems)}</span> dari{' '}
+              <span className="font-bold text-slate-900">{totalItems}</span> post
             </span>
-            <span className="text-zinc-600">|</span>
+            <span className="text-slate-300">|</span>
             <div className="flex items-center gap-1.5">
               <span>Per halaman:</span>
               <select
                 value={pageSize}
                 onChange={(e) => setPageSize(Number(e.target.value))}
-                className="px-2 py-1 border border-[#341a3e] rounded-lg bg-[#1a0e21] text-xs text-white focus:outline-none focus:ring-1 focus:ring-rose-500 cursor-pointer"
+                className="px-2 py-1 border border-slate-200 rounded-lg bg-slate-50 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-rose-500 cursor-pointer shadow-2xs"
               >
-                <option value={6} className="bg-[#1a0e21]">6</option>
-                <option value={9} className="bg-[#1a0e21]">9</option>
-                <option value={12} className="bg-[#1a0e21]">12</option>
-                <option value={18} className="bg-[#1a0e21]">18</option>
-                <option value={30} className="bg-[#1a0e21]">30</option>
-                <option value={60} className="bg-[#1a0e21]">60</option>
+                <option value={6}>6</option>
+                <option value={9}>9</option>
+                <option value={12}>12</option>
+                <option value={18}>18</option>
+                <option value={30}>30</option>
+                <option value={60}>60</option>
               </select>
             </div>
           </div>
@@ -568,7 +568,7 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={safePage <= 1}
-              className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#341a3e] text-zinc-300 hover:text-white hover:bg-[#1a0e21] disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+              className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer shadow-2xs"
             >
               ‹ Sebelumnya
             </button>
@@ -576,7 +576,7 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
             <div className="flex items-center gap-1">
               {getPageNumbers().map((num, idx) =>
                 num === '...' ? (
-                  <span key={`ellipsis-${idx}`} className="px-2 py-1 text-xs text-zinc-500">
+                  <span key={`ellipsis-${idx}`} className="px-2 py-1 text-xs text-slate-400">
                     ...
                   </span>
                 ) : (
@@ -585,8 +585,8 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
                     onClick={() => setCurrentPage(Number(num))}
                     className={`w-7 h-7 text-xs font-bold rounded-lg transition cursor-pointer ${
                       safePage === num
-                        ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-sm'
-                        : 'text-zinc-400 hover:text-white hover:bg-[#1a0e21]'
+                        ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                     }`}
                   >
                     {num}
@@ -598,7 +598,7 @@ export default function Posts({ onNavigate }: { onNavigate?: (page: string) => v
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={safePage >= totalPages}
-              className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#341a3e] text-zinc-300 hover:text-white hover:bg-[#1a0e21] disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+              className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer shadow-2xs"
             >
               Selanjutnya ›
             </button>

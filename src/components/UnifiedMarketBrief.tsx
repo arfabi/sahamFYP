@@ -317,20 +317,20 @@ export default function UnifiedMarketBrief() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-slate-800">
       {/* 1. Header & Interactive Session Selector */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-[#130a17]/70 backdrop-blur-md p-5 rounded-2xl border border-[#251323]">
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-white/90 backdrop-blur-md p-5 rounded-2xl border border-slate-200/90 shadow-sm">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-xs">
               MODUL RESMI TERPADU
             </span>
-            <span className="text-xs text-rose-400 font-semibold">• Makro Sesi + Analisis Saham</span>
+            <span className="text-xs text-rose-600 font-semibold">• Makro Sesi + Analisis Saham</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white flex items-center gap-2.5 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 flex items-center gap-2.5 tracking-tight">
             <span>⚡</span> Market Brief
           </h1>
-          <p className="text-xs sm:text-sm text-zinc-400 mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
             Riwayat kondisi pasar harian terintegrasi dengan daftar saham terpilih & analisis mendalam
           </p>
         </div>
@@ -339,22 +339,22 @@ export default function UnifiedMarketBrief() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsCalendarOpen(true)}
-            className="flex items-center gap-2.5 px-4 py-2.5 bg-[#180b1d] hover:bg-[#230f29] border border-[#3b1845] hover:border-rose-500/50 rounded-xl text-xs sm:text-sm font-bold text-white shadow-md transition cursor-pointer group"
+            className="flex items-center gap-2.5 px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-xl text-xs sm:text-sm font-bold text-slate-800 shadow-xs transition cursor-pointer group"
             title="Klik untuk membuka Kalender Pemilih Sesi"
           >
-            <CalendarIcon className="w-4 h-4 text-rose-400 group-hover:scale-110 transition-transform" />
+            <CalendarIcon className="w-4 h-4 text-rose-600 group-hover:scale-110 transition-transform" />
             <span>
               {selectedLog ? formatDate(selectedLog.trigger_date) : 'Pilih Sesi'} ·{' '}
               {selectedLog?.session === 'open' ? '☀️ Sesi Open' : '🌙 Sesi Close'}
             </span>
-            <span className="text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2 py-0.5 rounded-md font-mono">
+            <span className="text-[10px] bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded-md font-mono font-bold">
               PILIH TANGGAL ▼
             </span>
           </button>
 
           <button
             onClick={fetchLogs}
-            className="p-2.5 bg-[#180b1d] hover:bg-[#230f29] text-zinc-300 hover:text-white rounded-xl border border-[#2d142d] transition cursor-pointer"
+            className="p-2.5 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 rounded-xl border border-slate-200 shadow-xs transition cursor-pointer"
             title="Refresh Data"
           >
             🔄
@@ -378,81 +378,80 @@ export default function UnifiedMarketBrief() {
           {/* 2. KPI Cards Bar: 1. IHSG, 2. Emiten Terpilih, 3. Berita Di-Scan, 4. FOREIGN FLOW */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
             {/* 1. IHSG Card */}
-            <div className="bg-[#130a17]/80 hover:bg-[#1a0e20] backdrop-blur-md rounded-2xl p-4 border border-[#251323] shadow-lg transition">
-              <span className="text-xs text-zinc-400 font-semibold uppercase tracking-wider block">Indeks IHSG</span>
+            <div className="bg-white hover:bg-slate-50/80 backdrop-blur-md rounded-2xl p-4 border border-slate-200/90 shadow-xs transition">
+              <span className="text-xs text-slate-500 font-bold uppercase tracking-wider block">Indeks IHSG</span>
               <div className="flex items-baseline gap-2 mt-1">
-                <span className="text-2xl font-black text-white font-mono">{fmtNum(selectedLog.ihsg_price, 0)}</span>
+                <span className="text-2xl font-black text-slate-900 font-mono">{fmtNum(selectedLog.ihsg_price, 0)}</span>
                 <span
                   className={`text-xs font-bold font-mono ${
-                    selectedLog.ihsg_change && selectedLog.ihsg_change >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                    selectedLog.ihsg_change && selectedLog.ihsg_change >= 0 ? 'text-emerald-600' : 'text-rose-600'
                   }`}
                 >
                   {selectedLog.ihsg_change && selectedLog.ihsg_change >= 0 ? '+' : ''}
                   {fmtNum(selectedLog.ihsg_change, 2)}%
                 </span>
               </div>
-              <span className="text-[11px] text-zinc-500 font-mono mt-1 block">
+              <span className="text-[11px] text-slate-400 font-mono mt-1 block">
                 Data Date: {formatDate(selectedLog.data_date)}
               </span>
             </div>
 
             {/* 2. Emiten Watchlist Terpilih */}
-            <div className="bg-[#130a17]/80 hover:bg-[#1a0e20] backdrop-blur-md rounded-2xl p-4 border border-[#251323] shadow-lg transition">
-              <span className="text-xs text-zinc-400 font-semibold uppercase tracking-wider block">Emiten Terpilih</span>
-              <span className="text-2xl font-black text-amber-400 mt-1 block">
+            <div className="bg-white hover:bg-slate-50/80 backdrop-blur-md rounded-2xl p-4 border border-slate-200/90 shadow-xs transition">
+              <span className="text-xs text-slate-500 font-bold uppercase tracking-wider block">Emiten Terpilih</span>
+              <span className="text-2xl font-black text-amber-600 mt-1 block">
                 {selectedLog.tickers_selected || 0} Saham
               </span>
-              <span className="text-[11px] text-zinc-500 mt-1 block">Lolos seleksi AI CIO</span>
+              <span className="text-[11px] text-slate-400 mt-1 block">Lolos seleksi AI CIO</span>
             </div>
 
             {/* 3. Berita Di-Scan */}
-            <div className="bg-[#130a17]/80 hover:bg-[#1a0e20] backdrop-blur-md rounded-2xl p-4 border border-[#251323] shadow-lg transition">
-              <span className="text-xs text-zinc-400 font-semibold uppercase tracking-wider block">Berita Di-Scan</span>
-              <span className="text-2xl font-black text-sky-400 mt-1 block">
+            <div className="bg-white hover:bg-slate-50/80 backdrop-blur-md rounded-2xl p-4 border border-slate-200/90 shadow-xs transition">
+              <span className="text-xs text-slate-500 font-bold uppercase tracking-wider block">Berita Di-Scan</span>
+              <span className="text-2xl font-black text-sky-600 mt-1 block">
                 {selectedLog.news_fetched || 0} Artikel
               </span>
-              <span className="text-[11px] text-zinc-500 mt-1 block">BEI & media nasional dipindai</span>
+              <span className="text-[11px] text-slate-400 mt-1 block">BEI & media nasional dipindai</span>
             </div>
 
-            {/* 4. FOREIGN FLOW (Menggantikan Status & Biaya sesuai Permintaan) */}
-            {/* 2. Foreign Flow (from Database session log) */}
-            <div className="bg-[#130a17]/80 hover:bg-[#1a0e20] backdrop-blur-md rounded-2xl p-4 border border-[#251323] shadow-lg transition flex flex-col justify-between">
+            {/* 4. FOREIGN FLOW */}
+            <div className="bg-white hover:bg-slate-50/80 backdrop-blur-md rounded-2xl p-4 border border-slate-200/90 shadow-xs transition flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-zinc-400 font-semibold uppercase tracking-wider block">
+                  <span className="text-xs text-slate-500 font-bold uppercase tracking-wider block">
                     Foreign Flow
                   </span>
-                  <span className="text-[10px] text-purple-300 font-bold bg-purple-500/15 border border-purple-500/30 px-1.5 py-0.5 rounded">
+                  <span className="text-[10px] text-purple-700 font-bold bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded">
                     Database BEI
                   </span>
                 </div>
                 <div className="mt-1">
-                  <span className="text-[11px] text-zinc-500 font-medium block">Net Foreign Flow:</span>
+                  <span className="text-[11px] text-slate-400 font-medium block">Net Foreign Flow:</span>
                   {foreignFlowData ? (
                     <span
                       className={`text-xl font-black font-mono block ${
-                        foreignFlowData.isInflow ? 'text-emerald-400' : 'text-rose-400'
+                        foreignFlowData.isInflow ? 'text-emerald-600' : 'text-rose-600'
                       }`}
                     >
                       {foreignFlowData.net}
                     </span>
                   ) : (
-                    <span className="text-sm font-semibold text-zinc-400 block mt-1">
+                    <span className="text-sm font-semibold text-slate-400 block mt-1">
                       Belum Tercatat di Sesi Ini
                     </span>
                   )}
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-[#251323] text-[11px]">
+              <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-slate-100 text-[11px]">
                 <div>
-                  <span className="text-zinc-500 block">Buy Foreign:</span>
-                  <span className="font-mono font-bold text-emerald-400">
+                  <span className="text-slate-400 block">Buy Foreign:</span>
+                  <span className="font-mono font-bold text-emerald-600">
                     {foreignFlowData ? foreignFlowData.buy : '-'}
                   </span>
                 </div>
                 <div>
-                  <span className="text-zinc-500 block">Sell Foreign:</span>
-                  <span className="font-mono font-bold text-rose-400">
+                  <span className="text-slate-400 block">Sell Foreign:</span>
+                  <span className="font-mono font-bold text-rose-600">
                     {foreignFlowData ? foreignFlowData.sell : '-'}
                   </span>
                 </div>
@@ -462,13 +461,13 @@ export default function UnifiedMarketBrief() {
 
           {/* 3. AI Macro Reasoning Quote */}
           {selectedLog.reasoning && (
-            <div className="bg-gradient-to-r from-[#1c0f24] to-[#150a1b] p-4 sm:p-5 rounded-2xl border border-[#2d1437] shadow-lg flex items-start gap-3.5">
+            <div className="bg-gradient-to-r from-rose-50/70 to-orange-50/50 p-4 sm:p-5 rounded-2xl border border-rose-200/80 shadow-xs flex items-start gap-3.5">
               <span className="text-2xl mt-0.5">🧠</span>
               <div className="flex-1">
-                <span className="text-xs font-bold text-rose-400 uppercase tracking-wider block mb-1">
+                <span className="text-xs font-bold text-rose-700 uppercase tracking-wider block mb-1">
                   Analisis Makro & Reasoning AI CIO ({selectedLog.session.toUpperCase()}):
                 </span>
-                <p className="text-xs sm:text-sm text-zinc-200 leading-relaxed font-medium">
+                <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-normal">
                   {selectedLog.reasoning}
                 </p>
               </div>
@@ -485,11 +484,11 @@ export default function UnifiedMarketBrief() {
                 return (
                   <div
                     key={cls}
-                    className="bg-[#130a17]/80 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-[#251323] shadow-lg"
+                    className="bg-white backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-xs"
                   >
                     <h3
                       className={`text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-1.5 ${
-                        isGainer ? 'text-emerald-400' : 'text-rose-400'
+                        isGainer ? 'text-emerald-700' : 'text-rose-700'
                       }`}
                     >
                       <span>{isGainer ? '🚀 Top 5 Gainers' : '🔻 Top 5 Losers'}</span>
@@ -498,20 +497,20 @@ export default function UnifiedMarketBrief() {
                       {list.slice(0, 5).map((m) => (
                         <div
                           key={m.id}
-                          className="flex items-center justify-between p-2.5 rounded-xl bg-[#1a0e21] border border-[#281329] text-xs hover:border-[#3d1938] transition"
+                          className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs hover:border-rose-300 hover:bg-white transition"
                         >
                           <div className="flex items-center gap-2 min-w-0 pr-2">
-                            <span className="font-mono font-bold text-white bg-[#281132] border border-[#3b1949] px-2 py-0.5 rounded shrink-0">
+                            <span className="font-mono font-bold text-slate-800 bg-white border border-slate-200 px-2 py-0.5 rounded shrink-0 shadow-xs">
                               {m.symbol}
                             </span>
                             {/* NAMA PT LENGKAP (Tanpa pemotongan) */}
-                            <span className="text-zinc-300 font-medium whitespace-normal leading-tight">
+                            <span className="text-slate-700 font-medium whitespace-normal leading-tight">
                               {m.company_name || m.symbol}
                             </span>
                           </div>
                           <span
                             className={`font-mono font-bold shrink-0 ${
-                              m.price_change != null && m.price_change >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                              m.price_change != null && m.price_change >= 0 ? 'text-emerald-600' : 'text-rose-600'
                             }`}
                           >
                             {m.price_change != null ? `${m.price_change > 0 ? '+' : ''}${fmtNum(m.price_change, 2)}%` : '-'}
@@ -527,14 +526,14 @@ export default function UnifiedMarketBrief() {
 
           {/* 5. Main Tabbed Navigation (Watchlist vs Berita vs Skipped) */}
           <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#251323] pb-1">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-1">
               <div className="flex gap-2 sm:gap-4">
                 <button
                   onClick={() => setActiveTab('candidates')}
                   className={`pb-3 px-2 text-sm font-bold border-b-2 transition cursor-pointer flex items-center gap-2 ${
                     activeTab === 'candidates'
-                      ? 'border-rose-500 text-rose-400'
-                      : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                      ? 'border-rose-600 text-rose-600'
+                      : 'border-transparent text-slate-500 hover:text-slate-800'
                   }`}
                 >
                   <span>⭐</span>
@@ -544,8 +543,8 @@ export default function UnifiedMarketBrief() {
                   onClick={() => setActiveTab('news')}
                   className={`pb-3 px-2 text-sm font-bold border-b-2 transition cursor-pointer flex items-center gap-2 ${
                     activeTab === 'news'
-                      ? 'border-rose-500 text-rose-400'
-                      : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                      ? 'border-rose-600 text-rose-600'
+                      : 'border-transparent text-slate-500 hover:text-slate-800'
                   }`}
                 >
                   <span>📰</span>
@@ -555,8 +554,8 @@ export default function UnifiedMarketBrief() {
                   onClick={() => setActiveTab('skipped')}
                   className={`pb-3 px-2 text-sm font-bold border-b-2 transition cursor-pointer flex items-center gap-2 ${
                     activeTab === 'skipped'
-                      ? 'border-rose-500 text-rose-400'
-                      : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                      ? 'border-rose-600 text-rose-600'
+                      : 'border-transparent text-slate-500 hover:text-slate-800'
                   }`}
                 >
                   <span>📋</span>
@@ -571,21 +570,21 @@ export default function UnifiedMarketBrief() {
                     placeholder="Cari Ticker / Nama / Sektor..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full px-3 py-1.5 text-xs bg-[#1a0e21] border border-[#341a3e] rounded-xl text-white placeholder-zinc-500 focus:ring-2 focus:ring-rose-500 focus:outline-none"
+                    className="w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-rose-500 focus:outline-none shadow-xs"
                   />
                 </div>
               )}
             </div>
 
-            {/* TAB CONTENT 1: Candidates Watchlist Table (Kolom Sinyal Disembunyikan Sesuai Permintaan) */}
+            {/* TAB CONTENT 1: Candidates Watchlist Table */}
             {activeTab === 'candidates' && (
-              <div className="bg-[#130a17]/80 backdrop-blur-md rounded-2xl border border-[#251323] shadow-xl overflow-hidden">
-                <div className="p-4 border-b border-[#251323] bg-[#170b1d]/60 flex items-center justify-between">
+              <div className="bg-white backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+                <div className="p-4 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
                   <div>
-                    <h2 className="text-base font-bold text-white flex items-center gap-2">
+                    <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
                       <span>📋</span> Kandidat Saham Pilihan AI
                     </h2>
-                    <p className="text-xs text-zinc-400 mt-0.5">
+                    <p className="text-xs text-slate-500 mt-0.5">
                       Klik salah satu baris atau tombol "Detail Analisa" untuk membuka halaman analisis penuh emiten
                     </p>
                   </div>
@@ -594,7 +593,7 @@ export default function UnifiedMarketBrief() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="bg-[#1a0e21]/70 text-zinc-400 text-xs font-semibold border-b border-[#251323] text-left">
+                      <tr className="bg-slate-50 text-slate-600 text-xs font-bold border-b border-slate-200 text-left">
                         <th className="py-3 px-4">Ticker</th>
                         <th className="py-3 px-4">Perusahaan</th>
                         <th className="py-3 px-4">Sektor</th>
@@ -604,7 +603,7 @@ export default function UnifiedMarketBrief() {
                         <th className="py-3 px-4 text-center">Aksi</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#200f24]">
+                    <tbody className="divide-y divide-slate-100">
                       {filteredCandidates.map((c) => {
                         const tech = getTech(c);
                         const chg1d = tech.chg1d;
@@ -615,25 +614,25 @@ export default function UnifiedMarketBrief() {
                           <tr
                             key={c.id}
                             onClick={() => navigate(`/marketbrief/${c.id}`)}
-                            className="hover:bg-[#1d0e24] cursor-pointer transition-colors group"
+                            className="hover:bg-slate-50/80 cursor-pointer transition-colors group"
                           >
                             <td className="py-3 px-4">
-                              <span className="font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2.5 py-1 rounded-lg font-mono text-xs shadow-xs group-hover:border-amber-400/60 transition">
+                              <span className="font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-lg font-mono text-xs shadow-xs group-hover:border-amber-400 transition">
                                 {c.ticker}
                               </span>
                             </td>
-                            <td className="py-3 px-4 font-semibold text-white max-w-[200px]" title={c.company_name || ''}>
+                            <td className="py-3 px-4 font-semibold text-slate-900 max-w-[200px]" title={c.company_name || ''}>
                               {c.company_name || '-'}
                             </td>
-                            <td className="py-3 px-4 text-xs text-zinc-400 font-medium">
+                            <td className="py-3 px-4 text-xs text-slate-500 font-medium">
                               {c.sector || '-'}
                             </td>
                             <td className="py-3 px-4 text-right">
-                              <div className="font-mono font-bold text-amber-400 text-base">
+                              <div className="font-mono font-bold text-amber-700 text-base">
                                 Rp {fmtNum(c.price || tech.last, 0)}
                               </div>
                               {chg1d != null && (
-                                <span className={`text-[11px] font-mono font-semibold block ${isUp ? 'text-emerald-400' : isDown ? 'text-rose-400' : 'text-zinc-400'}`}>
+                                <span className={`text-[11px] font-mono font-semibold block ${isUp ? 'text-emerald-600' : isDown ? 'text-rose-600' : 'text-slate-400'}`}>
                                   {fmtPct(chg1d)} (1D)
                                 </span>
                               )}
@@ -643,34 +642,34 @@ export default function UnifiedMarketBrief() {
                                 <div className="inline-flex flex-col items-center gap-1">
                                   <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${
                                     tech.crossSignal.toLowerCase().includes('bullish') || tech.crossSignal.includes('🟢')
-                                      ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                       : tech.crossSignal.toLowerCase().includes('bearish') || tech.crossSignal.includes('🔴') || tech.crossSignal.toLowerCase().includes('death')
-                                      ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
-                                      : 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                                      ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                      : 'bg-amber-50 text-amber-800 border-amber-200'
                                   }`}>
                                     {tech.crossSignal}
                                   </span>
-                                  <div className="flex items-center justify-center gap-1.5 text-[10px] text-zinc-400 font-mono">
+                                  <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-500 font-mono">
                                     {tech.ma20 && <span>Supp: Rp {fmtNum(tech.ma20, 0)}</span>}
                                     {tech.volumeSignal && (
-                                      <span className="capitalize px-1.5 py-0.5 bg-[#200e26] border border-[#371641] rounded text-zinc-300">
+                                      <span className="capitalize px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-slate-700">
                                         Vol: {tech.volumeSignal}
                                       </span>
                                     )}
                                   </div>
                                 </div>
                               ) : (
-                                <span className="text-xs text-zinc-500">-</span>
+                                <span className="text-xs text-slate-400">-</span>
                               )}
                             </td>
                             <td className="py-3 px-4 max-w-md">
-                              <p className="text-xs text-zinc-200 font-medium line-clamp-1" title={c.news_title || ''}>
+                              <p className="text-xs text-slate-800 font-medium line-clamp-1" title={c.news_title || ''}>
                                 {c.news_title || '-'}
                               </p>
                               {c.news_tags && c.news_tags.length > 0 && (
                                 <div className="flex flex-wrap gap-1 mt-1">
                                   {c.news_tags.slice(0, 3).map((t, i) => (
-                                    <span key={i} className="text-[10px] bg-[#240f2b] text-zinc-400 border border-[#381a42] px-1.5 py-0.5 rounded">
+                                    <span key={i} className="text-[10px] bg-slate-100 text-slate-600 border border-slate-200 px-1.5 py-0.5 rounded">
                                       #{t}
                                     </span>
                                   ))}
@@ -683,7 +682,7 @@ export default function UnifiedMarketBrief() {
                                   e.stopPropagation();
                                   navigate(`/marketbrief/${c.id}`);
                                 }}
-                                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 text-white font-bold text-xs shadow-sm hover:opacity-95 transition cursor-pointer flex items-center gap-1.5 mx-auto"
+                                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 text-white font-bold text-xs shadow-xs hover:opacity-95 transition cursor-pointer flex items-center gap-1.5 mx-auto"
                               >
                                 <span>Detail Analisa</span>
                                 <ArrowRight className="w-3.5 h-3.5" />
@@ -700,10 +699,10 @@ export default function UnifiedMarketBrief() {
 
             {/* TAB CONTENT 2: News List */}
             {activeTab === 'news' && (
-              <div className="bg-[#130a17]/80 backdrop-blur-md rounded-2xl border border-[#251323] p-5 shadow-lg space-y-3">
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-bold text-white text-sm">Arsip Berita Sesi Ini ({news.length} artikel)</h3>
-                  <span className="text-xs text-zinc-400">BEI & Media Partner</span>
+                  <h3 className="font-bold text-slate-900 text-sm">Arsip Berita Sesi Ini ({news.length} artikel)</h3>
+                  <span className="text-xs text-slate-500">BEI & Media Partner</span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[600px] overflow-y-auto">
@@ -711,10 +710,10 @@ export default function UnifiedMarketBrief() {
                     <div
                       key={n.id || idx}
                       onClick={() => navigate(`/news/${n.id}`)}
-                      className={`p-4 rounded-xl border transition cursor-pointer hover:border-rose-500/40 hover:bg-[#1a0e21] ${
+                      className={`p-4 rounded-xl border transition cursor-pointer hover:border-rose-400 hover:bg-slate-50 ${
                         n.is_selected
-                          ? 'bg-gradient-to-r from-[#200f27] to-[#170a1d] border-amber-500/30'
-                          : 'bg-[#180c1d] border-[#281329]'
+                          ? 'bg-amber-50/40 border-amber-300'
+                          : 'bg-white border-slate-200'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2 mb-2">
@@ -722,23 +721,23 @@ export default function UnifiedMarketBrief() {
                           {n.symbols?.slice(0, 3).map((s) => (
                             <span
                               key={s}
-                              className="text-[10px] font-mono font-bold bg-[#260f2d] text-amber-300 border border-[#3b1845] px-1.5 py-0.5 rounded"
+                              className="text-[10px] font-mono font-bold bg-amber-50 text-amber-800 border border-amber-200 px-1.5 py-0.5 rounded"
                             >
                               {s}
                             </span>
                           ))}
                         </div>
                         {n.is_selected && (
-                          <span className="text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full">
+                          <span className="text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 rounded-full">
                             ★ Terpilih AI
                           </span>
                         )}
                       </div>
-                      <h4 className="text-xs sm:text-sm font-bold text-white line-clamp-2 leading-snug">
+                      <h4 className="text-xs sm:text-sm font-bold text-slate-900 line-clamp-2 leading-snug">
                         {n.title}
                       </h4>
                       {n.body && (
-                        <p className="text-[11px] text-zinc-400 line-clamp-2 mt-1 leading-relaxed">
+                        <p className="text-[11px] text-slate-600 line-clamp-2 mt-1 leading-relaxed">
                           {n.body}
                         </p>
                       )}
@@ -750,18 +749,18 @@ export default function UnifiedMarketBrief() {
 
             {/* TAB CONTENT 3: Skipped Audit */}
             {activeTab === 'skipped' && (
-              <div className="bg-[#130a17]/80 backdrop-blur-md rounded-2xl border border-[#251323] p-5 shadow-lg space-y-3">
-                <h3 className="font-bold text-white text-sm mb-2">Transparansi Audit Emiten Ditolak ({skipped.length})</h3>
-                <p className="text-xs text-zinc-400 mb-4">
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
+                <h3 className="font-bold text-slate-900 text-sm mb-2">Transparansi Audit Emiten Ditolak ({skipped.length})</h3>
+                <p className="text-xs text-slate-500 mb-4">
                   AI menolak emiten-emiten berikut untuk menjaga standar kualitas dan melindungi pengguna dari saham gorengan / berisiko tinggi:
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
                   {skipped.map((s) => (
-                    <div key={s.id} className="p-3 rounded-xl bg-[#1a0e21] border border-[#281329] text-xs">
-                      <span className="font-mono font-bold text-amber-300 bg-amber-500/15 px-2 py-0.5 rounded border border-amber-500/30 mr-2">
+                    <div key={s.id} className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+                      <span className="font-mono font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200 mr-2">
                         {s.ticker}
                       </span>
-                      <span className="text-zinc-300">{s.reason || 'Tanpa alasan terurai'}</span>
+                      <span className="text-slate-700">{s.reason || 'Tanpa alasan terurai'}</span>
                     </div>
                   ))}
                 </div>
@@ -774,45 +773,45 @@ export default function UnifiedMarketBrief() {
       {/* ─── BIG CALENDAR PICKER MODAL (Sesuai Permintaan User) ─── */}
       {isCalendarOpen && (
         <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-4"
           onClick={() => setIsCalendarOpen(false)}
         >
           <div
-            className="bg-[#130a17] border border-[#2e1436] rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 text-zinc-100"
+            className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 text-slate-800"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header & Month Navigation */}
-            <div className="flex items-center justify-between border-b border-[#251323] pb-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div>
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <CalendarIcon className="w-5 h-5 text-rose-400" />
+                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <CalendarIcon className="w-5 h-5 text-rose-600" />
                   <span>Pilih Tanggal Sesi Pasar</span>
                 </h3>
-                <p className="text-xs text-zinc-400 mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   Klik tanggal untuk memuat data bursa & watchlist sesi tersebut
                 </p>
               </div>
               <button
                 onClick={() => setIsCalendarOpen(false)}
-                className="w-8 h-8 rounded-lg bg-[#1e0e22] hover:bg-[#2b1233] text-zinc-400 hover:text-white flex items-center justify-center border border-[#341a3e] transition cursor-pointer"
+                className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center border border-slate-200 transition cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Month & Year Navigation */}
-            <div className="flex items-center justify-between bg-[#180c1d] p-3 rounded-xl border border-[#281329]">
+            <div className="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200">
               <button
                 onClick={() =>
                   setCalendarViewDate(
                     new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth() - 1, 1)
                   )
                 }
-                className="p-1.5 rounded-lg bg-[#220e28] hover:bg-[#2f1338] text-zinc-300 hover:text-white transition cursor-pointer"
+                className="p-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 shadow-2xs transition cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="font-bold text-sm text-white capitalize">
+              <span className="font-bold text-sm text-slate-900 capitalize">
                 {calendarViewDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
               </span>
               <button
@@ -821,21 +820,21 @@ export default function UnifiedMarketBrief() {
                     new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth() + 1, 1)
                   )
                 }
-                className="p-1.5 rounded-lg bg-[#220e28] hover:bg-[#2f1338] text-zinc-300 hover:text-white transition cursor-pointer"
+                className="p-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 shadow-2xs transition cursor-pointer"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
 
             {/* Calendar Day-of-week headers */}
-            <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold text-zinc-500 uppercase">
+            <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold text-slate-500 uppercase">
               <span>Sen</span>
               <span>Sel</span>
               <span>Rab</span>
               <span>Kam</span>
               <span>Jum</span>
-              <span className="text-rose-400/60">Sab</span>
-              <span className="text-rose-400/60">Min</span>
+              <span className="text-rose-500">Sab</span>
+              <span className="text-rose-500">Min</span>
             </div>
 
             {/* Calendar Grid */}
@@ -859,15 +858,15 @@ export default function UnifiedMarketBrief() {
                     }}
                     className={`h-14 p-1.5 rounded-xl border flex flex-col justify-between transition text-xs select-none ${
                       isCurrentSelected
-                        ? 'bg-rose-500/20 border-rose-500/60 ring-2 ring-rose-500/30'
+                        ? 'bg-rose-50 border-rose-500 ring-2 ring-rose-200'
                         : hasLogs
-                        ? 'bg-[#180c1d] border-[#311639] hover:bg-[#220f28] hover:border-rose-500/40 cursor-pointer'
-                        : 'bg-[#120815]/40 border-transparent text-zinc-600 opacity-40 cursor-not-allowed'
+                        ? 'bg-white border-slate-200 hover:bg-rose-50/50 hover:border-rose-300 shadow-2xs cursor-pointer'
+                        : 'bg-slate-50/50 border-transparent text-slate-300 opacity-60 cursor-not-allowed'
                     }`}
                   >
                     <span
                       className={`font-mono font-bold text-[11px] ${
-                        isCurrentSelected ? 'text-rose-300' : hasLogs ? 'text-white' : 'text-zinc-600'
+                        isCurrentSelected ? 'text-rose-700' : hasLogs ? 'text-slate-900' : 'text-slate-400'
                       }`}
                     >
                       {cell.day}
@@ -881,8 +880,8 @@ export default function UnifiedMarketBrief() {
                             key={l.id}
                             className={`text-[9px] px-1 rounded font-bold ${
                               l.session === 'open'
-                                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                                : 'bg-purple-500/20 text-purple-300 border border-purple-500/40'
+                                ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
                             }`}
                             title={`Sesi ${l.session.toUpperCase()}`}
                           >
@@ -897,13 +896,13 @@ export default function UnifiedMarketBrief() {
             </div>
 
             {/* Quick Helper footer */}
-            <div className="flex items-center justify-between pt-2 border-t border-[#251323] text-xs text-zinc-400">
+            <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs text-slate-500">
               <div className="flex items-center gap-3">
                 <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-amber-400" /> Sesi Open
+                  <span className="w-2 h-2 rounded-full bg-amber-500" /> Sesi Open
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-purple-400" /> Sesi Close
+                  <span className="w-2 h-2 rounded-full bg-indigo-500" /> Sesi Close
                 </span>
               </div>
 
@@ -914,7 +913,7 @@ export default function UnifiedMarketBrief() {
                     setIsCalendarOpen(false);
                   }
                 }}
-                className="text-xs font-bold text-rose-400 hover:text-rose-300 transition cursor-pointer"
+                className="text-xs font-bold text-rose-600 hover:text-rose-700 transition cursor-pointer"
               >
                 Lompat ke Sesi Terbaru ➔
               </button>
