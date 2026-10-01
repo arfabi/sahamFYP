@@ -83,7 +83,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   const activeItem = getActiveItem();
 
   return (
-    <div className="h-screen bg-[#0a060c] text-slate-100 flex overflow-hidden font-sans selection:bg-rose-500 selection:text-white">
+    <div className="h-screen bg-slate-50 text-slate-900 flex overflow-hidden font-sans selection:bg-rose-500 selection:text-white">
       {/* Sidebar */}
       <aside className="w-64 bg-[#0d070f] border-r border-[#251323] text-slate-200 flex flex-col shrink-0">
         {/* Logo */}
@@ -159,30 +159,30 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col overflow-y-auto bg-[#0a060c]">
+      <main className="flex-1 flex flex-col overflow-y-auto bg-slate-50 text-slate-900">
         {/* Topbar - persistent di semua modul/menu */}
-        <header className="bg-[#0a060c]/85 backdrop-blur-md border-b border-[#251323] sticky top-0 z-30">
+        <header className="bg-white/85 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30">
           <div className="flex items-center justify-between px-6 py-3.5">
             <div className="flex items-center gap-2.5">
               <span className="text-lg">{activeItem?.icon || '📄'}</span>
-              <span className="text-sm font-bold text-white tracking-wide">
+              <span className="text-sm font-bold text-slate-900 tracking-wide">
                 {activeItem?.label || 'Dashboard'}
               </span>
-              <span className="text-xs text-rose-300/40 hidden sm:inline">• SahamFYP Autonomous OS</span>
+              <span className="text-xs text-rose-600/70 font-semibold hidden sm:inline">• SahamFYP Autonomous OS</span>
             </div>
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-[#120914] border border-[#251323]">
-                <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-rose-500 to-orange-500 flex items-center justify-center text-white text-xs font-bold shadow-sm shadow-rose-500/20">
+              <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-slate-100/90 border border-slate-200">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-rose-500 to-orange-500 flex items-center justify-center text-white text-xs font-bold shadow-xs">
                   {user.email.charAt(0).toUpperCase()}
                 </div>
                 <div className="hidden md:block text-xs">
-                  <p className="font-semibold text-slate-200 truncate max-w-[150px]">{user.email}</p>
-                  <p className="text-[10px] text-rose-300/70 font-mono uppercase tracking-wider">{user.role}</p>
+                  <p className="font-semibold text-slate-800 truncate max-w-[150px]">{user.email}</p>
+                  <p className="text-[10px] text-rose-600 font-mono uppercase tracking-wider">{user.role}</p>
                 </div>
               </div>
               <button
                 onClick={onLogout}
-                className="px-3 py-1.5 bg-[#170c18] hover:bg-rose-500/15 border border-[#33182f] hover:border-rose-500/40 text-slate-300 hover:text-rose-300 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 active:scale-95 shadow-xs cursor-pointer"
+                className="px-3 py-1.5 bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-200 text-slate-600 hover:text-rose-600 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 active:scale-95 shadow-xs cursor-pointer"
                 title="Logout"
               >
                 <span>🚪</span>

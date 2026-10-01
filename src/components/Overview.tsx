@@ -69,22 +69,22 @@ export default function Overview({ onNavigate }: OverviewProps) {
   return (
     <div className="space-y-7">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#130a17]/70 backdrop-blur-md p-5 rounded-2xl border border-[#251323]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/90 backdrop-blur-md p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-sm">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[11px] font-bold uppercase tracking-wider text-rose-400">Live Mission Control</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-rose-600">Live Mission Control</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2.5">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2.5">
             <span>📊</span> Dashboard Overview
           </h1>
-          <p className="text-xs sm:text-sm text-zinc-400 mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
             Ringkasan metrik waktu nyata, arsitektur orkestrasi data, dan pipeline otomatisasi SahamFYP
           </p>
         </div>
         <button
           onClick={() => onNavigate('generator')}
-          className="px-5 py-2.5 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 hover:opacity-95 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-rose-900/30 flex items-center justify-center gap-2 self-start sm:self-auto cursor-pointer"
+          className="px-5 py-2.5 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 hover:opacity-95 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-md shadow-rose-500/20 flex items-center justify-center gap-2 self-start sm:self-auto cursor-pointer"
         >
           <span>✍️</span> Generate Konten Baru
         </button>
@@ -96,23 +96,23 @@ export default function Overview({ onNavigate }: OverviewProps) {
           <div
             key={i}
             onClick={() => onNavigate(stat.page)}
-            className="group relative bg-[#130a17]/80 hover:bg-[#1a0e20] backdrop-blur-md rounded-2xl p-5 border border-[#251323] hover:border-rose-500/40 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-rose-950/30"
+            className="group relative bg-white hover:bg-slate-50/80 backdrop-blur-md rounded-2xl p-5 border border-slate-200/90 hover:border-rose-300 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md"
           >
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{stat.label}</span>
-              <div className="w-10 h-10 rounded-xl bg-[#200f27] border border-[#341a3e] group-hover:scale-110 flex items-center justify-center text-xl transition-transform">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{stat.label}</span>
+              <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 group-hover:scale-110 flex items-center justify-center text-xl transition-transform">
                 {stat.icon}
               </div>
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-black text-white tracking-tight">{stat.value}</span>
+              <span className="text-3xl font-black text-slate-900 tracking-tight">{stat.value}</span>
             </div>
             {'subtitle' in stat && stat.subtitle && (
-              <p className="text-xs text-rose-400/90 mt-2 font-medium bg-[#1d0d24] px-2.5 py-1 rounded-md border border-[#31163b] inline-block">
+              <p className="text-xs text-rose-600 mt-2 font-semibold bg-rose-50 px-2.5 py-1 rounded-md border border-rose-100 inline-block">
                 {stat.subtitle}
               </p>
             )}
-            <div className="mt-3 flex items-center text-[11px] text-zinc-500 group-hover:text-rose-400 font-medium transition-colors">
+            <div className="mt-3 flex items-center text-[11px] text-slate-400 group-hover:text-rose-600 font-semibold transition-colors">
               <span>Buka modul</span>
               <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
             </div>
