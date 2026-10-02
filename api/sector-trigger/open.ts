@@ -867,7 +867,21 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Step 4: LLM (Sumopod) generates final slides
-    const naskah = await generateSlidesWithLlm(today, dataDate, ihs, candidates, newsResults, selection, topMovers);
+    const foreignFlowForLlm = brokerFlowSummary ? {
+      netValue: brokerFlowSummary.netTotal,
+      direction: brokerFlowSummary.isInflow ? 'buy' : 'sell',
+    } : null;
+
+    const naskah = await generateSlidesWithLlm(
+      today,
+      dataDate,
+      ihs,
+      candidates,
+      newsResults,
+      selection,
+      topMovers,
+      foreignFlowForLlm
+    );
 
     const totalCredits = BASE_CREDITS + candidates.length * (REPORT_CREDITS_PER_TICKER + TECHNICAL_CREDITS_PER_TICKER);
 
@@ -1128,7 +1142,6 @@ ${JSON.stringify(candidatesData, null, 2)}
         { "section": "kondisiMarket", "icon": "TrendingUp", "text": "IHSG ${ihs?.price ?? 'N/A'} (${fmtIhsChange(ihs?.change)}) — [kondisi pasar singkat 5 kata]" },
         { "section": "kondisiMarket", "icon": "Flame", "text": "Gainer: [TICKER TOP GAINER] ([Nama]) +XX.XX%" },
         { "section": "kondisiMarket", "icon": "TrendingDown", "text": "Loser: [TICKER TOP LOSER] ([Nama]) -XX.XX%" },
-        { "section": "kondisiMarket", "icon": "Scale", "text": "Asing: ${foreignFlowStr}" },
         { "section": "fillings", "icon": "Newspaper", "text": "[Ringkasan filing/keterbukaan korporasi terpenting hari ini, maks 10 kata]" },
         { "section": "fillings", "icon": "Newspaper", "text": "[Filing penting #2 jika ada, atau skip jika tidak relevan]" },
         { "section": "katalis", "icon": "Flame", "text": "[Headline katalis/berita saham #1 paling impactful, maks 10 kata]" },
