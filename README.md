@@ -80,7 +80,7 @@ Setiap hari sebelum bursa saham Indonesia buka (08:00 WIB), SahamFYP memproses d
 
 ### Realita Pasar Modal Indonesia
 Berdasarkan data resmi **Kustodian Sentral Efek Indonesia (KSEI)** dan **Bursa Efek Indonesia (BEI)**:
-- **54,4% investor pasar modal adalah Generasi Z** (usia di bawah 30 tahun mendominasi demografi investor individu di Indonesia).
+- **55,38% investor pasar modal adalah Generasi Z** (usia di bawah 30 tahun mendominasi demografi investor individu di Indonesia).
 - **70%** Gen Z dapat info investasi dari **media sosial** — bukan dari data fundamental
 - **60%+ investor pemula** tidak melakukan analisis fundamental sebelum beli
 - **70%** pernah ikut tren tanpa pertimbangan matang
@@ -136,7 +136,7 @@ SahamFYP mengambil **kedalaman data riset sekuritas** dan memformatnya menjadi *
 
 - **Dashboard Terintegrasi** → Akses cepat untuk *Market Brief* harian dan pantauan *Stock Watchlist*.
 - **News Monitoring Real-Time** → Deteksi otomatis berita dari 8 sumber RSS, filter berdasarkan rentang waktu untuk merangkum berita terkini secara dinamis.
-- **Accounts Manager** → Manajemen akun sosial media terpusat (Instagram, Threads, Facebook, X, TikTok). Bisa menambah, menghapus, melihat preview link profil, serta *toggle* Active/Inactive yang tersinkronisasi langsung dengan *database* Supabase.
+- **Accounts Manager** → Manajemen akun sosial media terpusat (Instagram, Threads, TikTok, Facebook, Telegram). Bisa menambah, menghapus, melihat preview link profil, serta *toggle* Active/Inactive yang tersinkronisasi langsung dengan *database* Supabase.
 - **Content Generator & Multi-Publishing** → Generate konten visual AI (Form Wizard) dan kemampuan **memilih beberapa target akun sosmed** sekaligus dalam satu kali klik — untuk kebutuhan konten manual/ad-hoc di luar dua workflow otomatis di atas.
 - **Full Automation Workflow (n8n)** → Dua pipeline otonom end-to-end (lihat bagian [Template Konten Postingan](#-template-konten-postingan)) dari deteksi sinyal → verifikasi data Sectors → generate → publish → laporan Telegram, tanpa intervensi manual per siklus.
 
@@ -214,7 +214,7 @@ SahamFYP dilengkapi dengan **Web Dashboard Monitoring** interaktif yang dideploy
 
 ### 2. Repliz
 
-- **Fungsi**: Publish scheduling ke berbagai media sosial (Instagram, Threads, Facebook, TikTok, Twitter/X, LinkedIn, Telegram).
+- **Fungsi**: Publish scheduling ke berbagai media sosial (Instagram, Threads, TikTok, Facebook, Telegram).
 - **Referensi**: https://repliz.com/ | https://api.repliz.com/public-json
 - **Cara kerja**: Endpoint Vercel API `/api/publish` SahamFYP berperan sebagai orkestrator yang menerima daftar akun yang ingin dituju (`targetAccountIds`). API ini kemudian akan mengecek kredensial dinamis dari database Supabase (`social_accounts`) dan mengirim payload massal ke Repliz secara simultan.
 
@@ -323,7 +323,7 @@ Schedule Trigger (08:00 WIB)
       4. Enrich rasio fundamental & broker foreign flow vs rata-rata sektor
   → Split Out per Slide → Render HTML → Browserless.io (HTML → JPEG 1080×1350)
   → Upload ke Supabase Storage (bucket sfyp-storage) → Collect All URLs
-  → Publish ke Repliz (multi-akun: Instagram, Facebook, Threads, X, TikTok)
+  → Publish ke Repliz & Telegram Bot (multi-akun: Instagram, Threads, TikTok, Facebook, Telegram)
   → Simpan log riwayat post ke Supabase (/api/posts)
   → Kirim broadcast laporan status & credits used ke Telegram
 ```
@@ -1120,7 +1120,7 @@ sahamFYP/
   - **Password**: `d3m0cu4n`
   - **Infrastruktur**: Vercel Hosting + Supabase (Database, Auth, & Storage)
 - **API Health**: https://saham-fyp.vercel.app/api/health
-- **Akun live**: [@sahamfyp](https://instagram.com/sahamfyp) di Instagram, Facebook, Threads, X, TikTok
+- **Akun live**: [@sahamfyp.id](https://instagram.com/sahamfyp.id) di Instagram, Threads, TikTok, Facebook, Telegram
 - **API Sector Trigger**: `POST /api/sector-trigger/open`
 - **API Classify**: `POST /api/classify`
 - **API Score**: `POST /api/score`
@@ -1203,7 +1203,7 @@ sahamFYP/
 - Klasifikasi & scoring berita otomatis (6 kategori)
 - Enrichment data fundamental via Sectors REST API
 - Generate konten (slide + caption + hashtag)
-- Publish otomatis ke 5 platform (Instagram, Facebook, Threads, X, TikTok) lewat Repliz — live di akun [@sahamfyp](https://instagram.com/sahamfyp)
+- Publish otomatis ke 5 platform (Instagram, Threads, TikTok, Facebook, Telegram) lewat Repliz & Telegram Bot — live di akun [@sahamfyp.id](https://instagram.com/sahamfyp.id)
 - Manual post / form wizard dengan fleksibel waktu posting (WIB)
 - Penyimpanan gambar: Supabase Storage
 - Telegram bot notifikasi sebagai bukti unattended run
@@ -1217,7 +1217,7 @@ sahamFYP/
 
 | Sumber / Riset | Data / Temuan | Indikator / Keterangan |
 |----------------|---------------|------------------------|
-| **KSEI & BEI** / [Katadata Databoks](https://databoks.katadata.co.id/pasar/statistik/66bdf4a992e5b/gen-z-dan-milenial-mendominasi-investor-pasar-modal-di-indonesia) | **54,4% — 55,38%** investor pasar modal adalah Gen Z & Milenial (≤30 tahun) | Dominasi kelompok usia muda di pasar modal Indonesia |
+| **KSEI & BEI** / [Katadata Databoks](https://databoks.katadata.co.id/pasar/statistik/66bdf4a992e5b/gen-z-dan-milenial-mendominasi-investor-pasar-modal-di-indonesia) | **55,38%** investor pasar modal adalah Generasi Z (≤30 tahun) | Dominasi kelompok usia muda di pasar modal Indonesia |
 | **Rohman & Safiih (2025)** | Pengaruh media sosial terhadap keputusan investasi saham di kalangan Generasi Z | Validasi empiris 70% Gen Z dipengaruhi media sosial |
 | **Anastasya, Ridha, & Windarsari (2025)** | Moderasi literasi keuangan dalam pengaruh finfluencer dan FOMO pada investor pemula | Pembuktian dampak FOMO pom-pom vs perlunya literasi keuangan |
 | **Adinda, Wahid, & Sitorus (2025)** | Meningkatkan investor saham Gen Z di Indonesia | Kebutuhan format edukasi ramah generasi muda |
@@ -1254,7 +1254,7 @@ Proyek ini dikembangkan untuk keperluan edukasi dan riset, dan disubmit untuk Se
 
 - **Sectors.app** — Data fundamental & pasar saham (REST API), core data source produk ini
 - **Sumopod** — LLM API (OpenAI-compatible) untuk classification, scoring, enrichment, dan content generation
-- **Repliz** — Platform scheduling & publishing ke Instagram/Facebook/Threads/X/TikTok
+- **Repliz** — Platform scheduling & publishing ke Instagram, Threads, TikTok, Facebook
 - **Supabase Storage** — CDN & penyimpanan gambar
 - **Supabase** — Database & Backend-as-a-Service
 - **Vercel** — Hosting & Serverless Functions
